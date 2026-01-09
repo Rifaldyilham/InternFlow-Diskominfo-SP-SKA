@@ -4,9 +4,9 @@
 
 @section('content')
 
-<!-- Search and Filter -->
+<!-- Search -->
 <div class="form-card mb-8">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="grid grid-cols-1 gap-4 mb-6">
         <div>
             <label class="block text-gray-700 mb-2">Cari Peserta</label>
             <div class="relative">
@@ -14,26 +14,6 @@
                        class="w-full p-3 pl-10 border border-gray-300 rounded-lg">
                 <i class='bx bx-search absolute left-3 top-3 text-gray-400'></i>
             </div>
-        </div>
-        
-        <div>
-            <label class="block text-gray-700 mb-2">Status</label>
-            <select id="statusFilter" class="w-full p-3 border border-gray-300 rounded-lg">
-                <option value="all">Semua Status</option>
-                <option value="active">Aktif</option>
-                <option value="completed">Selesai</option>
-                <option value="pending">Menunggu</option>
-            </select>
-        </div>
-        
-        <div>
-            <label class="block text-gray-700 mb-2">Bidang</label>
-            <select id="bidangFilter" class="w-full p-3 border border-gray-300 rounded-lg">
-                <option value="all">Semua Bidang</option>
-                <option value="informatika">Informatika</option>
-                <option value="statistik">Statistik</option>
-                <option value="kesekretariatan">Kesekretariatan</option>
-            </select>
         </div>
     </div>
     
@@ -63,28 +43,28 @@
                     <th>Nama Peserta</th>
                     <th>Universitas</th>
                     <th>Program Studi</th>
-                    <th>Periode</th>
-                    <th>Status</th>
+                    <th>Tanggal Masuk</th>
+                    <th>Tanggal Selesai</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
             <tbody id="pesertaTable">
                 @foreach([
                     ['name' => 'John Doe', 'nim' => 'G12345678', 'univ' => 'Universitas Sebelas Maret', 
-                     'prodi' => 'Teknik Informatika', 'periode' => '1 Jan - 30 Mar 2024', 
-                     'status' => 'active', 'bidang' => 'informatika'],
+                     'prodi' => 'Teknik Informatika', 'tanggal_masuk' => '1 Jan 2024', 
+                     'tanggal_selesai' => '30 Mar 2024'],
                     ['name' => 'Jane Smith', 'nim' => 'S98765432', 'univ' => 'Politeknik Negeri Semarang', 
-                     'prodi' => 'Sistem Informasi', 'periode' => '1 Feb - 30 Apr 2024', 
-                     'status' => 'active', 'bidang' => 'statistik'],
+                     'prodi' => 'Sistem Informasi', 'tanggal_masuk' => '1 Feb 2024', 
+                     'tanggal_selesai' => '30 Apr 2024'],
                     ['name' => 'Budi Santoso', 'nim' => 'D87654321', 'univ' => 'Universitas Diponegoro', 
-                     'prodi' => 'Ilmu Komputer', 'periode' => '1 Mar - 30 Mei 2024', 
-                     'status' => 'active', 'bidang' => 'informatika'],
+                     'prodi' => 'Ilmu Komputer', 'tanggal_masuk' => '1 Mar 2024', 
+                     'tanggal_selesai' => '30 Mei 2024'],
                     ['name' => 'Siti Rahma', 'nim' => 'U76543210', 'univ' => 'Universitas Gadjah Mada', 
-                     'prodi' => 'Teknologi Informasi', 'periode' => '1 Jan - 30 Mar 2024', 
-                     'status' => 'completed', 'bidang' => 'kesekretariatan'],
+                     'prodi' => 'Teknologi Informasi', 'tanggal_masuk' => '1 Jan 2024', 
+                     'tanggal_selesai' => '30 Mar 2024'],
                     ['name' => 'Ahmad Rizki', 'nim' => 'N65432109', 'univ' => 'Universitas Negeri Semarang', 
-                     'prodi' => 'Manajemen Informatika', 'periode' => '1 Des 2023 - 29 Feb 2024', 
-                     'status' => 'completed', 'bidang' => 'informatika']
+                     'prodi' => 'Manajemen Informatika', 'tanggal_masuk' => '1 Des 2023', 
+                     'tanggal_selesai' => '29 Feb 2024']
                 ] as $peserta)
                 <tr>
                     <td>
@@ -93,12 +73,8 @@
                     </td>
                     <td>{{ $peserta['univ'] }}</td>
                     <td>{{ $peserta['prodi'] }}</td>
-                    <td>{{ $peserta['periode'] }}</td>
-                    <td>
-                        <span class="status-badge {{ $peserta['status'] === 'active' ? 'status-active' : 'status-approved' }}">
-                            {{ $peserta['status'] === 'active' ? 'AKTIF' : 'SELESAI' }}
-                        </span>
-                    </td>
+                    <td>{{ $peserta['tanggal_masuk'] }}</td>
+                    <td>{{ $peserta['tanggal_selesai'] }}</td>
                     <td>
                         <div class="flex gap-2">
                             <button onclick="viewDetail('{{ $peserta['name'] }}')" 
@@ -145,27 +121,28 @@
     let pesertaData = [
         @foreach([
             ['name' => 'John Doe', 'nim' => 'G12345678', 'univ' => 'Universitas Sebelas Maret', 
-             'prodi' => 'Teknik Informatika', 'periode' => '1 Jan - 30 Mar 2024', 
-             'status' => 'active', 'bidang' => 'informatika'],
+             'prodi' => 'Teknik Informatika', 'tanggal_masuk' => '1 Jan 2024', 
+             'tanggal_selesai' => '30 Mar 2024', 'status' => 'active', 'bidang' => 'informatika'],
             ['name' => 'Jane Smith', 'nim' => 'S98765432', 'univ' => 'Politeknik Negeri Semarang', 
-             'prodi' => 'Sistem Informasi', 'periode' => '1 Feb - 30 Apr 2024', 
-             'status' => 'active', 'bidang' => 'statistik'],
+             'prodi' => 'Sistem Informasi', 'tanggal_masuk' => '1 Feb 2024', 
+             'tanggal_selesai' => '30 Apr 2024', 'status' => 'active', 'bidang' => 'statistik'],
             ['name' => 'Budi Santoso', 'nim' => 'D87654321', 'univ' => 'Universitas Diponegoro', 
-             'prodi' => 'Ilmu Komputer', 'periode' => '1 Mar - 30 Mei 2024', 
-             'status' => 'active', 'bidang' => 'informatika'],
+             'prodi' => 'Ilmu Komputer', 'tanggal_masuk' => '1 Mar 2024', 
+             'tanggal_selesai' => '30 Mei 2024', 'status' => 'active', 'bidang' => 'informatika'],
             ['name' => 'Siti Rahma', 'nim' => 'U76543210', 'univ' => 'Universitas Gadjah Mada', 
-             'prodi' => 'Teknologi Informasi', 'periode' => '1 Jan - 30 Mar 2024', 
-             'status' => 'completed', 'bidang' => 'kesekretariatan'],
+             'prodi' => 'Teknologi Informasi', 'tanggal_masuk' => '1 Jan 2024', 
+             'tanggal_selesai' => '30 Mar 2024', 'status' => 'completed', 'bidang' => 'kesekretariatan'],
             ['name' => 'Ahmad Rizki', 'nim' => 'N65432109', 'univ' => 'Universitas Negeri Semarang', 
-             'prodi' => 'Manajemen Informatika', 'periode' => '1 Des 2023 - 29 Feb 2024', 
-             'status' => 'completed', 'bidang' => 'informatika']
+             'prodi' => 'Manajemen Informatika', 'tanggal_masuk' => '1 Des 2023', 
+             'tanggal_selesai' => '29 Feb 2024', 'status' => 'completed', 'bidang' => 'informatika']
         ] as $peserta)
         {
             name: "{{ $peserta['name'] }}",
             nim: "{{ $peserta['nim'] }}",
             univ: "{{ $peserta['univ'] }}",
             prodi: "{{ $peserta['prodi'] }}",
-            periode: "{{ $peserta['periode'] }}",
+            tanggal_masuk: "{{ $peserta['tanggal_masuk'] }}",
+            tanggal_selesai: "{{ $peserta['tanggal_selesai'] }}",
             status: "{{ $peserta['status'] }}",
             bidang: "{{ $peserta['bidang'] }}"
         },
@@ -174,20 +151,13 @@
     
     function filterPeserta() {
         const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-        const statusFilter = document.getElementById('statusFilter').value;
-        const bidangFilter = document.getElementById('bidangFilter').value;
         
         const filtered = pesertaData.filter(peserta => {
-            const matchesSearch = searchTerm === '' || 
+            return searchTerm === '' || 
                 peserta.name.toLowerCase().includes(searchTerm) ||
                 peserta.nim.toLowerCase().includes(searchTerm) ||
                 peserta.univ.toLowerCase().includes(searchTerm) ||
                 peserta.prodi.toLowerCase().includes(searchTerm);
-            
-            const matchesStatus = statusFilter === 'all' || peserta.status === statusFilter;
-            const matchesBidang = bidangFilter === 'all' || peserta.bidang === bidangFilter;
-            
-            return matchesSearch && matchesStatus && matchesBidang;
         });
         
         renderTable(filtered);
@@ -196,8 +166,6 @@
     
     function resetFilter() {
         document.getElementById('searchInput').value = '';
-        document.getElementById('statusFilter').value = 'all';
-        document.getElementById('bidangFilter').value = 'all';
         renderTable(pesertaData);
         document.getElementById('totalPeserta').textContent = `Total: ${pesertaData.length} peserta`;
     }
@@ -215,12 +183,8 @@
                     </td>
                     <td>${peserta.univ}</td>
                     <td>${peserta.prodi}</td>
-                    <td>${peserta.periode}</td>
-                    <td>
-                        <span class="status-badge ${peserta.status === 'active' ? 'status-active' : 'status-approved'}">
-                            ${peserta.status === 'active' ? 'AKTIF' : 'SELESAI'}
-                        </span>
-                    </td>
+                    <td>${peserta.tanggal_masuk}</td>
+                    <td>${peserta.tanggal_selesai}</td>
                     <td>
                         <div class="flex gap-2">
                             <button onclick="viewDetail('${peserta.name}')" 
@@ -283,14 +247,12 @@
                                     <div class="font-medium">${peserta.prodi}</div>
                                 </div>
                                 <div>
-                                    <div class="text-sm text-gray-500">Periode Magang</div>
-                                    <div class="font-medium">${peserta.periode}</div>
+                                    <div class="text-sm text-gray-500">Tanggal Masuk</div>
+                                    <div class="font-medium">${peserta.tanggal_masuk}</div>
                                 </div>
                                 <div>
-                                    <div class="text-sm text-gray-500">Status</div>
-                                    <span class="status-badge ${peserta.status === 'active' ? 'status-active' : 'status-approved'}">
-                                        ${peserta.status === 'active' ? 'AKTIF' : 'SELESAI'}
-                                    </span>
+                                    <div class="text-sm text-gray-500">Tanggal Selesai</div>
+                                    <div class="font-medium">${peserta.tanggal_selesai}</div>
                                 </div>
                             </div>
                         </div>
@@ -341,8 +303,6 @@
     document.addEventListener('DOMContentLoaded', function() {
         // Add real-time search
         document.getElementById('searchInput').addEventListener('input', filterPeserta);
-        document.getElementById('statusFilter').addEventListener('change', filterPeserta);
-        document.getElementById('bidangFilter').addEventListener('change', filterPeserta);
     });
 </script>
 @endsection

@@ -34,19 +34,6 @@
             </div>
             <span class="status-badge status-approved">DISETUJUI</span>
         </div>
-        
-    <div style="background: #f8fafc; padding: 20px; border-radius: 12px;">
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                <div style="width: 40px; height: 40px; background: rgba(113, 88, 226, 0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #7158e2;">
-                    <i class='bx bx-file'></i>
-                </div>
-                <div>
-                    <div style="font-weight: 600; color: var(--primary);">Penilaian</div>
-                    <div style="font-size: 0.9rem; color: #666;">Status</div>
-                </div>
-            </div>
-            <span class="status-badge status-pending">BELUM SELESAI</span>
-        </div>
 
         <div style="background: #f8fafc; padding: 20px; border-radius: 12px;">
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">

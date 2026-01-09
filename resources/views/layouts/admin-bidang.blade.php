@@ -807,13 +807,6 @@
                 </div>
                 
                 <div class="header-right">
-                    <div style="position: relative;">
-                        <div class="notification" onclick="showNotifications()">
-                            <i class='bx bx-bell'></i>
-                            <span class="notification-badge">3</span>
-                        </div>
-                    </div>
-                    
                     <div class="user-profile" onclick="window.location.href='/admin-bidang/profil'">
                         <div class="avatar">AB</div>
                         <div class="user-info">
@@ -890,17 +883,7 @@
                 window.location.href = '/login';
             }
         }
-        
-        // Show notifications
-        function showNotifications() {
-            const notifications = [
-                '5 peserta baru perlu penempatan bidang',
-                '3 peserta mendekati akhir masa magang',
-                'Permintaan tambahan mentor untuk bidang Statistik'
-            ];
-            
-            alert('Notifikasi:\n' + notifications.map((n, i) => `${i+1}. ${n}`).join('\n'));
-        }
+    
         
         // Update badge counts
         function updateBadgeCounts() {

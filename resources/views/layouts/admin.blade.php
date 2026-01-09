@@ -506,11 +506,6 @@
                 </div>
                 
                 <div class="header-right">
-                    <div class="notification">
-                        <i class='bx bx-bell'></i>
-                        <span class="notification-badge">3</span>
-                    </div>
-                    
                     <div class="user-profile">
                         <div class="avatar">AK</div>
                         <div class="user-info">

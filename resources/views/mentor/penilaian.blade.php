@@ -4,7 +4,6 @@
 
 @section('content')
 
-
 <!-- Filter dan Pencarian -->
 <div class="form-card mb-8">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -52,9 +51,7 @@
                 <tr>
                     <th>Peserta</th>
                     <th>Universitas</th>
-                    <th>Periode</th>
                     <th>Status</th>
-                    <th>File Penilaian</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
@@ -122,7 +119,6 @@ const pesertaData = [
         nim: "1234567890",
         universitas: "Universitas Sebelas Maret",
         prodi: "Teknik Informatika",
-        periode: "1 Jan - 30 Mar 2024",
         status: "selesai",
         sudahDinilai: true,
         tanggalSelesai: "2024-03-30",
@@ -140,7 +136,6 @@ const pesertaData = [
         nim: "0987654321",
         universitas: "Universitas Gadjah Mada",
         prodi: "Ilmu Komunikasi",
-        periode: "1 Jan - 30 Mar 2024",
         status: "selesai",
         sudahDinilai: false,
         tanggalSelesai: "2024-03-30",
@@ -153,7 +148,6 @@ const pesertaData = [
         nim: "1122334455",
         universitas: "Universitas Diponegoro",
         prodi: "Sistem Informasi",
-        periode: "1 Jan - 30 Mar 2024",
         status: "selesai",
         sudahDinilai: true,
         tanggalSelesai: "2024-03-30",
@@ -171,7 +165,6 @@ const pesertaData = [
         nim: "5566778899",
         universitas: "Universitas Indonesia",
         prodi: "Administrasi Bisnis",
-        periode: "1 Jan - 30 Mar 2024",
         status: "selesai",
         sudahDinilai: true,
         tanggalSelesai: "2024-03-30",
@@ -189,7 +182,6 @@ const pesertaData = [
         nim: "6677889900",
         universitas: "Institut Teknologi Bandung",
         prodi: "Teknik Informatika",
-        periode: "1 Jan - 30 Mar 2024",
         status: "selesai",
         sudahDinilai: false,
         tanggalSelesai: "2024-03-30",
@@ -202,7 +194,6 @@ const pesertaData = [
         nim: "3344556677",
         universitas: "Universitas Airlangga",
         prodi: "Komunikasi",
-        periode: "1 Jan - 30 Mar 2024",
         status: "selesai",
         sudahDinilai: true,
         tanggalSelesai: "2024-03-30",
@@ -232,7 +223,7 @@ function loadPesertaTable() {
     if (totalItems === 0) {
         container.innerHTML = `
             <tr>
-                <td colspan="6" class="text-center py-8">
+                <td colspan="4" class="text-center py-8">
                     <div class="text-gray-500">
                         <i class='bx bx-search-alt text-4xl mb-3 block'></i>
                         <div class="font-medium">Tidak ada peserta ditemukan</div>
@@ -264,16 +255,6 @@ function loadPesertaTable() {
             statusText = 'Sedang Berjalan';
         }
 
-        const fileInfo = peserta.filePenilaian ? `
-            <div class="flex items-center gap-2">
-                <i class='bx bx-file text-primary'></i>
-                <div>
-                    <div class="font-medium text-primary text-sm">${peserta.filePenilaian.nama}</div>
-                    <div class="text-xs text-gray-600">${peserta.filePenilaian.ukuran} • ${peserta.filePenilaian.tanggalUpload}</div>
-                </div>
-            </div>
-        ` : `<span class="text-gray-400 italic">Belum ada file</span>`;
-
         return `
             <tr>
                 <td>
@@ -284,42 +265,37 @@ function loadPesertaTable() {
                         <div>
                             <div class="font-bold text-primary">${peserta.nama}</div>
                             <div class="text-sm text-gray-600">${peserta.nim}</div>
+                            <div class="text-xs text-gray-500">${peserta.prodi}</div>
                         </div>
                     </div>
                 </td>
                 <td>
                     <div class="font-medium">${peserta.universitas}</div>
-                    <div class="text-sm text-gray-600">${peserta.prodi}</div>
                 </td>
-                <td class="text-gray-600">${peserta.periode}</td>
                 <td>
                     <span class="px-3 py-1 rounded-full text-xs font-medium ${statusColor}">
                         ${statusText}
                     </span>
                 </td>
                 <td>
-                    ${fileInfo}
-                </td>
-                <td>
                     <div class="flex gap-2">
                         ${peserta.filePenilaian ? `
                             <button onclick="previewFile(${peserta.id})" 
-                                    class="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition text-sm">
+                                    class="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition text-sm"
+                                    title="Preview File">
                                 <i class='bx bx-show'></i>
-                            </button>
-                            <button onclick="downloadFile(${peserta.id})" 
-                                    class="px-3 py-1 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition text-sm">
-                                <i class='bx bx-download'></i>
                             </button>
                         ` : ''}
                         <button onclick="${peserta.filePenilaian ? `editFile(${peserta.id})` : `uploadFile(${peserta.id})`}" 
-                                class="px-3 py-1 ${peserta.filePenilaian ? 'bg-yellow-100 text-yellow-700' : 'bg-primary text-white'} rounded-lg hover:opacity-90 transition text-sm">
+                                class="px-3 py-1 ${peserta.filePenilaian ? 'bg-yellow-100 text-yellow-700' : 'bg-primary text-white'} rounded-lg hover:opacity-90 transition text-sm"
+                                title="${peserta.filePenilaian ? 'Edit File' : 'Upload File'}">
                             <i class='bx ${peserta.filePenilaian ? 'bx-edit' : 'bx-upload'} mr-1'></i>
                             ${peserta.filePenilaian ? 'Edit' : 'Upload'}
                         </button>
                         ${peserta.filePenilaian ? `
                             <button onclick="deleteFile(${peserta.id})" 
-                                    class="px-3 py-1 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition text-sm">
+                                    class="px-3 py-1 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition text-sm"
+                                    title="Hapus File">
                                 <i class='bx bx-trash'></i>
                             </button>
                         ` : ''}
@@ -574,8 +550,6 @@ function processUpload(pesertaId) {
     }
     
     const file = fileInput.files[0];
-    const jenisFile = document.getElementById('jenisFile').value;
-    const keterangan = document.getElementById('keterangan').value;
     
     // Simulate upload progress
     const progressBar = document.getElementById('uploadProgress');
@@ -592,9 +566,7 @@ function processUpload(pesertaId) {
                 nama: file.name,
                 ukuran: (file.size / 1024 / 1024).toFixed(1) + ' MB',
                 tanggalUpload: new Date().toISOString().split('T')[0],
-                url: URL.createObjectURL(file),
-                jenis: jenisFile,
-                keterangan: keterangan
+                url: URL.createObjectURL(file)
             };
             peserta.sudahDinilai = true;
             
@@ -725,9 +697,14 @@ function updateStats() {
     const completed = pesertaData.filter(p => p.sudahDinilai).length;
     const totalFiles = pesertaData.filter(p => p.filePenilaian).length;
     
-    document.getElementById('pendingCount').textContent = pending;
-    document.getElementById('completedCount').textContent = completed;
-    document.getElementById('totalFiles').textContent = totalFiles;
+    // Update UI elements if they exist
+    const pendingCountEl = document.getElementById('pendingCount');
+    const completedCountEl = document.getElementById('completedCount');
+    const totalFilesEl = document.getElementById('totalFiles');
+    
+    if (pendingCountEl) pendingCountEl.textContent = pending;
+    if (completedCountEl) completedCountEl.textContent = completed;
+    if (totalFilesEl) totalFilesEl.textContent = totalFiles;
 }
 
 // Download all files

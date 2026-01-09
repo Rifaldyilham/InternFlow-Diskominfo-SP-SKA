@@ -557,11 +557,6 @@
                 </div>
 
                 <div class="header-right">
-                    <div class="notification">
-                        <i class='bx bx-bell'></i>
-                        <span class="notification-badge">3</span>
-                    </div>
-
                     <div class="user-profile" onclick="window.location.href='/peserta/profil'">
                         <div class="avatar">JD</div>
                         <div class="user-info">

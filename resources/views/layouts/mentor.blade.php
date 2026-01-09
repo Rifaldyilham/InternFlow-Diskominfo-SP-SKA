@@ -910,13 +910,6 @@
                 </div>
                 
                 <div class="header-right">
-                    <div style="position: relative;">
-                        <div class="notification" onclick="showNotifications()">
-                            <i class='bx bx-bell'></i>
-                            <span class="notification-badge">5</span>
-                        </div>
-                    </div>
-                    
                     <div class="user-profile" onclick="window.location.href='/mentor/profil'">
                         <div class="avatar">AF</div>
                         <div class="user-info">
@@ -1035,19 +1028,6 @@
             if(confirm('Apakah Anda yakin ingin keluar?')) {
                 window.location.href = '/login';
             }
-        }
-        
-        // Show notifications
-        function showNotifications() {
-            const notifications = [
-                'John Doe mengisi logbook hari ini',
-                'Jane Smith memerlukan verifikasi absensi',
-                '3 logbook menunggu verifikasi',
-                'Rapat evaluasi mingguan besok',
-                'Periode penilaian akhir mendekati'
-            ];
-            
-            alert('Notifikasi:\n' + notifications.map((n, i) => `${i+1}. ${n}`).join('\n'));
         }
         
         // Update badge counts
