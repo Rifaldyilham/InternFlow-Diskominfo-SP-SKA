@@ -35,21 +35,6 @@
         </div>
     </div>
     
-    <div class="stat-card border-cyan">
-        <div class="stat-header">
-            <div>
-                <div class="stat-value">2</div>
-                <div class="stat-label">Absensi Pending</div>
-                <div class="text-xs text-gray-600 mt-1">
-                    Perlu konfirmasi
-                </div>
-            </div>
-            <div class="stat-icon cyan">
-                <i class='bx bx-calendar-check'></i>
-            </div>
-        </div>
-    </div>
-    
     <div class="stat-card border-orange">
         <div class="stat-header">
             <div>
