@@ -1,21 +1,30 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
 // Route untuk dashboard utama
 Route::get('/', function () {
     return view('welcome');
 });
 
+
 // Route untuk halaman login placeholder
 Route::get('/login', function () {
-    return view('auth.login-placeholder');
+    return view('auth.login');
 })->name('login');
+
+Route::post('/login', [AuthenticatedSessionController::class, 'store'])
+    ->name('login.store');
 
 // Route untuk halaman register placeholder
 Route::get('/register', function () {
-    return view('auth.register-placeholder');
+    return view('auth.register');
 })->name('register');
+
+Route::post('/register', [RegisteredUserController::class, 'store'])
+    ->name('register.store');
 
 // Dashboard routes dengan middleware auth (nanti)
 Route::prefix('admin')->group(function () {

@@ -28,7 +28,30 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        $user = auth()->user();
+
+        // Peserta Magang
+        if ($user->id_role == 4) {
+            return redirect('/peserta/dashboard');
+        }
+
+        // Mentor
+        if ($user->id_role == 3) {
+            return redirect('/mentor/dashboard');
+        }
+
+        // Admin Bidang
+        if ($user->id_role == 2) {
+            return redirect('/admin-bidang/dashboard');
+        }
+
+        // Admin Kepegawaian
+        if ($user->id_role == 1) {
+            return redirect('/admin/dashboard');
+        }
+
+        // Fallback (jaga-jaga)
+        return redirect('/');
     }
 
     /**
