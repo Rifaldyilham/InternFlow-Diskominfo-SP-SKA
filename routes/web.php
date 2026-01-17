@@ -9,7 +9,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-
 // Route untuk halaman login placeholder
 Route::get('/login', function () {
     return view('auth.login');
@@ -28,21 +27,30 @@ Route::post('/register', [RegisteredUserController::class, 'store'])
 
 // Dashboard routes dengan middleware auth (nanti)
 Route::prefix('admin')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('admin.dashboard');
+    Route::get('/verifikasi-berkas', function () {
+        return view('admin.verifikasi-berkas');
+    })->name('admin.verifikasiberkas');
     
     Route::get('/peserta', function () {
         return view('admin.peserta.index');
     })->name('admin.peserta');
+    
+    Route::get('/manajemen-akun', function () {
+        return view('admin.manajemenakun');
+    })->name('admin.manajemen-akun');
+    
+    Route::get('/manajemen-bidang', function () {
+        return view('admin.manajemenbidang');
+    })->name('admin.manajemen-bidang');
     
     Route::get('/mentor', function () {
         return view('admin.mentor.index');
     })->name('admin.mentor');
     
     Route::get('/sertifikat', function () {
-        return view('admin.sertifikat.index');
+        return view('admin.sertifikat');
     })->name('admin.sertifikat');
+
 });
 
 // Routes untuk Peserta Magang
@@ -88,12 +96,13 @@ Route::prefix('mentor')->group(function () {
 });
 
 // Routes untuk Admin Bidang
-Route::prefix('admin-bidang')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('admin-bidang.dashboard');
-    })->name('admin-bidang.dashboard');
-    
+Route::prefix('admin-bidang')->group(function () { 
     Route::get('/mentor', function () {
-        return view('admin-bidang.mentor.index');
+        return view('admin-bidang.mentor');
     })->name('admin-bidang.mentor');
+
+    Route::get('/penempatan', function () {
+        return view('admin-bidang.penempatan');
+    })->name('admin-bidang.penempatan');
+    
 });

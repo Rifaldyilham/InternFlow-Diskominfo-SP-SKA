@@ -6,15 +6,12 @@
 
 @section('content')
 <div class="stats-grid">
-    <!-- Card 1 -->
+    <!-- Card 1 - Peserta Aktif -->
     <div class="stat-card border-blue">
         <div class="stat-header">
             <div>
-                <div class="stat-value">13</div>
-                <div class="stat-label">Total Peserta Magang</div>
-                <div class="stat-change positive">
-                    <i class='bx bx-up-arrow-alt'></i> 12% dari bulan lalu
-                </div>
+                <div class="stat-value" id="totalPeserta">124</div>
+                <div class="stat-label">Peserta Aktif</div>
             </div>
             <div class="stat-icon blue">
                 <i class='bx bx-user'></i>
@@ -22,265 +19,125 @@
         </div>
     </div>
     
-    <!-- Card 2 -->
+    <!-- Card 2 - Bidang Tersedia -->
     <div class="stat-card border-green">
         <div class="stat-header">
             <div>
-                <div class="stat-value">24</div>
-                <div class="stat-label">Pendaftar Baru</div>
-                <div class="stat-change positive">
-                    <i class='bx bx-up-arrow-alt'></i> 5 menunggu verifikasi
-                </div>
+                <div class="stat-value" id="totalBidang">18</div>
+                <div class="stat-label">Bidang Tersedia</div>
             </div>
             <div class="stat-icon green">
-                <i class='bx bx-user-plus'></i>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Card 3 -->
-    <div class="stat-card border-orange">
-        <div class="stat-header">
-            <div>
-                <div class="stat-value">4</div>
-                <div class="stat-label">Bidang Aktif</div>
-                <div class="stat-change positive">
-                    <i class='bx bx-check'></i> Semua beroperasi
-                </div>
-            </div>
-            <div class="stat-icon orange">
                 <i class='bx bx-briefcase'></i>
             </div>
         </div>
     </div>
     
-    <!-- Card 4 -->
-    <div class="stat-card border-purple">
+    <!-- Card 3 - Mentor -->
+    <div class="stat-card border-orange">
         <div class="stat-header">
             <div>
-                <div class="stat-value">10</div>
-                <div class="stat-label">Mentor Terdaftar</div>
-                <div class="stat-change negative">
-                    <i class='bx bx-down-arrow-alt'></i> 2 perlu penambahan
-                </div>
+                <div class="stat-value" id="totalMentor">42</div>
+                <div class="stat-label">Mentor Berpengalaman</div>
             </div>
-            <div class="stat-icon purple">
+            <div class="stat-icon orange">
                 <i class='bx bx-user-voice'></i>
             </div>
         </div>
     </div>
-</div>
-
-
-<!-- Recent Pendaftar -->
-<div class="table-container">
-    <div class="table-header">
-        <h3>Pendaftar Terbaru</h3>
-        <div class="table-actions">
-            <button class="btn btn-secondary">
-                <i class='bx bx-refresh'></i> Refresh
-            </button>
-            <button class="btn btn-primary">
-                <i class='bx bx-download'></i> Export
-            </button>
+    
+    <!-- Card 4 - Alumni -->
+    <div class="stat-card border-purple">
+        <div class="stat-header">
+            <div>
+                <div class="stat-value" id="totalAlumni">890</div>
+                <div class="stat-label">Alumni Sukses</div>
+            </div>
+            <div class="stat-icon purple">
+                <i class='bx bx-trophy'></i>
+            </div>
         </div>
-    </div>
-    
-    <table>
-        <thead>
-            <tr>
-                <th>Nama</th>
-                <th>Universitas</th>
-                <th>Bidang Minat</th>
-                <th>Tanggal Daftar</th>
-                <th>Status</th>
-                <th>Aksi</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div class="avatar" style="width: 35px; height: 35px; font-size: 0.9rem;">RD</div>
-                        <div>
-                            <div style="font-weight: 600;">Rizky Darmawan</div>
-                            <div style="font-size: 0.8rem; color: #888;">rizky@uns.ac.id</div>
-                        </div>
-                    </div>
-                </td>
-                <td>UNS</td>
-                <td>Informatika</td>
-                <td>12 Mar 2024</td>
-                <td><span class="status-badge status-pending">Menunggu</span></td>
-                <td>
-                    <div class="action-buttons">
-                        <button class="action-btn view" title="Lihat">
-                            <i class='bx bx-show'></i>
-                        </button>
-                        <button class="action-btn edit" title="Edit">
-                            <i class='bx bx-edit'></i>
-                        </button>
-                        <button class="action-btn delete" title="Hapus">
-                            <i class='bx bx-trash'></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div class="avatar" style="width: 35px; height: 35px; font-size: 0.9rem;">SA</div>
-                        <div>
-                            <div style="font-weight: 600;">Siti Aisyah</div>
-                            <div style="font-size: 0.8rem; color: #888;">aisyah@ums.ac.id</div>
-                        </div>
-                    </div>
-                </td>
-                <td>UMS</td>
-                <td>Statistik</td>
-                <td>11 Mar 2024</td>
-                <td><span class="status-badge status-approved">Disetujui</span></td>
-                <td>
-                    <div class="action-buttons">
-                        <button class="action-btn view">
-                            <i class='bx bx-show'></i>
-                        </button>
-                        <button class="action-btn edit">
-                            <i class='bx bx-edit'></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div class="avatar" style="width: 35px; height: 35px; font-size: 0.9rem;">RI</div>
-                        <div>
-                            <div style="font-weight: 600;">Rifaldy Ilham Nasrulloh</div>
-                            <div style="font-size: 0.8rem; color: #888;">rifaldy@uns.ac.id</div>
-                        </div>
-                    </div>
-                </td>
-                <td>UNS</td>
-                <td>Informatika</td>
-                <td>08 Des 2025</td>
-                <td><span class="status-badge status-approved">Disetujui</span></td>
-                <td>
-                    <div class="action-buttons">
-                        <button class="action-btn view">
-                            <i class='bx bx-show'></i>
-                        </button>
-                        <button class="action-btn edit">
-                            <i class='bx bx-edit'></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div class="avatar" style="width: 35px; height: 35px; font-size: 0.9rem;">MD</div>
-                        <div>
-                            <div style="font-weight: 600;">Maya Dewi</div>
-                            <div style="font-size: 0.8rem; color: #888;">maya@its.ac.id</div>
-                        </div>
-                    </div>
-                </td>
-                <td>ITS</td>
-                <td>Penyelenggara</td>
-                <td>9 Mar 2024</td>
-                <td><span class="status-badge status-pending">Menunggu</span></td>
-                <td>
-                    <div class="action-buttons">
-                        <button class="action-btn view">
-                            <i class='bx bx-show'></i>
-                        </button>
-                        <button class="action-btn edit">
-                            <i class='bx bx-edit'></i>
-                        </button>
-                        <button class="action-btn delete">
-                            <i class='bx bx-trash'></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-    
-    <div style="padding: 20px 25px; text-align: center; border-top: 1px solid #eee;">
-        <a href="{{ route('admin.peserta') }}" style="color: var(--primary); text-decoration: none; font-weight: 600;">
-            Lihat Semua Pendaftar → 
-        </a>
     </div>
 </div>
 
-<!-- Bidang dengan Kuota -->
-<div class="table-container">
-    <div class="table-header">
-        <h3>Kuota Magang per Bidang</h3>
-        <div class="table-actions">
-            <button class="btn btn-primary">
-                <i class='bx bx-cog'></i> Atur Kuota
-            </button>
-        </div>
+<!-- Distribusi Peserta per Bidang -->
+<div class="form-card mb-8">
+    <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-bold text-primary flex items-center gap-2">
+            <i class='bx bx-pie-chart'></i> Distribusi Peserta per Bidang
+        </h3>
     </div>
     
-    <div style="padding: 25px;">
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-            <div style="background: #f8fafc; padding: 20px; border-radius: 12px;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-                    <div>
-                        <h4 style="color: var(--primary); margin-bottom: 5px;">Statistik</h4>
-                        <p style="color: #666; font-size: 0.9rem;">Data & Analisis</p>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Pie Chart -->
+        <div class="flex justify-center">
+            <div id="pieChartContainer" class="w-full max-w-md"></div>
+        </div>
+        
+        <!-- Detail Bidang -->
+        <div>
+            <div class="space-y-4">
+                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
+                    <div class="flex justify-between items-center mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                            <div class="font-medium text-gray-800">Bidang Informatika</div>
+                        </div>
+                        <div class="text-lg font-bold text-primary" id="bidang-informatika">12</div>
                     </div>
-                    <div style="text-align: right;">
-                        <div style="font-size: 1.8rem; font-weight: 700; color: var(--primary);">8/10</div>
-                        <div style="color: #666; font-size: 0.9rem;">Peserta</div>
-                    </div>
-                </div>
-                <div style="height: 10px; background: #e0e0e0; border-radius: 5px; overflow: hidden;">
-                    <div style="width: 80%; height: 100%; background: var(--primary);"></div>
-                </div>
-                <div style="margin-top: 10px; font-size: 0.85rem; color: #666;">
-                    <i class='bx bx-info-circle'></i> 2 slot tersisa
-                </div>
-            </div>
-            
-            <div style="background: #f8fafc; padding: 20px; border-radius: 12px;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-                    <div>
-                        <h4 style="color: var(--primary); margin-bottom: 5px;">Informatika</h4>
-                        <p style="color: #666; font-size: 0.9rem;">IT & Programming</p>
-                    </div>
-                    <div style="text-align: right;">
-                        <div style="font-size: 1.8rem; font-weight: 700; color: var(--primary);">12/15</div>
-                        <div style="color: #666; font-size: 0.9rem;">Peserta</div>
+                    <div class="flex items-center gap-3">
+                        <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div class="h-full bg-blue-500" id="bidang-informatika-bar" style="width: 48%"></div>
+                        </div>
+                        <span class="text-sm text-gray-600" id="bidang-informatika-persen">48%</span>
                     </div>
                 </div>
-                <div style="height: 10px; background: #e0e0e0; border-radius: 5px; overflow: hidden;">
-                    <div style="width: 80%; height: 100%; background: #2ed573;"></div>
-                </div>
-                <div style="margin-top: 10px; font-size: 0.85rem; color: #666;">
-                    <i class='bx bx-info-circle'></i> 3 slot tersisa
-                </div>
-            </div>
-            
-            <div style="background: #f8fafc; padding: 20px; border-radius: 12px;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-                    <div>
-                        <h4 style="color: var(--primary); margin-bottom: 5px;">Kesekretariatan</h4>
-                        <p style="color: #666; font-size: 0.9rem;">Administrasi</p>
+                
+                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
+                    <div class="flex justify-between items-center mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 bg-teal-500 rounded-full"></div>
+                            <div class="font-medium text-gray-800">Bidang Statistik</div>
+                        </div>
+                        <div class="text-lg font-bold text-primary" id="bidang-statistik">8</div>
                     </div>
-                    <div style="text-align: right;">
-                        <div style="font-size: 1.8rem; font-weight: 700; color: var(--primary);">6/8</div>
-                        <div style="color: #666; font-size: 0.9rem;">Peserta</div>
+                    <div class="flex items-center gap-3">
+                        <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div class="h-full bg-teal-500" id="bidang-statistik-bar" style="width: 32%"></div>
+                        </div>
+                        <span class="text-sm text-gray-600" id="bidang-statistik-persen">32%</span>
                     </div>
                 </div>
-                <div style="height: 10px; background: #e0e0e0; border-radius: 5px; overflow: hidden;">
-                    <div style="width: 75%; height: 100%; background: #ffa502;"></div>
+                
+                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
+                    <div class="flex justify-between items-center mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 bg-purple-500 rounded-full"></div>
+                            <div class="font-medium text-gray-800">Kesekretariatan</div>
+                        </div>
+                        <div class="text-lg font-bold text-primary" id="bidang-sekretariat">3</div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div class="h-full bg-purple-500" id="bidang-sekretariat-bar" style="width: 12%"></div>
+                        </div>
+                        <span class="text-sm text-gray-600" id="bidang-sekretariat-persen">12%</span>
+                    </div>
                 </div>
-                <div style="margin-top: 10px; font-size: 0.85rem; color: #666;">
-                    <i class='bx bx-info-circle'></i> 2 slot tersisa
+                
+                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
+                    <div class="flex justify-between items-center mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 bg-orange-500 rounded-full"></div>
+                            <div class="font-medium text-gray-800">E-Goverment</div>
+                        </div>
+                        <div class="text-lg font-bold text-primary" id="bidang-egov">2</div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div class="h-full bg-orange-500" id="bidang-egov-bar" style="width: 8%"></div>
+                        </div>
+                        <span class="text-sm text-gray-600" id="bidang-egov-persen">8%</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -290,9 +147,107 @@
 
 @section('scripts')
 <script>
-    // Refresh data setiap 30 detik
-    setInterval(() => {
-        console.log('Refreshing dashboard data...');
-    }, 30000);
+// Data for pie chart - from bidang distribution
+const bidangData = [
+    { name: 'Informatika', value: 12, color: '#3b82f6' },
+    { name: 'Statistik', value: 8, color: '#14b8a6' },
+    { name: 'Kesekretariatan', value: 3, color: '#8b5cf6' },
+    { name: 'E-Goverment', value: 2, color: '#f59e0b' }
+];
+
+// Initialize pie chart
+function initPieChart() {
+    const container = document.getElementById('pieChartContainer');
+    if (!container) return;
+    
+    const total = bidangData.reduce((sum, item) => sum + item.value, 0);
+    const size = 300;
+    const radius = size / 2;
+    
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("width", "100%");
+    svg.setAttribute("height", "300");
+    svg.setAttribute("viewBox", `0 0 ${size} ${size}`);
+    
+    let cumulativeAngle = 0;
+    const centerX = size / 2;
+    const centerY = size / 2;
+    
+    bidangData.forEach((item, index) => {
+        const percentage = item.value / total;
+        const angle = percentage * 360;
+        const startAngle = cumulativeAngle;
+        const endAngle = startAngle + angle;
+        
+        // Calculate points for arc
+        const startAngleRad = (startAngle - 90) * Math.PI / 180;
+        const endAngleRad = (endAngle - 90) * Math.PI / 180;
+        
+        const x1 = centerX + radius * Math.cos(startAngleRad);
+        const y1 = centerY + radius * Math.sin(startAngleRad);
+        const x2 = centerX + radius * Math.cos(endAngleRad);
+        const y2 = centerY + radius * Math.sin(endAngleRad);
+        
+        // Create path
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        const largeArcFlag = angle > 180 ? 1 : 0;
+        
+        const d = [
+            `M ${centerX} ${centerY}`,
+            `L ${x1} ${y1}`,
+            `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`,
+            "Z"
+        ].join(" ");
+        
+        path.setAttribute("d", d);
+        path.setAttribute("fill", item.color);
+        path.setAttribute("stroke", "white");
+        path.setAttribute("stroke-width", "2");
+        path.setAttribute("class", "cursor-pointer hover:opacity-90 transition-opacity");
+        path.setAttribute("data-index", index);
+        
+        svg.appendChild(path);
+        
+        cumulativeAngle = endAngle;
+    });
+    
+    // Add center circle
+    const centerCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    centerCircle.setAttribute("cx", centerX);
+    centerCircle.setAttribute("cy", centerY);
+    centerCircle.setAttribute("r", radius * 0.3);
+    centerCircle.setAttribute("fill", "white");
+    svg.appendChild(centerCircle);
+    
+    // Add total text
+    const totalText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    totalText.setAttribute("x", centerX);
+    totalText.setAttribute("y", centerY - 5);
+    totalText.setAttribute("text-anchor", "middle");
+    totalText.setAttribute("dominant-baseline", "middle");
+    totalText.setAttribute("fill", "#1a3a5f");
+    totalText.setAttribute("font-size", "24");
+    totalText.setAttribute("font-weight", "bold");
+    totalText.textContent = total;
+    svg.appendChild(totalText);
+    
+    const totalLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    totalLabel.setAttribute("x", centerX);
+    totalLabel.setAttribute("y", centerY + 15);
+    totalLabel.setAttribute("text-anchor", "middle");
+    totalLabel.setAttribute("dominant-baseline", "middle");
+    totalLabel.setAttribute("fill", "#666");
+    totalLabel.setAttribute("font-size", "12");
+    totalLabel.textContent = "Total Peserta";
+    svg.appendChild(totalLabel);
+    
+    container.innerHTML = '';
+    container.appendChild(svg);
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    initPieChart();
+});
 </script>
 @endsection

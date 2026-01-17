@@ -88,7 +88,7 @@
         .logo-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-            gap: 20px;
+            gap: 30px; 
             align-items: center;
             margin-top: 20px;
         }
@@ -208,7 +208,7 @@
                         <h3 class="text-xl font-bold text-primary mb-3">1. Pendaftaran Online</h3>
                         <p class="text-gray-600 mb-4">Calon peserta mengisi formulir pendaftaran online dan mengunggah berkas administrasi melalui portal InternFlow.</p>
                         <div class="bg-background p-4 rounded-xl">
-                            <p class="text-sm font-medium text-primary">📋 Berkas yang diperlukan:</p>
+                            <p class="text-sm font-medium text-primary">Berkas yang diperlukan:</p>
                             <ul class="text-sm text-gray-600 mt-2 space-y-1">
                                 <li class="flex items-center"><span class="w-2 h-2 bg-accent rounded-full mr-2"></span> CV/Resume terbaru</li>
                                 <li class="flex items-center"><span class="w-2 h-2 bg-accent rounded-full mr-2"></span> Surat penempatan magang dari BKPSDM</li>
@@ -242,16 +242,16 @@
                         <p class="text-gray-600 mb-4">Admin Bidang menempatkan peserta ke bidang sesuai kompetensi dan ketersediaan kuota, kemudian menetapkan mentor pembimbing.</p>
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
                             <div class="bg-secondary/10 p-3 rounded-lg text-center">
-                                <p class="text-sm font-medium text-secondary">📊 Statistik</p>
+                                <p class="text-sm font-medium text-secondary"> Statistik</p>
                             </div>
                             <div class="bg-secondary/10 p-3 rounded-lg text-center">
-                                <p class="text-sm font-medium text-secondary">💻 Informatika</p>
+                                <p class="text-sm font-medium text-secondary"> Informatika</p>
                             </div>
                             <div class="bg-secondary/10 p-3 rounded-lg text-center">
-                                <p class="text-sm font-medium text-secondary">📑 Kesekretariatan</p>
+                                <p class="text-sm font-medium text-secondary"> Kesekretariatan</p>
                             </div>
                             <div class="bg-secondary/10 p-3 rounded-lg text-center">
-                                <p class="text-sm font-medium text-secondary">🎯 E-Goverment</p>
+                                <p class="text-sm font-medium text-secondary"> E-Goverment</p>
                             </div>
                         </div>
                     </div>
@@ -261,14 +261,14 @@
                         <h3 class="text-xl font-bold text-primary mb-3">4. Pelaksanaan Magang</h3>
                         <p class="text-gray-600 mb-4">Peserta menjalani magang dengan panduan mentor, mengisi logbook harian, dan melaksanakan tugas sesuai bidang.</p>
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                            <div class="bg-accent/10 p-3 rounded-lg text-center">
-                                <p class="text-xs font-medium text-accent">📝 Logbook Harian</p>
+                            <div class="bg-secondary/10 p-3 rounded-lg text-center">
+                                <p class="text-sm font-medium text-secondary"> Logbook Harian</p>
                             </div>
-                            <div class="bg-accent/10 p-3 rounded-lg text-center">
-                                <p class="text-xs font-medium text-accent">✅ Absensi Digital</p>
+                            <div class="bg-secondary/10 p-3 rounded-lg text-center">
+                                <p class="text-sm font-medium text-secondary"> Absensi Digital</p>
                             </div>
-                            <div class="bg-accent/10 p-3 rounded-lg text-center">
-                                <p class="text-xs font-medium text-accent">📋 Tugas & Project</p>
+                            <div class="bg-secondary/10 p-3 rounded-lg text-center">
+                                <p class="text-sm font-medium text-secondary"> Tugas & Project</p>
                             </div>
                         </div>
                     </div>
@@ -279,10 +279,9 @@
                         <p class="text-gray-600 mb-4">Di akhir periode, mentor memberikan penilaian dan Admin Kepegawaian menerbitkan sertifikat digital yang dapat diunduh langsung.</p>
                         <div class="bg-gradient-to-r from-primary/10 to-secondary/10 p-4 rounded-xl mt-4">
                             <div class="flex items-center gap-4">
-                                <div class="text-3xl">🏆</div>
                                 <div>
-                                    <p class="font-medium text-primary">Sertifikat Digital InternFlow</p>
-                                    <p class="text-sm text-gray-600">Terverifikasi, memiliki QR code, dan dapat diunduh kapan saja melalui akun peserta</p>
+                                    <p class="font-medium text-primary">Sertifikat Digital Magang</p>
+                                    <p class="text-sm text-gray-600">Terverifikasi, Dapat diunduh kapan saja melalui akun peserta</p>
                                 </div>
                             </div>
                         </div>
@@ -293,7 +292,6 @@
                     <a href="/register" class="inline-block bg-primary text-white font-bold px-8 py-3 rounded-xl text-lg hover:shadow-xl hover:scale-105 transition duration-300">
                         Daftar Sekarang & Ikuti Alur Ini
                     </a>
-                    <p class="text-gray-500 text-sm mt-4">Durasi magang: Minimal 1 bulan, maksimal 6 bulan</p>
                 </div>
             </div>
         </section>
@@ -316,27 +314,21 @@
                         <span class="text-accent">Intern</span><span class="text-white">Flow</span>
                     </a>
                     <p class="mt-4 text-gray-300 text-sm">Sistem Monitoring Magang Digital Dinas Komunikasi dan Informatika Kota Surakarta.</p>
-                    
-                    <!-- Logo Pemerintah -->
-                    <div class="logo-grid mt-6">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Lambang_Kota_Surakarta.png/200px-Lambang_Kota_Surakarta.png" alt="Pemkot Surakarta" class="gov-logo" title="Pemerintah Kota Surakarta">
-                        <img src="https://ppid.surakarta.go.id/assets/img/logo-ppid.png" alt="PPID Surakarta" class="gov-logo" title="PPID Kota Surakarta">
-                        <img src="https://diskominfo.surakarta.go.id/assets/images/logo-diskominfo.png" alt="Diskominfo SP Surakarta" class="gov-logo" title="Diskominfo SP Surakarta">
-                        <img src="https://solodata.surakarta.go.id/assets/img/logo-solodata.png" alt="SoloData" class="gov-logo" title="SoloData - Open Data Surakarta">
+                </div>
+                
+                <!-- Logo Pemerintah -->
+                <div>
+                    <h4 class="font-bold text-lg mb-6 text-accent">Mitra Pemerintah</h4>
+                    <div class="logo-grid">
+                        <img src="https://diskominfosp.surakarta.go.id/public/fe/assets/img/pemkot.png" alt="No-Image" style="max-height: 60px !important">
+                        <img src="https://diskominfosp.surakarta.go.id/public/fe/assets/img/ppidkotasolologo.png" alt="No-Image" style="max-height: 60px !important">
+                        <img src="https://diskominfosp.surakarta.go.id/public/fe/assets/img/solodatalogo.png" alt="No-Image" style="max-height: 60px !important">
+                        <img src="https://diskominfosp.surakarta.go.id/public/displayFileFe/setting/4cdb646e-0344-4342-abed-d19dc8ea2aaf.png" alt="No-Image" style="max-height: 60px !important">
                     </div>
                 </div>
                 
                 <div>
-                    <h4 class="font-bold text-lg mb-6 text-accent">Tautan Cepat</h4>
-                    <ul class="space-y-3">
-                        <li><a href="#home" class="hover:text-accent transition">Beranda</a></li>
-                        <li><a href="#alur" class="hover:text-accent transition">Alur Magang</a></li>
-                        <li><a href="/login" class="hover:text-accent transition">Login</a></li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h4 class="font-bold text-lg mb-6 text-accent">Kontak & Lokasi</h4>
+                    <h4 class="font-bold text-lg mb-6 text-accent">Kontak</h4>
                     <ul class="space-y-3 text-gray-300">
                         <li class="flex items-start"><span class="mr-3">📧</span> info.magang@diskominfo.surakarta.go.id</li>
                         <li class="flex items-start"><span class="mr-3">📞</span> (0271) 1234567</li>
@@ -365,8 +357,8 @@
             <hr class="border-gray-700 my-8">
             
             <div class="text-center text-gray-400 text-sm">
-                <p>© {{ date('Y') }} InternFlow - Dinas Komunikasi dan Informatika Kota Surakarta. Hak Cipta Dilindungi.</p>
-                <p class="mt-2">Dibangun dengan Laravel & Tailwind CSS. Bagian dari transformasi digital Pemerintah Kota Surakarta.</p>
+                <p>© {{ date('Y') }} InternFlow - Dinas Komunikasi Informatika Statistik Dan Persandian Kota Surakarta. Hak Cipta Dilindungi.</p>
+                <p class="mt-2">Dibangun dengan Laravel. Bagian dari transformasi digital Pemerintah Kota Surakarta.</p>
                 <div class="mt-4 flex justify-center space-x-6">
                     <a href="https://surakarta.go.id" class="text-gray-400 hover:text-accent transition">surakarta.go.id</a>
                     <a href="https://diskominfo.surakarta.go.id" class="text-gray-400 hover:text-accent transition">diskominfo.surakarta.go.id</a>
