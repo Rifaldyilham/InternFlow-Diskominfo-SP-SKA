@@ -17,6 +17,10 @@ Route::get('/login', function () {
 Route::post('/login', [AuthenticatedSessionController::class, 'store'])
     ->name('login.store');
 
+// Route untuk logout
+Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
+    ->name('logout');
+
 // Route untuk halaman register placeholder
 Route::get('/register', function () {
     return view('auth.register');
@@ -50,30 +54,33 @@ Route::prefix('admin')->group(function () {
     Route::get('/sertifikat', function () {
         return view('admin.sertifikat');
     })->name('admin.sertifikat');
-
 });
 
 // Routes untuk Peserta Magang
 Route::prefix('peserta')->group(function () {
     Route::get('/dashboard', function () {
         return view('peserta.dashboard');
-    });
+    })->name('peserta.dashboard');
     
     Route::get('/pendaftaran', function () {
         return view('peserta.pendaftaran');
-    });
+    })->name('peserta.pendaftaran');
     
     Route::get('/logbook', function () {
         return view('peserta.logbook');
-    });
+    })->name('peserta.logbook');
     
     Route::get('/absensi', function () {
         return view('peserta.absensi');
-    });
+    })->name('peserta.absensi');
     
     Route::get('/penilaian-sertifikat', function () {
         return view('peserta.penilaian-sertifikat');
-    });
+    })->name('peserta.penilaian-sertifikat');
+    
+    Route::get('/profil', function () {
+        return view('peserta.profil');
+    })->name('peserta.profil');
 });
 
 // Routes untuk Mentor Magang
@@ -104,5 +111,4 @@ Route::prefix('admin-bidang')->group(function () {
     Route::get('/penempatan', function () {
         return view('admin-bidang.penempatan');
     })->name('admin-bidang.penempatan');
-    
 });

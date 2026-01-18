@@ -3,6 +3,10 @@
 @section('title', 'Verifikasi Berkas Peserta')
 @section('subtitle', 'Kelola Pengajuan Magang Peserta')
 
+@section('styles')
+<link rel="stylesheet" href="{{ asset('css/admin/admin.css') }}">
+@endsection
+
 @section('content')
 <div class="content-header">
     <div class="header-actions">
@@ -90,10 +94,11 @@
             </label>
             <select id="bidangFilter" class="filter-select">
                 <option value="all">Semua Bidang</option>
-                <option value="Statistik">Statistik</option>
-                <option value="Informatika">Informatika</option>
-                <option value="Sekretariat">Sekretariat</option>
-                <option value="E-Goverment">E-Goverment</option>
+                <option value="statistik">Statistik</option>
+                <option value="informatika">Informatika</option>
+                <option value="sekretariat">Sekretariat</option>
+                <option value="e-goverment">E-Goverment</option>
+                <!-- Data bidang akan diisi via JavaScript -->
             </select>
         </div>
         
@@ -128,6 +133,17 @@
         </thead>
         <tbody id="pengajuanTable">
             <!-- Data akan dimuat via JavaScript -->
+            <tr id="loadingRow">
+                <td colspan="6" style="text-align: center; padding: 50px 20px;">
+                    <div class="loading-skeleton" style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
+                        <i class='bx bx-loader-circle bx-spin' style="font-size: 3rem; color: var(--primary);"></i>
+                        <div style="text-align: center; color: #666;">
+                            <div style="font-weight: 600; margin-bottom: 5px;">Memuat data...</div>
+                            <div style="font-size: 0.9rem;">Mohon tunggu sebentar</div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
         </tbody>
     </table>
     
@@ -150,7 +166,7 @@
     <div class="modal-content" style="max-width: 900px;">
         <div class="modal-header">
             <h3 id="modalTitle">Detail Pengajuan Magang</h3>
-            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <button class="modal-close" onclick="closeModal('detailModal')">&times;</button>
         </div>
         <div class="modal-body">
             <div id="modalContent">
@@ -165,17 +181,19 @@
     <div class="modal-content" style="max-width: 600px;">
         <div class="modal-header">
             <h3 id="verifikasiTitle">Verifikasi Pengajuan</h3>
-            <button class="modal-close" onclick="closeVerifikasiModal()">&times;</button>
+            <button class="modal-close" onclick="closeModal('verifikasiModal')">&times;</button>
         </div>
-        <form id="verifikasiForm" onsubmit="event.preventDefault(); submitVerifikasi();">
+        <form id="verifikasiForm">
+            @csrf
             <div class="modal-body">
                 <input type="hidden" id="verifikasiId">
+                <input type="hidden" id="pengajuanId">
                 
                 <div class="form-section">
                     <h4><i class='bx bx-check-shield'></i> Status Verifikasi</h4>
                     <div class="form-group">
                         <label for="statusVerifikasi">Status *</label>
-                        <select id="statusVerifikasi" required>
+                        <select id="statusVerifikasi" name="status" required>
                             <option value="">Pilih Status</option>
                             <option value="accepted">Diterima</option>
                             <option value="rejected">Ditolak</option>
@@ -185,7 +203,7 @@
                     
                     <div class="form-group">
                         <label for="catatanVerifikasi">Catatan/Keterangan</label>
-                        <textarea id="catatanVerifikasi" rows="4" 
+                        <textarea id="catatanVerifikasi" name="catatan" rows="4" 
                                   placeholder="Berikan catatan atau alasan verifikasi..."></textarea>
                         <small>Catatan akan dikirimkan ke peserta via email</small>
                     </div>
@@ -195,20 +213,19 @@
                     <h4><i class='bx bx-briefcase'></i> Penempatan Final</h4>
                     <div class="form-group">
                         <label for="bidangFinal">Bidang Penempatan</label>
-                        <select id="bidangFinal">
+                        <select id="bidangFinal" name="bidang_penempatan">
                             <option value="">Pilih Bidang (Opsional)</option>
-                            <option value="Statistik">Statistik</option>
-                            <option value="Informatika">Informatika</option>
-                            <option value="Sekretariat">Sekretariat</option>
-                            <option value="E-Goverment">E-Goverment</option>
+                            <!-- Data bidang akan diisi via JavaScript -->
                         </select>
                         <small>Isi jika ingin menempatkan ke bidang yang berbeda dengan pilihan peserta</small>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeVerifikasiModal()">Batal</button>
-                <button type="submit" class="btn btn-primary">Simpan Verifikasi</button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal('verifikasiModal')">Batal</button>
+                <button type="submit" class="btn btn-primary" id="submitVerifikasiBtn">
+                    <i class='bx bx-check'></i> Simpan Verifikasi
+                </button>
             </div>
         </form>
     </div>
@@ -217,284 +234,343 @@
 
 @section('scripts')
 <script>
-let pengajuanData = [];
-let currentPage = 1;
-const itemsPerPage = 10;
+// Konfigurasi API
+const API_CONFIG = {
+    baseUrl: window.location.origin,
+    endpoints: {
+        pengajuan: '/api/admin/pengajuan',
+        bidang: '/api/bidang',
+        verifikasi: '/api/admin/pengajuan/verifikasi',
+        download: '/api/admin/pengajuan/download'
+    }
+};
 
-// Inisialisasi data
+// State management
+let state = {
+    pengajuan: [],
+    filteredPengajuan: [],
+    bidangList: [],
+    currentPage: 1,
+    itemsPerPage: 10,
+    totalPages: 1,
+    totalItems: 0,
+    currentFilters: {
+        search: '',
+        status: 'all',
+        bidang: 'all'
+    }
+};
+
+// Inisialisasi
 document.addEventListener('DOMContentLoaded', function() {
-    fetchPengajuanData();
-    document.getElementById('searchInput').addEventListener('input', filterPengajuan);
-    document.getElementById('statusFilter').addEventListener('change', filterPengajuan);
-    document.getElementById('bidangFilter').addEventListener('change', filterPengajuan);
+    setupCSRF();
+    fetchBidangList();
+    fetchPengajuan();
+    setupEventListeners();
 });
 
-// Data dummy pengajuan
-function fetchPengajuanData() {
-    pengajuanData = [
-        {
-            id: 1,
-            nama: "John Doe",
-            nim: "G123456789",
-            email: "john.doe@uns.ac.id",
-            no_telp: "081234567890",
-            universitas: "Universitas Sebelas Maret",
-            jurusan: "Teknik Informatika",
-            semester: "6",
-            bidang_pilihan: "Informatika",
-            tanggal_mulai: "2024-01-01",
-            tanggal_selesai: "2024-03-30",
-            alasan: "Saya tertarik dengan bidang informatika karena sesuai dengan program studi saya dan ingin mengembangkan skill programming.",
-            tanggal_pengajuan: "2024-12-01",
-            status: "pending",
-            berkas: {
-                cv: { nama: "CV_John_Doe.pdf", ukuran: "1.2 MB" },
-                surat: { nama: "Surat_Magang_Uns.pdf", ukuran: "0.8 MB" }
-            }
-        },
-        {
-            id: 2,
-            nama: "Jane Smith",
-            nim: "S987654321",
-            email: "jane.smith@ugm.ac.id",
-            no_telp: "081298765432",
-            universitas: "Universitas Gadjah Mada",
-            jurusan: "Ilmu Komunikasi",
-            semester: "7",
-            bidang_pilihan: "Sekretariat",
-            tanggal_mulai: "2024-02-01",
-            tanggal_selesai: "2024-04-30",
-            alasan: "Ingin mengembangkan skill administrasi dan organisasi di bidang kesekretariatan.",
-            tanggal_pengajuan: "2024-12-02",
-            status: "accepted",
-            catatan: "Peserta memenuhi syarat administrasi dan akademik.",
-            tanggal_verifikasi: "2024-12-03",
-            verifikator: "Admin Bidang Sekretariat",
-            berkas: {
-                cv: { nama: "CV_Jane_Smith.pdf", ukuran: "1.5 MB" },
-                surat: { nama: "Surat_UGM.pdf", ukuran: "1.0 MB" }
-            }
-        },
-        {
-            id: 3,
-            nama: "Budi Santoso",
-            nim: "M112233445",
-            email: "budi@polines.ac.id",
-            no_telp: "082134567890",
-            universitas: "Politeknik Negeri Semarang",
-            jurusan: "Sistem Informasi",
-            semester: "5",
-            bidang_pilihan: "Statistik",
-            tanggal_mulai: "2024-01-15",
-            tanggal_selesai: "2024-04-15",
-            alasan: "Ingin mempelajari analisis data statistik untuk mendukung penelitian skripsi.",
-            tanggal_pengajuan: "2024-12-03",
-            status: "rejected",
-            catatan: "Berkas tidak lengkap, surat penempatan tidak sesuai format.",
-            tanggal_verifikasi: "2024-12-04",
-            verifikator: "Admin Bidang Statistik",
-            berkas: {
-                cv: { nama: "CV_Budi_Santoso.pdf", ukuran: "1.0 MB" },
-                surat: { nama: "Surat_Polines.docx", ukuran: "1.8 MB" }
-            }
-        },
-        {
-            id: 4,
-            nama: "Siti Rahma",
-            nim: "U556677889",
-            email: "siti@ui.ac.id",
-            no_telp: "081312345678",
-            universitas: "Universitas Indonesia",
-            jurusan: "Administrasi Bisnis",
-            semester: "6",
-            bidang_pilihan: "E-Goverment",
-            tanggal_mulai: "2024-02-15",
-            tanggal_selesai: "2024-05-15",
-            alasan: "Tertarik dengan implementasi e-government di pemerintah daerah.",
-            tanggal_pengajuan: "2024-12-04",
-            status: "pending",
-            berkas: {
-                cv: { nama: "CV_Siti_Rahma.pdf", ukuran: "1.3 MB" },
-                surat: { nama: "Surat_UI.pdf", ukuran: "0.9 MB" }
-            }
-        },
-        {
-            id: 5,
-            nama: "Ahmad Rizki",
-            nim: "N667788990",
-            email: "ahmad@unnes.ac.id",
-            no_telp: "082245678901",
-            universitas: "Universitas Negeri Semarang",
-            jurusan: "Manajemen Informatika",
-            semester: "8",
-            bidang_pilihan: "Informatika",
-            tanggal_mulai: "2024-03-01",
-            tanggal_selesai: "2024-06-01",
-            alasan: "Ingin mendapatkan pengalaman kerja nyata di bidang IT pemerintahan.",
-            tanggal_pengajuan: "2024-12-05",
-            status: "accepted",
-            catatan: "Peserta memiliki portofolio yang baik di bidang web development.",
-            tanggal_verifikasi: "2024-12-06",
-            verifikator: "Admin Bidang Informatika",
-            berkas: {
-                cv: { nama: "CV_Ahmad_Rizki.pdf", ukuran: "2.0 MB" },
-                surat: { nama: "Surat_UNNES.pdf", ukuran: "1.1 MB" }
-            }
-        }
-    ];
+// Setup CSRF token
+function setupCSRF() {
+    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    if (token) {
+        window.csrfToken = token;
+    }
+}
+
+// Setup event listeners
+function setupEventListeners() {
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+        state.currentFilters.search = e.target.value;
+        debounce(filterPengajuan, 300)();
+    });
     
-    filterPengajuan();
+    document.getElementById('statusFilter').addEventListener('change', function(e) {
+        state.currentFilters.status = e.target.value;
+        filterPengajuan();
+    });
+    
+    document.getElementById('bidangFilter').addEventListener('change', function(e) {
+        state.currentFilters.bidang = e.target.value;
+        filterPengajuan();
+    });
+    
+    document.getElementById('verifikasiForm').addEventListener('submit', handleVerifikasiSubmit);
+}
+
+// Fetch data bidang
+async function fetchBidangList() {
+    try {
+        const response = await fetch(API_CONFIG.endpoints.bidang, {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        
+        if (!response.ok) throw new Error('Gagal mengambil data bidang');
+        
+        const data = await response.json();
+        state.bidangList = data.data || data;
+        populateBidangSelects();
+        
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification('Gagal memuat data bidang', 'error');
+        
+        // Fallback data
+        state.bidangList = [
+            { id: 1, nama_bidang: 'Statistik' },
+            { id: 2, nama_bidang: 'Informatika' },
+            { id: 3, nama_bidang: 'Sekretariat' },
+            { id: 4, nama_bidang: 'E-Goverment' }
+        ];
+        populateBidangSelects();
+    }
+}
+
+// Populate bidang selects
+function populateBidangSelects() {
+    const bidangFilter = document.getElementById('bidangFilter');
+    const bidangFinal = document.getElementById('bidangFinal');
+    
+    // Clear existing options
+    bidangFilter.innerHTML = '<option value="all">Semua Bidang</option>';
+    bidangFinal.innerHTML = '<option value="">Pilih Bidang (Opsional)</option>';
+    
+    state.bidangList.forEach(bidang => {
+        const filterOption = document.createElement('option');
+        filterOption.value = bidang.id || bidang.nama_bidang;
+        filterOption.textContent = bidang.nama_bidang;
+        bidangFilter.appendChild(filterOption);
+        
+        const finalOption = document.createElement('option');
+        finalOption.value = bidang.id || bidang.nama_bidang;
+        finalOption.textContent = bidang.nama_bidang;
+        bidangFinal.appendChild(finalOption);
+    });
+}
+
+// Fetch data pengajuan
+async function fetchPengajuan() {
+    try {
+        showLoading(true);
+        
+        let url = `${API_CONFIG.endpoints.pengajuan}?page=${state.currentPage}&per_page=${state.itemsPerPage}`;
+        
+        const response = await fetch(url, {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        
+        if (!response.ok) throw new Error('Gagal mengambil data pengajuan');
+        
+        const data = await response.json();
+        state.pengajuan = data.data || data.pengajuan || [];
+        state.totalItems = data.meta?.total || data.total || state.pengajuan.length;
+        state.totalPages = Math.ceil(state.totalItems / state.itemsPerPage);
+        
+        filterPengajuan();
+        
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification('Gagal memuat data pengajuan', 'error');
+        renderEmptyTable('Terjadi kesalahan saat memuat data');
+    } finally {
+        showLoading(false);
+    }
 }
 
 // Filter pengajuan
 function filterPengajuan() {
-    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-    const statusFilter = document.getElementById('statusFilter').value;
-    const bidangFilter = document.getElementById('bidangFilter').value;
+    const searchTerm = state.currentFilters.search.toLowerCase();
+    const statusFilter = state.currentFilters.status;
+    const bidangFilter = state.currentFilters.bidang;
     
-    let filtered = pengajuanData;
-    
-    // Filter pencarian
-    if (searchTerm) {
-        filtered = filtered.filter(p => 
-            p.nama.toLowerCase().includes(searchTerm) ||
-            p.nim.toLowerCase().includes(searchTerm) ||
-            p.universitas.toLowerCase().includes(searchTerm) ||
-            p.jurusan.toLowerCase().includes(searchTerm)
-        );
-    }
-    
-    // Filter status
-    if (statusFilter !== 'all') {
-        filtered = filtered.filter(p => p.status === statusFilter);
-    }
-    
-    // Filter bidang
-    if (bidangFilter !== 'all') {
-        filtered = filtered.filter(p => p.bidang_pilihan === bidangFilter);
-    }
+    state.filteredPengajuan = state.pengajuan.filter(pengajuan => {
+        // Filter pencarian
+        if (searchTerm) {
+            const matchesSearch = 
+                pengajuan.nama?.toLowerCase().includes(searchTerm) ||
+                pengajuan.nim?.toLowerCase().includes(searchTerm) ||
+                pengajuan.universitas?.toLowerCase().includes(searchTerm) ||
+                pengajuan.jurusan?.toLowerCase().includes(searchTerm);
+            if (!matchesSearch) return false;
+        }
+        
+        // Filter status
+        if (statusFilter !== 'all' && pengajuan.status !== statusFilter) {
+            return false;
+        }
+        
+        // Filter bidang
+        if (bidangFilter !== 'all') {
+            const bidangId = pengajuan.bidang?.id || pengajuan.id_bidang;
+            if (bidangId != bidangFilter) return false;
+        }
+        
+        return true;
+    });
     
     // Sort by tanggal pengajuan (terbaru pertama)
-    filtered.sort((a, b) => new Date(b.tanggal_pengajuan) - new Date(a.tanggal_pengajuan));
+    state.filteredPengajuan.sort((a, b) => {
+        return new Date(b.tanggal_pengajuan || b.created_at) - new Date(a.tanggal_pengajuan || a.created_at);
+    });
     
-    renderTable(filtered);
-    updateStats(filtered);
+    renderTable();
+    updateStats();
 }
 
 // Reset filter
 function resetFilter() {
+    state.currentFilters = {
+        search: '',
+        status: 'all',
+        bidang: 'all'
+    };
+    
     document.getElementById('searchInput').value = '';
     document.getElementById('statusFilter').value = 'all';
     document.getElementById('bidangFilter').value = 'all';
-    currentPage = 1;
+    
+    state.currentPage = 1;
     filterPengajuan();
 }
 
 // Render tabel
-function renderTable(data) {
+function renderTable() {
     const container = document.getElementById('pengajuanTable');
-    const totalItems = data.length;
-    const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+    const totalItems = state.filteredPengajuan.length;
     
-    if (currentPage > totalPages) currentPage = totalPages;
+    if (totalItems === 0) {
+        renderEmptyTable('Tidak ada pengajuan ditemukan');
+        updatePageInfo(0, 0, 0);
+        return;
+    }
     
-    const start = (currentPage - 1) * itemsPerPage;
-    const end = start + itemsPerPage;
-    const pageData = data.slice(start, end);
+    const start = (state.currentPage - 1) * state.itemsPerPage;
+    const end = start + state.itemsPerPage;
+    const pageData = state.filteredPengajuan.slice(start, end);
     
-    if (pageData.length === 0) {
-        container.innerHTML = `
+    container.innerHTML = pageData.map(pengajuan => {
+        const statusConfig = getStatusConfig(pengajuan.status);
+        const tanggal = formatDate(pengajuan.tanggal_pengajuan || pengajuan.created_at);
+        const bidangNama = pengajuan.bidang?.nama_bidang || pengajuan.bidang_pilihan || '-';
+        const user = pengajuan.user || pengajuan.peserta || {};
+        
+        return `
             <tr>
-                <td colspan="6" style="text-align: center; padding: 40px; color: #888;">
-                    <i class='bx bx-search-alt' style="font-size: 3rem; margin-bottom: 10px; display: block;"></i>
-                    <div style="font-weight: 500;">Tidak ada pengajuan ditemukan</div>
-                    <div style="font-size: 0.9rem;">Coba dengan filter yang berbeda</div>
+                <td>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="user-avatar">${getInitials(user.nama || pengajuan.nama)}</div>
+                        <div>
+                            <div style="font-weight: 600; color: var(--primary);">${user.nama || pengajuan.nama}</div>
+                            <div style="font-size: 0.85rem; color: #666;">${user.nim || pengajuan.nim || ''}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div style="font-weight: 500;">${user.universitas || pengajuan.universitas || '-'}</div>
+                    <div style="font-size: 0.85rem; color: #666;">${user.jurusan || pengajuan.jurusan || ''}</div>
+                </td>
+                <td>
+                    <span class="bidang-badge">${bidangNama}</span>
+                </td>
+                <td>
+                    <div style="color: #666;">${tanggal}</div>
+                </td>
+                <td>
+                    <span class="status-badge ${statusConfig.class}">${statusConfig.text}</span>
+                </td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="action-btn view" onclick="showDetail('${pengajuan.id}')" title="Lihat Detail">
+                            <i class='bx bx-show'></i>
+                        </button>
+                    </div>
                 </td>
             </tr>
         `;
-    } else {
-        container.innerHTML = pageData.map(pengajuan => {
-            const statusConfig = getStatusConfig(pengajuan.status);
-            const tanggal = new Date(pengajuan.tanggal_pengajuan).toLocaleDateString('id-ID');
-            
-            return `
-                <tr>
-                    <td>
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <div class="user-avatar">${getInitials(pengajuan.nama)}</div>
-                            <div>
-                                <div style="font-weight: 600; color: var(--primary);">${pengajuan.nama}</div>
-                                <div style="font-size: 0.85rem; color: #666;">${pengajuan.nim}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div style="font-weight: 500;">${pengajuan.universitas}</div>
-                        <div style="font-size: 0.85rem; color: #666;">${pengajuan.jurusan}</div>
-                    </td>
-                    <td>
-                        <span class="bidang-badge">${pengajuan.bidang_pilihan}</span>
-                    </td>
-                    <td>
-                        <div style="color: #666;">${tanggal}</div>
-                    </td>
-                    <td>
-                        <span class="status-badge ${statusConfig.class}">${statusConfig.text}</span>
-                    </td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="action-btn view" onclick="showDetail(${pengajuan.id})" title="Lihat Detail">
-                                <i class='bx bx-show'></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `;
-        }).join('');
-    }
+    }).join('');
     
-    // Update info
-    document.getElementById('pengajuanCount').textContent = `${totalItems} pengajuan`;
-    document.getElementById('pageInfo').textContent = `Menampilkan ${start + 1} - ${Math.min(end, totalItems)} dari ${totalItems}`;
-    document.getElementById('prevPageBtn').disabled = currentPage === 1;
-    document.getElementById('nextPageBtn').disabled = currentPage === totalPages;
+    updatePageInfo(start + 1, Math.min(end, totalItems), totalItems);
+    updatePaginationButtons();
+}
+
+// Render empty table
+function renderEmptyTable(message) {
+    const container = document.getElementById('pengajuanTable');
+    container.innerHTML = `
+        <tr>
+            <td colspan="6" style="text-align: center; padding: 50px 20px;">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 15px;">
+                    <i class='bx bx-search-alt' style="font-size: 3rem; color: #ccc;"></i>
+                    <div style="color: #888; font-weight: 500;">${message}</div>
+                    <div style="font-size: 0.9rem; color: #999;">Coba dengan filter yang berbeda</div>
+                </div>
+            </td>
+        </tr>
+    `;
 }
 
 // Update statistik
-function updateStats(data) {
-    const pending = data.filter(p => p.status === 'pending').length;
-    const accepted = data.filter(p => p.status === 'accepted').length;
-    const rejected = data.filter(p => p.status === 'rejected').length;
-    const total = data.length;
+function updateStats() {
+    const pending = state.filteredPengajuan.filter(p => p.status === 'pending').length;
+    const accepted = state.filteredPengajuan.filter(p => p.status === 'accepted').length;
+    const rejected = state.filteredPengajuan.filter(p => p.status === 'rejected').length;
+    const total = state.filteredPengajuan.length;
     
     document.getElementById('pendingCount').textContent = pending;
     document.getElementById('acceptedCount').textContent = accepted;
     document.getElementById('rejectedCount').textContent = rejected;
     document.getElementById('totalCount').textContent = total;
+    document.getElementById('pengajuanCount').textContent = `${total} pengajuan`;
 }
 
-// Tampilkan detail pengajuan
-function showDetail(id) {
-    const pengajuan = pengajuanData.find(p => p.id == id);
-    if (!pengajuan) return;
-    
+// Show detail pengajuan
+async function showDetail(pengajuanId) {
+    try {
+        showLoading('detail', true);
+        
+        const response = await fetch(`${API_CONFIG.endpoints.pengajuan}/${pengajuanId}`, {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        
+        if (!response.ok) throw new Error('Gagal mengambil detail pengajuan');
+        
+        const data = await response.json();
+        const pengajuan = data.data || data;
+        
+        renderDetailModal(pengajuan);
+        
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification('Gagal memuat detail pengajuan', 'error');
+    } finally {
+        showLoading('detail', false);
+    }
+}
+
+// Render detail modal
+function renderDetailModal(pengajuan) {
     const statusConfig = getStatusConfig(pengajuan.status);
-    const tanggalMulai = new Date(pengajuan.tanggal_mulai).toLocaleDateString('id-ID');
-    const tanggalSelesai = new Date(pengajuan.tanggal_selesai).toLocaleDateString('id-ID');
-    const tanggalPengajuan = new Date(pengajuan.tanggal_pengajuan).toLocaleDateString('id-ID');
-    const tanggalVerifikasi = pengajuan.tanggal_verifikasi ? 
-        new Date(pengajuan.tanggal_verifikasi).toLocaleDateString('id-ID') : '-';
+    const user = pengajuan.user || pengajuan.peserta || {};
+    const bidangNama = pengajuan.bidang?.nama_bidang || pengajuan.bidang_pilihan || '-';
     
-    document.getElementById('modalTitle').textContent = `Detail Pengajuan - ${pengajuan.nama}`;
+    document.getElementById('modalTitle').textContent = `Detail Pengajuan - ${user.nama || pengajuan.nama}`;
     
     document.getElementById('modalContent').innerHTML = `
         <div class="detail-section">
             <div class="detail-header">
                 <div class="detail-title">
-                    <div class="detail-avatar">${getInitials(pengajuan.nama)}</div>
+                    <div class="detail-avatar">${getInitials(user.nama || pengajuan.nama)}</div>
                     <div>
-                        <h4>${pengajuan.nama}</h4>
-                        <p>${pengajuan.nim} • ${pengajuan.universitas}</p>
+                        <h4>${user.nama || pengajuan.nama}</h4>
+                        <p>${user.nim || pengajuan.nim || ''} • ${user.universitas || pengajuan.universitas || '-'}</p>
                     </div>
                 </div>
                 <span class="status-badge ${statusConfig.class}">${statusConfig.text}</span>
@@ -504,188 +580,209 @@ function showDetail(id) {
         <div class="detail-grid">
             <div class="detail-item">
                 <label><i class='bx bx-envelope'></i> Email</label>
-                <span>${pengajuan.email}</span>
+                <span>${user.email || pengajuan.email || '-'}</span>
             </div>
             <div class="detail-item">
                 <label><i class='bx bx-phone'></i> No. Telepon</label>
-                <span>${pengajuan.no_telp}</span>
+                <span>${user.no_telp || pengajuan.no_telp || '-'}</span>
             </div>
             <div class="detail-item">
                 <label><i class='bx bx-book'></i> Program Studi</label>
-                <span>${pengajuan.jurusan} - Semester ${pengajuan.semester}</span>
+                <span>${user.jurusan || pengajuan.jurusan || '-'} - Semester ${user.semester || pengajuan.semester || '-'}</span>
             </div>
             <div class="detail-item">
                 <label><i class='bx bx-briefcase'></i> Bidang Pilihan</label>
-                <span class="bidang-badge">${pengajuan.bidang_pilihan}</span>
+                <span class="bidang-badge">${bidangNama}</span>
             </div>
             <div class="detail-item">
                 <label><i class='bx bx-calendar'></i> Periode Magang</label>
-                <span>${tanggalMulai} - ${tanggalSelesai}</span>
+                <span>${formatDate(pengajuan.tanggal_mulai)} - ${formatDate(pengajuan.tanggal_selesai)}</span>
             </div>
             <div class="detail-item">
                 <label><i class='bx bx-time'></i> Tanggal Pengajuan</label>
-                <span>${tanggalPengajuan}</span>
+                <span>${formatDate(pengajuan.tanggal_pengajuan || pengajuan.created_at)}</span>
             </div>
         </div>
         
         <div class="detail-section">
             <h4><i class='bx bx-message'></i> Alasan Memilih Bidang</h4>
             <div class="detail-card">
-                <p>${pengajuan.alasan}</p>
+                <p>${pengajuan.alasan || '-'}</p>
             </div>
         </div>
         
         <div class="detail-section">
             <h4><i class='bx bx-file'></i> Berkas Pendaftaran</h4>
             <div class="berkas-grid">
-                <div class="berkas-card">
-                    <div class="berkas-header">
-                        <i class='bx bx-file-pdf'></i>
-                        <div>
-                            <div class="berkas-name">${pengajuan.berkas.cv.nama}</div>
-                            <div class="berkas-size">${pengajuan.berkas.cv.ukuran}</div>
-                        </div>
-                    </div>
-                    <button onclick="downloadBerkas(${pengajuan.id}, 'cv')" class="berkas-btn">
-                        <i class='bx bx-download'></i> Download CV
-                    </button>
-                </div>
-                
-                <div class="berkas-card">
-                    <div class="berkas-header">
-                        <i class='bx bx-file'></i>
-                        <div>
-                            <div class="berkas-name">${pengajuan.berkas.surat.nama}</div>
-                            <div class="berkas-size">${pengajuan.berkas.surat.ukuran}</div>
-                        </div>
-                    </div>
-                    <button onclick="downloadBerkas(${pengajuan.id}, 'surat')" class="berkas-btn">
-                        <i class='bx bx-download'></i> Download Surat
-                    </button>
-                </div>
+                ${renderBerkas(pengajuan.berkas)}
             </div>
         </div>
         
-        ${pengajuan.status !== 'pending' ? `
-            <div class="detail-section">
-                <h4><i class='bx bx-check-shield'></i> Informasi Verifikasi</h4>
-                <div class="detail-card">
-                    <div class="verifikasi-grid">
-                        <div class="verifikasi-item">
-                            <label>Tanggal Verifikasi</label>
-                            <span>${tanggalVerifikasi}</span>
-                        </div>
-                        <div class="verifikasi-item">
-                            <label>Verifikator</label>
-                            <span>${pengajuan.verifikator || '-'}</span>
-                        </div>
-                        <div class="verifikasi-item full">
-                            <label>Catatan</label>
-                            <span>${pengajuan.catatan || '-'}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        ` : ''}
+        ${pengajuan.status !== 'pending' ? renderVerifikasiInfo(pengajuan) : ''}
         
         <div class="detail-actions">
-            <button onclick="showVerifikasiModal(${pengajuan.id})" class="btn btn-primary">
+            <button onclick="showVerifikasiModal('${pengajuan.id}')" class="btn btn-primary">
                 <i class='bx bx-check'></i> Verifikasi Pengajuan
             </button>
-            <button onclick="closeModal()" class="btn btn-secondary">Tutup</button>
+            <button onclick="closeModal('detailModal')" class="btn btn-secondary">Tutup</button>
         </div>
     `;
     
-    document.getElementById('detailModal').style.display = 'flex';
+    openModal('detailModal');
 }
 
-// Tampilkan modal verifikasi
-function showVerifikasiModal(id) {
-    const pengajuan = pengajuanData.find(p => p.id == id);
-    if (!pengajuan) return;
-    
-    document.getElementById('verifikasiId').value = id;
-    document.getElementById('verifikasiTitle').textContent = `Verifikasi - ${pengajuan.nama}`;
-    document.getElementById('statusVerifikasi').value = pengajuan.status === 'pending' ? '' : pengajuan.status;
-    document.getElementById('catatanVerifikasi').value = pengajuan.catatan || '';
-    document.getElementById('bidangFinal').value = pengajuan.bidang_final || pengajuan.bidang_pilihan;
-    
-    document.getElementById('verifikasiModal').style.display = 'flex';
-}
-
-// Submit verifikasi
-function submitVerifikasi() {
-    const id = document.getElementById('verifikasiId').value;
-    const status = document.getElementById('statusVerifikasi').value;
-    const catatan = document.getElementById('catatanVerifikasi').value;
-    const bidangFinal = document.getElementById('bidangFinal').value;
-    
-    if (!status) {
-        showNotification('Pilih status verifikasi terlebih dahulu!', 'error');
-        return;
+// Render berkas
+function renderBerkas(berkasData) {
+    if (!berkasData || Object.keys(berkasData).length === 0) {
+        return '<p>Tidak ada berkas tersedia</p>';
     }
     
-    const pengajuan = pengajuanData.find(p => p.id == id);
-    if (pengajuan) {
-        pengajuan.status = status;
-        pengajuan.catatan = catatan;
-        pengajuan.tanggal_verifikasi = new Date().toISOString().split('T')[0];
-        pengajuan.verifikator = "Admin Utama";
-        if (bidangFinal) pengajuan.bidang_final = bidangFinal;
+    const berkas = Array.isArray(berkasData) ? berkasData : [berkasData];
+    
+    return berkas.map(berkas => `
+        <div class="berkas-card">
+            <div class="berkas-header">
+                <i class='bx ${berkas.type === 'pdf' ? 'bx-file-pdf' : 'bx-file'}'
+                   style="color: ${berkas.type === 'pdf' ? '#e74c3c' : '#3498db'};"></i>
+                <div>
+                    <div class="berkas-name">${berkas.nama_file || berkas.nama}</div>
+                    <div class="berkas-size">${formatFileSize(berkas.ukuran)}</div>
+                </div>
+            </div>
+            <button onclick="downloadBerkas('${berkas.id || berkas.nama_file}')" class="berkas-btn">
+                <i class='bx bx-download'></i> Download
+            </button>
+        </div>
+    `).join('');
+}
+
+// Render verifikasi info
+function renderVerifikasiInfo(pengajuan) {
+    return `
+        <div class="detail-section">
+            <h4><i class='bx bx-check-shield'></i> Informasi Verifikasi</h4>
+            <div class="detail-card">
+                <div class="verifikasi-grid">
+                    <div class="verifikasi-item">
+                        <label>Tanggal Verifikasi</label>
+                        <span>${formatDate(pengajuan.tanggal_verifikasi || pengajuan.updated_at)}</span>
+                    </div>
+                    <div class="verifikasi-item">
+                        <label>Verifikator</label>
+                        <span>${pengajuan.verifikator?.nama || pengajuan.verifikator || '-'}</span>
+                    </div>
+                    <div class="verifikasi-item full">
+                        <label>Catatan</label>
+                        <span>${pengajuan.catatan_verifikasi || pengajuan.catatan || '-'}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Show verifikasi modal
+function showVerifikasiModal(pengajuanId) {
+    const pengajuan = state.pengajuan.find(p => p.id === pengajuanId);
+    if (!pengajuan) return;
+    
+    document.getElementById('verifikasiId').value = pengajuanId;
+    document.getElementById('pengajuanId').value = pengajuanId;
+    document.getElementById('verifikasiTitle').textContent = `Verifikasi - ${pengajuan.user?.nama || pengajuan.nama}`;
+    document.getElementById('statusVerifikasi').value = pengajuan.status || '';
+    document.getElementById('catatanVerifikasi').value = pengajuan.catatan_verifikasi || '';
+    document.getElementById('bidangFinal').value = pengajuan.bidang_penempatan || pengajuan.bidang?.id || '';
+    
+    closeModal('detailModal');
+    openModal('verifikasiModal');
+}
+
+// Handle verifikasi submit
+async function handleVerifikasiSubmit(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const pengajuanId = document.getElementById('pengajuanId').value;
+    
+    try {
+        showSubmitLoading(true);
         
-        showNotification(`Pengajuan ${pengajuan.nama} telah diverifikasi`, 'success');
-        closeVerifikasiModal();
-        closeModal();
-        filterPengajuan();
+        const response = await fetch(`${API_CONFIG.endpoints.verifikasi}/${pengajuanId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': window.csrfToken
+            },
+            body: JSON.stringify(Object.fromEntries(formData))
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.message || 'Gagal melakukan verifikasi');
+        }
+        
+        showNotification('Verifikasi berhasil disimpan', 'success');
+        closeModal('verifikasiModal');
+        fetchPengajuan(); // Refresh data
+        
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification(error.message || 'Gagal melakukan verifikasi', 'error');
+    } finally {
+        showSubmitLoading(false);
     }
 }
 
 // Download berkas
-function downloadBerkas(id, type) {
-    const pengajuan = pengajuanData.find(p => p.id == id);
-    if (!pengajuan) return;
-    
-    const berkas = type === 'cv' ? pengajuan.berkas.cv : type === 'surat' ? pengajuan.berkas.surat : null;
-    if (!berkas) return;
-    
-    // Simulasi download
-    showNotification(`Mendownload ${berkas.nama}...`, 'info');
-    
-    // Buat link download dummy
-    const link = document.createElement('a');
-    link.href = '#';
-    link.download = berkas.nama;
-    link.click();
-}
-
-// Modal functions
-function closeModal() {
-    document.getElementById('detailModal').style.display = 'none';
-}
-
-function closeVerifikasiModal() {
-    document.getElementById('verifikasiModal').style.display = 'none';
-    document.getElementById('verifikasiForm').reset();
+async function downloadBerkas(berkasId) {
+    try {
+        const response = await fetch(`${API_CONFIG.endpoints.download}/${berkasId}`, {
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': window.csrfToken
+            }
+        });
+        
+        if (!response.ok) throw new Error('Gagal mendownload berkas');
+        
+        // Handle file download
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `berkas-${berkasId}`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        showNotification('Berkas berhasil didownload', 'success');
+        
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification('Gagal mendownload berkas', 'error');
+    }
 }
 
 // Pagination
 function nextPage() {
-    const filtered = getFilteredData();
-    const totalPages = Math.max(1, Math.ceil(filtered.length / itemsPerPage));
-    if (currentPage < totalPages) {
-        currentPage++;
-        renderTable(filtered);
+    const totalPages = Math.ceil(state.filteredPengajuan.length / state.itemsPerPage);
+    if (state.currentPage < totalPages) {
+        state.currentPage++;
+        renderTable();
     }
 }
 
 function prevPage() {
-    if (currentPage > 1) {
-        currentPage--;
-        renderTable(getFilteredData());
+    if (state.currentPage > 1) {
+        state.currentPage--;
+        renderTable();
     }
 }
 
-// Utility functions
+// Helper functions
 function getStatusConfig(status) {
     const configs = {
         'pending': { class: 'status-pending', text: 'MENUNGGU' },
@@ -696,45 +793,117 @@ function getStatusConfig(status) {
 }
 
 function getInitials(name) {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+    if (!name) return '--';
+    return name
+        .split(' ')
+        .map(n => n.charAt(0).toUpperCase())
+        .join('')
+        .substring(0, 2);
 }
 
-function getFilteredData() {
-    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-    const statusFilter = document.getElementById('statusFilter').value;
-    const bidangFilter = document.getElementById('bidangFilter').value;
-    
-    let filtered = pengajuanData;
-    
-    if (searchTerm) {
-        filtered = filtered.filter(p => 
-            p.nama.toLowerCase().includes(searchTerm) ||
-            p.nim.toLowerCase().includes(searchTerm) ||
-            p.universitas.toLowerCase().includes(searchTerm)
-        );
-    }
-    
-    if (statusFilter !== 'all') {
-        filtered = filtered.filter(p => p.status === statusFilter);
-    }
-    
-    if (bidangFilter !== 'all') {
-        filtered = filtered.filter(p => p.bidang_pilihan === bidangFilter);
-    }
-    
-    return filtered;
+function formatDate(dateString) {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+    });
 }
 
-// Notification
+function formatFileSize(bytes) {
+    if (!bytes) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function updatePageInfo(start, end, total) {
+    document.getElementById('pageInfo').textContent = 
+        `Menampilkan ${start} - ${end} dari ${total} pengajuan`;
+}
+
+function updatePaginationButtons() {
+    const totalPages = Math.ceil(state.filteredPengajuan.length / state.itemsPerPage);
+    document.getElementById('prevPageBtn').disabled = state.currentPage <= 1;
+    document.getElementById('nextPageBtn').disabled = state.currentPage >= totalPages;
+}
+
+// Modal functions
+function openModal(modalId) {
+    document.getElementById(modalId).style.display = 'flex';
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+
+// Loading states
+function showLoading(context, isLoading) {
+    const loaders = {
+        'table': () => {
+            const loadingRow = document.getElementById('loadingRow');
+            if (loadingRow) {
+                loadingRow.style.display = isLoading ? 'table-row' : 'none';
+            }
+        },
+        'detail': () => {
+            const modalContent = document.getElementById('modalContent');
+            if (modalContent && isLoading) {
+                modalContent.innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <i class='bx bx-loader-circle bx-spin' style="font-size: 3rem; color: var(--primary);"></i>
+                        <div style="margin-top: 15px; color: #666;">Memuat detail...</div>
+                    </div>
+                `;
+            }
+        }
+    };
+    
+    if (loaders[context]) {
+        loaders[context]();
+    }
+}
+
+function showSubmitLoading(show) {
+    const btn = document.getElementById('submitVerifikasiBtn');
+    if (btn) {
+        btn.disabled = show;
+        btn.innerHTML = show 
+            ? '<i class="bx bx-loader-circle bx-spin"></i> Memproses...'
+            : '<i class="bx bx-check"></i> Simpan Verifikasi';
+    }
+}
+
+// Utility functions
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
 function showNotification(message, type = 'info') {
+    // Reuse the notification function from admin.js or create a simple one
+    if (typeof window.showNotification === 'function') {
+        window.showNotification(message, type);
+        return;
+    }
+    
+    // Simple notification implementation
     const notification = document.createElement('div');
-    notification.className = `notification-toast notification-${type}`;
+    notification.className = `notification notification-${type}`;
     notification.innerHTML = `
-        <div class="notification-content">
+        <div style="display: flex; align-items: center; gap: 10px;">
             <i class='bx ${type === 'success' ? 'bx-check-circle' : type === 'error' ? 'bx-error-circle' : 'bx-info-circle'}'></i>
             <span>${message}</span>
         </div>
-        <button onclick="this.parentElement.remove()">&times;</button>
     `;
     
     notification.style.cssText = `
@@ -745,12 +914,8 @@ function showNotification(message, type = 'info') {
         color: ${type === 'success' ? '#155724' : type === 'error' ? '#721c24' : '#0c5460'};
         padding: 15px 20px;
         border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        min-width: 300px;
-        z-index: 1000;
         box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        z-index: 1000;
         animation: slideIn 0.3s ease;
     `;
     
@@ -763,812 +928,23 @@ function showNotification(message, type = 'info') {
     }, 5000);
 }
 
-// Add CSS styles
-const style = document.createElement('style');
-style.textContent = `
-    /* Reset and Base Styles */
-    .content-header {
-        margin-bottom: 30px;
-    }
-    
-    /* STATS CARDS */
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 25px;
-        margin-bottom: 40px;
-    }
-
-    .stat-card {
-        background: white;
-        border-radius: 16px;
-        padding: 25px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-        border-top: 5px solid;
-        transition: transform 0.3s, box-shadow 0.3s;
-    }
-
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-    }
-
-    .stat-card.border-blue {
-        border-color: var(--primary);
-    }
-
-    .stat-card.border-green {
-        border-color: #2ed573;
-    }
-
-    .stat-card.border-orange {
-        border-color: #ffa502;
-    }
-
-    .stat-card.border-purple {
-        border-color: #7158e2;
-    }
-
-    .stat-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 15px;
-    }
-
-    .stat-icon {
-        width: 50px;
-        height: 50px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-    }
-
-    .stat-icon.blue {
-        background: rgba(33, 52, 72, 0.1);
-        color: var(--primary);
-    }
-
-    .stat-icon.green {
-        background: rgba(46, 213, 115, 0.1);
-        color: #2ed573;
-    }
-
-    .stat-icon.orange {
-        background: rgba(255, 165, 2, 0.1);
-        color: #ffa502;
-    }
-
-    .stat-icon.purple {
-        background: rgba(113, 88, 226, 0.1);
-        color: #7158e2;
-    }
-
-    .stat-value {
-        font-size: 2.2rem;
-        font-weight: 700;
-        color: var(--primary);
-        line-height: 1;
-    }
-
-    .stat-label {
-        color: #666;
-        font-size: 0.95rem;
-        margin-top: 8px;
-    }
-
-    .stat-change {
-        font-size: 0.85rem;
-        margin-top: 5px;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-
-    .stat-change.positive {
-        color: #2ed573;
-    }
-
-    .stat-change.negative {
-        color: #ff4757;
-    }
-    
-    /* Filter Container */
-    .filter-container {
-        background: white;
-        border-radius: 12px;
-        padding: 20px;
-        margin-bottom: 30px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    }
-    
-    .filter-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 20px;
-        align-items: end;
-    }
-    
-    .filter-group {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-    
-    .filter-label {
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: #333;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-    
-    .filter-input, .filter-select {
-        width: 100%;
-        padding: 12px 15px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        font-size: 0.95rem;
-        transition: border-color 0.3s;
-        background: white;
-    }
-    
-    .filter-input:focus, .filter-select:focus {
-        outline: none;
-        border-color: var(--primary);
-        box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
-    }
-    
-    .filter-actions {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-    }
-    
-    /* Button Styles */
-    .btn {
-        padding: 12px 24px;
-        border-radius: 8px;
-        border: none;
-        font-size: 0.95rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.3s;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-    }
-    
-    .btn-primary {
-        background: var(--primary);
-        color: white;
-    }
-    
-    .btn-primary:hover {
-        background: #2980b9;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
-    }
-    
-    .btn-secondary {
-        background: #f8f9fa;
-        color: #666;
-        border: 1px solid #ddd;
-    }
-    
-    .btn-secondary:hover {
-        background: #e2e6ea;
-        transform: translateY(-2px);
-    }
-    
-    /* Table Styles */
-    .table-container {
-        background: white;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    }
-    
-    .table-header {
-        padding: 20px;
-        border-bottom: 1px solid #eee;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .table-header h3 {
-        color: var(--primary);
-        font-size: 1.3rem;
-        margin: 0;
-    }
-    
-    .table-count {
-        font-size: 0.9rem;
-        color: #666;
-        background: #f8f9fa;
-        padding: 6px 12px;
-        border-radius: 20px;
-    }
-    
-    table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    
-    thead {
-        background: #f8f9fa;
-    }
-    
-    th {
-        padding: 15px;
-        text-align: left;
-        font-weight: 600;
-        color: #333;
-        border-bottom: 2px solid #dee2e6;
-    }
-    
-    td {
-        padding: 15px;
-        border-bottom: 1px solid #eee;
-    }
-    
-    tr:hover {
-        background: #f8f9fa;
-    }
-    
-    /* User Avatar */
-    .user-avatar {
-        width: 40px;
-        height: 40px;
-        background: linear-gradient(45deg, var(--primary), var(--secondary));
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        font-size: 0.9rem;
-        flex-shrink: 0;
-    }
-    
-    /* Bidang Badge */
-    .bidang-badge {
-        display: inline-block;
-        padding: 4px 12px;
-        background: #e3f2fd;
-        color: #1976d2;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        white-space: nowrap;
-    }
-    
-    /* Status Badge */
-    .status-badge {
-        display: inline-block;
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        white-space: nowrap;
-    }
-    
-    .status-pending {
-        background: #fff3cd;
-        color: #856404;
-    }
-    
-    .status-approved {
-        background: #d4edda;
-        color: #155724;
-    }
-    
-    .status-rejected {
-        background: #f8d7da;
-        color: #721c24;
-    }
-    
-    /* Action Buttons */
-    .action-buttons {
-        display: flex;
-        gap: 8px;
-    }
-    
-    .action-btn {
-        width: 36px;
-        height: 36px;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: none;
-        cursor: pointer;
-        font-size: 1.1rem;
-        transition: all 0.3s;
-        background: #e3f2fd;
-        color: #1976d2;
-    }
-    
-    .action-btn:hover {
-        opacity: 0.9;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    
-    /* Pagination */
-    .pagination {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 20px;
-        border-top: 1px solid #eee;
-    }
-    
-    .pagination-info {
-        font-size: 0.9rem;
-        color: #666;
-    }
-    
-    .pagination-controls {
-        display: flex;
-        gap: 8px;
-    }
-    
-    .pagination-btn {
-        width: 36px;
-        height: 36px;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid #ddd;
-        background: white;
-        color: #666;
-        cursor: pointer;
-        transition: all 0.3s;
-    }
-    
-    .pagination-btn:hover:not(:disabled) {
-        border-color: var(--primary);
-        color: var(--primary);
-        transform: translateY(-2px);
-    }
-    
-    .pagination-btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        transform: none;
-    }
-    
-    /* Modal Styles */
-    .modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 1000;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-    }
-    
-    .modal-content {
-        background: white;
-        border-radius: 16px;
-        max-height: 90vh;
-        overflow-y: auto;
-        width: 100%;
-        animation: modalSlideIn 0.3s ease;
-    }
-    
-    @keyframes modalSlideIn {
-        from {
-            opacity: 0;
-            transform: translateY(-20px);
+// Add notification animation
+if (!document.querySelector('#notification-animation')) {
+    const style = document.createElement('style');
+    style.id = 'notification-animation';
+    style.textContent = `
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    .modal-header {
-        padding: 25px;
-        border-bottom: 1px solid #eee;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .modal-header h3 {
-        color: var(--primary);
-        font-size: 1.3rem;
-        margin: 0;
-    }
-    
-    .modal-close {
-        background: none;
-        border: none;
-        font-size: 1.8rem;
-        color: #888;
-        cursor: pointer;
-        line-height: 1;
-        transition: color 0.3s;
-    }
-    
-    .modal-close:hover {
-        color: #666;
-    }
-    
-    .modal-body {
-        padding: 25px;
-    }
-    
-    /* Detail Modal Components */
-    .detail-section {
-        margin-bottom: 25px;
-    }
-    
-    .detail-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 20px;
-        background: #f8f9fa;
-        border-radius: 12px;
-        margin-bottom: 25px;
-    }
-    
-    .detail-title {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-    
-    .detail-avatar {
-        width: 50px;
-        height: 50px;
-        background: linear-gradient(45deg, var(--primary), var(--secondary));
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        font-size: 1.1rem;
-        flex-shrink: 0;
-    }
-    
-    .detail-title h4 {
-        margin: 0;
-        color: var(--primary);
-        font-size: 1.2rem;
-    }
-    
-    .detail-title p {
-        margin: 5px 0 0 0;
-        color: #666;
-        font-size: 0.9rem;
-    }
-    
-    .detail-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 20px;
-        margin-bottom: 25px;
-    }
-    
-    .detail-item {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-    
-    .detail-item label {
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: #666;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-    
-    .detail-item span {
-        color: #333;
-        font-size: 0.95rem;
-    }
-    
-    .detail-card {
-        background: #f8f9fa;
-        border-radius: 12px;
-        padding: 20px;
-        margin-top: 10px;
-    }
-    
-    .detail-card p {
-        margin: 0;
-        line-height: 1.6;
-        color: #333;
-    }
-    
-    .berkas-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 15px;
-        margin-top: 10px;
-    }
-    
-    .berkas-card {
-        border: 1px solid #e0e0e0;
-        border-radius: 12px;
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-    }
-    
-    .berkas-header {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-    
-    .berkas-header i {
-        font-size: 2rem;
-        color: #e74c3c;
-    }
-    
-    .berkas-card:nth-child(2) .berkas-header i {
-        color: #3498db;
-    }
-    
-    .berkas-name {
-        font-weight: 600;
-        color: #333;
-    }
-    
-    .berkas-size {
-        font-size: 0.85rem;
-        color: #666;
-    }
-    
-    .berkas-btn {
-        padding: 10px 15px;
-        background: #f8f9fa;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        color: #333;
-        font-size: 0.9rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        cursor: pointer;
-        transition: all 0.3s;
-    }
-    
-    .berkas-btn:hover {
-        background: #e9ecef;
-    }
-    
-    .verifikasi-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 20px;
-    }
-    
-    .verifikasi-item {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
-    
-    .verifikasi-item.full {
-        grid-column: 1 / -1;
-    }
-    
-    .verifikasi-item label {
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: #666;
-    }
-    
-    .verifikasi-item span {
-        color: #333;
-    }
-    
-    .detail-actions {
-        display: flex;
-        gap: 15px;
-        margin-top: 30px;
-        padding-top: 20px;
-        border-top: 1px solid #eee;
-    }
-    
-    /* Form Section */
-    .form-section {
-        margin-bottom: 25px;
-    }
-    
-    .form-section h4 {
-        color: var(--primary);
-        margin-bottom: 15px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 1.1rem;
-    }
-    
-    .form-group {
-        margin-bottom: 20px;
-    }
-    
-    .form-group label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: 600;
-        color: #333;
-        font-size: 0.9rem;
-    }
-    
-    .form-group select,
-    .form-group textarea {
-        width: 100%;
-        padding: 12px 15px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        font-size: 0.95rem;
-        transition: border-color 0.3s;
-        background: white;
-    }
-    
-    .form-group select:focus,
-    .form-group textarea:focus {
-        outline: none;
-        border-color: var(--primary);
-    }
-    
-    .form-group textarea {
-        resize: vertical;
-        min-height: 100px;
-    }
-    
-    .form-group small {
-        display: block;
-        margin-top: 5px;
-        color: #888;
-        font-size: 0.8rem;
-    }
-    
-    .modal-footer {
-        padding: 20px 25px;
-        border-top: 1px solid #eee;
-        display: flex;
-        justify-content: flex-end;
-        gap: 15px;
-    }
-    
-    /* Responsive Design */
-    @media (max-width: 1024px) {
-        .filter-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-        
-        .detail-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-    
-    @media (max-width: 768px) {
-        .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-        
-        .filter-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .filter-actions {
-            justify-content: flex-end;
-        }
-        
-        .table-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 10px;
-        }
-        
-        .table-count {
-            margin-top: 5px;
-        }
-        
-        .detail-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 15px;
-        }
-        
-        .detail-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .berkas-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .verifikasi-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .detail-actions {
-            flex-direction: column;
-        }
-        
-        .detail-actions .btn {
-            width: 100%;
-        }
-        
-        table {
-            display: block;
-            overflow-x: auto;
-        }
-        
-        th, td {
-            white-space: nowrap;
-        }
-        
-        .modal-content {
-            width: 95%;
-            margin: 10px;
-        }
-        
-        .modal-footer {
-            flex-direction: column;
-        }
-        
-        .modal-footer .btn {
-            width: 100%;
-        }
-    }
-    
-    @media (max-width: 480px) {
-        .stats-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .pagination {
-            flex-direction: column;
-            gap: 15px;
-            align-items: stretch;
-        }
-        
-        .pagination-controls {
-            justify-content: center;
-        }
-    }
-    
-    /* Notification Animation */
-    @keyframes slideIn {
-        from {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-`;
-document.head.appendChild(style);
+    `;
+    document.head.appendChild(style);
+}
 </script>
 @endsection
