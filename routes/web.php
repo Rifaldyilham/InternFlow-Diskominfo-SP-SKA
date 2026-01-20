@@ -31,6 +31,10 @@ Route::post('/register', [RegisteredUserController::class, 'store'])
 
 // Dashboard routes dengan middleware auth (nanti)
 Route::prefix('admin')->group(function () {
+    Route::get('/dashboard', function() {
+        return view('admin.dashboard');
+    }) -> name('admin.dashboard');
+    
     Route::get('/verifikasi-berkas', function () {
         return view('admin.verifikasi-berkas');
     })->name('admin.verifikasiberkas');

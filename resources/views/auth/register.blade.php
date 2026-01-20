@@ -433,9 +433,39 @@
                     return;
                 }
 
+                const hasUppercase = /[A-Z]/.test(password.value);
+                const hasLowercase = /[a-z]/.test(password.value);
+                const hasNumber = /[0-9]/.test(password.value);
+                const hasSymbol = /[^A-Za-z0-9]/.test(password.value);
+
                 if (password.value.length < 8) {
                     e.preventDefault();
                     alert('Password harus minimal 8 karakter.');
+                    return;
+                }
+
+                if (!hasUppercase) {
+                    e.preventDefault();
+                    alert('Password harus mengandung huruf Besar.');
+                    return;
+                }
+
+                if (!hasLowercase) {
+                    e.preventDefault();
+                    alert('Password harus mengandung huruf Kecil.');
+                    return;
+                }
+
+                if (!hasNumber) {
+                    e.preventDefault();
+                    alert('Password harus mengandung Angka.');
+                    return;
+                }
+
+                  if (!hasSymbol) {
+                    e.preventDefault();
+                    alert('Password harus mengandung Simbol.');
+                    return;
                 }
             });
 
