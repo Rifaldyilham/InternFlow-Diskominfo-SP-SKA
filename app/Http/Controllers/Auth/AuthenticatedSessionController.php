@@ -42,12 +42,12 @@ class AuthenticatedSessionController extends Controller
 
         // Admin Bidang
         if ($user->id_role == 2) {
-            return redirect('/admin-bidang/dashboard');
+            return redirect('/admin-bidang/mentor');
         }
 
         // Admin Kepegawaian
         if ($user->id_role == 1) {
-            return redirect('/admin/dashboard');
+            return redirect('/admin/verifikasi-berkas');
         }
 
         // Fallback (jaga-jaga)
