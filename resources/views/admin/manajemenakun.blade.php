@@ -139,10 +139,10 @@
                         <label for="id_role">Role *</label>
                         <select id="id_role" name="id_role" required>
                             <option value="">Pilih Role</option>
-                            <option value="0">Admin Kepegawaian</option>
-                            <option value="1">Admin Bidang</option>
-                            <option value="2">Mentor</option>
-                            <option value="3">Peserta Magang</option>
+                            <option value="1">Admin Kepegawaian</option>
+                            <option value="2">Admin Bidang</option>
+                            <option value="3">Mentor</option>
+                            <option value="4">Peserta Magang</option>
                         </select>
                             <!-- Options akan diisi via JavaScript -->
                         </select>
@@ -721,7 +721,7 @@ function prevPage() {
         currentPage--;
         fetchUsers();
     }
-}
+} 
 
 function updatePagination(data) {
     const meta = data.meta || {

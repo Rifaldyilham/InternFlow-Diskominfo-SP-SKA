@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Admin\ManajemenAkunController;
 
 // Route untuk dashboard utama
 Route::get('/', function () {
@@ -43,9 +44,8 @@ Route::prefix('admin')->group(function () {
         return view('admin.peserta.index');
     })->name('admin.peserta');
     
-    Route::get('/manajemen-akun', function () {
-        return view('admin.manajemenakun');
-    })->name('admin.manajemen-akun');
+    Route::get('/manajemen-akun', [ManajemenAkunController::class, 'index'])
+    ->name('admin.manajemen-akun');
     
     Route::get('/manajemen-bidang', function () {
         return view('admin.manajemenbidang');
