@@ -55,19 +55,13 @@
 
             <!-- Menu Navigasi -->
             <ul class="sidebar-menu">
-                <a href="/mentor/dashboard" class="menu-item" :class="isActive('/mentor/dashboard') ? 'active' : ''">
-                    <i class='bx bx-home-alt'></i>
-                    <span class="menu-text">Dashboard</span>
-                </a>
                 <a href="/mentor/bimbingan" class="menu-item" :class="isActive('/mentor/bimbingan') ? 'active' : ''">
                     <i class='bx bx-group'></i>
                     <span class="menu-text">Daftar Bimbingan</span>
-                    <span class="menu-badge" id="pesertaCount">5</span>
                 </a>
                 <a href="/mentor/verifikasi" class="menu-item" :class="isActive('/mentor/verifikasi') ? 'active' : ''">
                     <i class='bx bx-check-circle'></i>
                     <span class="menu-text">Verifikasi</span>
-                    <span class="menu-badge" id="verifikasiPending">5</span>
                 </a>
                 <a href="/mentor/penilaian" class="menu-item" :class="isActive('/mentor/penilaian') ? 'active' : ''">
                     <i class='bx bx-star'></i>
@@ -100,10 +94,12 @@
 
                 <div class="header-right">
                     <div class="user-profile" onclick="window.location.href='/mentor/profil'">
-                        <div class="avatar" id="userAvatar">AF</div>
+                        <div class="avatar" id="userAvatar">
+                            {{-- Avatar akan diisi oleh JavaScript --}}
+                        </div>
                         <div class="user-info">
-                            <h4 id="userName">Dr. Ahmad Fauzi, M.Kom.</h4>
-                            <p>Mentor Bidang Informatika</p>
+                            <h4 id="userName">{{ Auth::check() ? Auth::user()->name : 'Nama Mentor' }}</h4>
+                            <p>Mentor/Pembimbing</p>
                         </div>
                     </div>
                 </div>
@@ -222,7 +218,7 @@
                 if (homeItem) homeItem.classList.add('active');
             }
             
-            // Update avatar dengan inisial
+            // Update avatar dengan inisial dari nama user yang login
             const userName = document.getElementById('userName').textContent;
             const avatar = document.getElementById('userAvatar');
             
@@ -237,10 +233,6 @@
             if (avatar) {
                 avatar.textContent = getInitials(userName);
             }
-            
-            // Update badge counts (simulasi)
-            document.getElementById('pesertaCount').textContent = '5';
-            document.getElementById('verifikasiPending').textContent = '5';
         });
     </script>
 

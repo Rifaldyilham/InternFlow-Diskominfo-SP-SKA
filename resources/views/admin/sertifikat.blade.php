@@ -8,13 +8,6 @@
 @endsection
 
 @section('content')
-<div class="content-header">
-    <div class="header-actions">
-        <button class="btn btn-secondary" onclick="refreshData()">
-            <i class='bx bx-refresh'></i> Refresh
-        </button>
-    </div>
-</div>
 
 <!-- Stats Cards -->
 <div class="stats-grid">
@@ -34,7 +27,7 @@
         <div class="stat-header">
             <div>
                 <div class="stat-value" id="sudahSertifikat">0</div>
-                <div class="stat-label">Sudah Sertifikat</div>
+                <div class="stat-label">Sudah Upload</div>
             </div>
             <div class="stat-icon green">
                 <i class='bx bx-check-circle'></i>
@@ -46,7 +39,7 @@
         <div class="stat-header">
             <div>
                 <div class="stat-value" id="belumSertifikat">0</div>
-                <div class="stat-label">Belum Sertifikat</div>
+                <div class="stat-label">Belum Upload</div>
             </div>
             <div class="stat-icon orange">
                 <i class='bx bx-time'></i>
@@ -1195,10 +1188,6 @@ function previewFileName(input) {
     document.getElementById('fileError').style.display = 'none';
 }
 
-function refreshData() {
-    fetchPesertaData();
-    showNotification('Data diperbarui', 'success');
-}
 
 // Notification function (reuse from other files)
 function showNotification(message, type = 'info') {

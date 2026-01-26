@@ -13,9 +13,6 @@
         <button class="btn btn-primary" onclick="showAddModal()">
             <i class='bx bx-user-plus'></i> Tambah Akun
         </button>
-        <button class="btn btn-secondary" onclick="exportData()">
-            <i class='bx bx-export'></i> Export
-        </button>
     </div>
     
     <div class="search-filter">
@@ -759,10 +756,6 @@ function refreshData() {
     showNotification('Data berhasil diperbarui', 'success');
 }
 
-function exportData() {
-    showNotification('Fitur export akan segera tersedia', 'info');
-    // Implement export functionality here
-}
 
 function showNotification(message, type = 'info') {
     // Existing notification code...

@@ -62,7 +62,6 @@
                 <a href="/peserta/pendaftaran" class="menu-item" :class="isActive('/peserta/pendaftaran') ? 'active' : ''">
                     <i class='bx bx-file'></i>
                     <span class="menu-text">Pengajuan Magang</span>
-                    <span class="menu-badge">Baru</span>
                 </a>
                 <a href="/peserta/logbook" class="menu-item" :class="isActive('/peserta/logbook') ? 'active' : ''">
                     <i class='bx bx-book'></i>

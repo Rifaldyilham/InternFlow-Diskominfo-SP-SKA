@@ -37,7 +37,7 @@ class AuthenticatedSessionController extends Controller
 
         // Mentor
         if ($user->id_role == 3) {
-            return redirect('/mentor/dashboard');
+            return redirect('/mentor/bimbingan');
         }
 
         // Admin Bidang

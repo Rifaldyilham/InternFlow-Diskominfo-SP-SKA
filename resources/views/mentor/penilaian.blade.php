@@ -1,475 +1,607 @@
 @extends('layouts.mentor')
 
 @section('title', 'Input Penilaian Peserta')
+@section('subtitle', 'Upload penilaian untuk peserta yang telah selesai magang')
+
+@section('styles')
+<link rel="stylesheet" href="{{ asset('css/mentor/mentor.css') }}">
+@endsection
 
 @section('content')
-
-<!-- Filter dan Pencarian -->
-<div class="form-card mb-8">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div class="md:col-span-2">
-            <label class="block text-gray-700 mb-2">Cari Peserta</label>
-            <div class="relative">
-                <input type="text" id="searchPeserta" placeholder="Nama peserta, NIM, atau universitas..." 
-                       class="w-full p-3 pl-10 border border-gray-300 rounded-lg">
-                <i class='bx bx-search absolute left-3 top-3 text-gray-400'></i>
+<div class="mentor-dashboard">
+    <!-- Filter Pencarian -->
+    <div class="filter-container-mentor">
+        <div class="filter-grid-mentor">
+            <div class="filter-group-mentor">
+                <label for="searchInput" class="filter-label-mentor">
+                    <i class='bx bx-search'></i> Cari Peserta
+                </label>
+                <input type="text" id="searchInput" placeholder="Nama peserta atau NIM..." 
+                       class="filter-input-mentor">
+            </div>
+            
+            <div class="filter-group-mentor">
+                <label for="statusFilter" class="filter-label-mentor">
+                    <i class='bx bx-filter-alt'></i> Status Penilaian
+                </label>
+                <select id="statusFilter" class="filter-select-mentor">
+                    <option value="all">Semua Status</option>
+                    <option value="sudah">Sudah Dinilai</option>
+                    <option value="belum">Belum Dinilai</option>
+                </select>
+            </div>
+            
+            <div class="filter-group-mentor flex items-end">
+                <button onclick="resetFilters()" class="btn btn-secondary w-full">
+                    <i class='bx bx-reset'></i> Reset Filter
+                </button>
             </div>
         </div>
-        
-        <div>
-            <label class="block text-gray-700 mb-2">Status Penilaian</label>
-            <select id="statusFilter" class="w-full p-3 border border-gray-300 rounded-lg">
-                <option value="all">Semua</option>
-                <option value="sudah">Sudah Dinilai</option>
-                <option value="belum">Belum Dinilai</option>
-            </select>
-        </div>
     </div>
-    
-    <div class="flex gap-3">
-        <button onclick="filterPeserta()" class="btn btn-primary">
-            <i class='bx bx-filter'></i> Terapkan Filter
-        </button>
-        <button onclick="resetFilter()" class="btn" style="background: #f8fafc; color: #666;">
-            <i class='bx bx-reset'></i> Reset
-        </button>
-    </div>
-</div>
 
-<!-- Daftar Peserta -->
-<div class="form-card mb-8">
-    <div class="flex justify-between items-center mb-6">
-        <h3 class="text-xl font-bold text-primary flex items-center gap-2">
-            <i class='bx bx-list-ul'></i> Daftar Peserta Magang
-        </h3>
-        <span class="text-gray-600" id="pesertaCount">12 peserta ditemukan</span>
-    </div>
-    
-    <div class="table-container">
-        <table class="data-table">
+    <!-- Daftar Peserta -->
+    <div class="mentor-table-container">
+        <div class="mentor-table-header">
+            <h3>Daftar Peserta Magang</h3>
+            <span class="mentor-table-count" id="pesertaCount">0 peserta</span>
+        </div>
+        
+        <table class="mentor-table">
             <thead>
                 <tr>
-                    <th>Peserta</th>
+                    <th>Nama Peserta</th>
                     <th>Universitas</th>
-                    <th>Status</th>
+                    <th>Status Magang</th>
+                    <th>Status Penilaian</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
-            <tbody id="pesertaTable">
-                <!-- Data akan di-load oleh JavaScript -->
+            <tbody id="pesertaTableBody">
+                <!-- Data akan diisi oleh JavaScript -->
+                <tr id="loadingRow">
+                    <td colspan="5" class="text-center py-12">
+                        <div class="loading-skeleton-mentor flex flex-col items-center gap-5">
+                            <i class='bx bx-loader-circle bx-spin text-4xl text-primary'></i>
+                            <div class="text-center text-gray-600">
+                                <div class="font-semibold mb-2">Memuat data peserta...</div>
+                                <div class="text-sm">Mohon tunggu sebentar</div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
             </tbody>
         </table>
-    </div>
-
-    <div class="flex items-center justify-between mt-4">
-        <div class="text-sm text-gray-600" id="pageInfo">Menampilkan 1 - 5 dari 6 peserta</div>
-        <div class="flex items-center gap-2">
-            <button id="prevPageBtn" onclick="prevPage()" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition disabled:opacity-50" disabled>
-                <i class='bx bx-chevron-up'></i>
-            </button>
-            <button id="nextPageBtn" onclick="nextPage()" class="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
-                <i class='bx bx-chevron-down'></i>
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Upload File Penilaian -->
-<div id="uploadModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 hidden">
-    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div class="p-6">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold text-primary" id="modalTitle">Upload File Penilaian</h3>
-                <button onclick="closeUploadModal()" class="text-gray-400 hover:text-gray-600">
-                    <i class='bx bx-x text-2xl'></i>
+        
+        <!-- Pagination -->
+        <div class="pagination-mentor">
+            <div class="pagination-info-mentor" id="pageInfo">
+                Menampilkan 0 - 0 dari 0 peserta
+            </div>
+            <div class="pagination-controls-mentor">
+                <button id="prevPage" class="pagination-btn-mentor" disabled>
+                    <i class='bx bx-chevron-left'></i>
+                </button>
+                <button id="nextPage" class="pagination-btn-mentor" disabled>
+                    <i class='bx bx-chevron-right'></i>
                 </button>
             </div>
-            
-            <div id="modalContent">
-                <!-- Form upload akan di-load di sini -->
-            </div>
         </div>
     </div>
 </div>
 
-<!-- Modal Preview File -->
-<div id="previewModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 hidden">
-    <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        <div class="p-6">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold text-primary" id="previewTitle">Preview File Penilaian</h3>
-                <button onclick="closePreviewModal()" class="text-gray-400 hover:text-gray-600">
-                    <i class='bx bx-x text-2xl'></i>
-                </button>
-            </div>
-            
-            <div id="previewContent" class="text-center">
-                <!-- Preview file akan di-load di sini -->
-            </div>
+<!-- Modal Upload Penilaian -->
+<div id="uploadModal" class="modal-mentor">
+    <div class="modal-content-mentor" style="max-width: 600px;">
+        <div class="modal-header-mentor">
+            <h3 class="modal-title-mentor" id="modalTitle">Upload File Penilaian</h3>
+            <button class="modal-close-mentor" onclick="closeUploadModal()">&times;</button>
+        </div>
+        <div class="modal-body-mentor">
+            <form id="uploadForm">
+                @csrf
+                <input type="hidden" id="pesertaId" name="peserta_id">
+                
+                <div id="modalContent">
+                    <!-- Konten akan diisi oleh JavaScript -->
+                </div>
+                
+                <div class="modal-footer-mentor">
+                    <button type="button" class="btn btn-secondary" onclick="closeUploadModal()">Batal</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        <i class='bx bx-upload'></i> Upload File
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
+<!-- Modal Preview Penilaian -->
+<div id="previewModal" class="modal-mentor">
+    <div class="modal-content-mentor" style="max-width: 800px;">
+        <div class="modal-header-mentor">
+            <h3 class="modal-title-mentor" id="previewTitle">Preview File Penilaian</h3>
+            <button class="modal-close-mentor" onclick="closePreviewModal()">&times;</button>
+        </div>
+        <div class="modal-body-mentor">
+            <div id="previewContent">
+                <!-- Preview akan diisi oleh JavaScript -->
+            </div>
+        </div>
+        <div class="modal-footer-mentor">
+            <button type="button" class="btn btn-secondary" onclick="closePreviewModal()">Tutup</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Konfirmasi Hapus -->
+<div id="deleteModal" class="modal-mentor">
+    <div class="modal-content-mentor" style="max-width: 500px;">
+        <div class="modal-header-mentor">
+            <h3 class="modal-title-mentor">Konfirmasi Hapus</h3>
+            <button class="modal-close-mentor" onclick="closeDeleteModal()">&times;</button>
+        </div>
+        <div class="modal-body-mentor">
+            <div class="text-center">
+                <i class='bx bx-error-circle text-5xl text-red-500 mb-4'></i>
+                <p id="deleteMessage">Apakah Anda yakin ingin menghapus file penilaian ini?</p>
+                <p class="text-sm text-gray-600 mt-2">Aksi ini tidak dapat dibatalkan.</p>
+            </div>
+        </div>
+        <div class="modal-footer-mentor">
+            <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Batal</button>
+            <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                <i class='bx bx-trash'></i> Hapus File
+            </button>
+        </div>
+    </div>
+</div>
+@endsection
+
+@section('scripts')
 <script>
-// Data peserta magang
-const pesertaData = [
-    {
-        id: 1,
-        nama: "John Doe",
-        nim: "1234567890",
-        universitas: "Universitas Sebelas Maret",
-        prodi: "Teknik Informatika",
-        status: "selesai",
-        sudahDinilai: true,
-        tanggalSelesai: "2024-03-30",
-        foto: "JD",
-        filePenilaian: {
-            nama: "Penilaian_John_Doe.pdf",
-            ukuran: "2.4 MB",
-            tanggalUpload: "2024-03-28",
-            url: "#"
-        }
-    },
-    {
-        id: 2,
-        nama: "Jane Smith",
-        nim: "0987654321",
-        universitas: "Universitas Gadjah Mada",
-        prodi: "Ilmu Komunikasi",
-        status: "selesai",
-        sudahDinilai: false,
-        tanggalSelesai: "2024-03-30",
-        foto: "JS",
-        filePenilaian: null
-    },
-    {
-        id: 3,
-        nama: "Budi Santoso",
-        nim: "1122334455",
-        universitas: "Universitas Diponegoro",
-        prodi: "Sistem Informasi",
-        status: "selesai",
-        sudahDinilai: true,
-        tanggalSelesai: "2024-03-30",
-        foto: "BS",
-        filePenilaian: {
-            nama: "Nilai_Budi_Santoso.pdf",
-            ukuran: "1.8 MB",
-            tanggalUpload: "2024-03-27",
-            url: "#"
-        }
-    },
-    {
-        id: 4,
-        nama: "Siti Rahma",
-        nim: "5566778899",
-        universitas: "Universitas Indonesia",
-        prodi: "Administrasi Bisnis",
-        status: "selesai",
-        sudahDinilai: true,
-        tanggalSelesai: "2024-03-30",
-        foto: "SR",
-        filePenilaian: {
-            nama: "Penilaian_Siti_Rahma.docx",
-            ukuran: "3.1 MB",
-            tanggalUpload: "2024-03-29",
-            url: "#"
-        }
-    },
-    {
-        id: 5,
-        nama: "Ahmad Rizki",
-        nim: "6677889900",
-        universitas: "Institut Teknologi Bandung",
-        prodi: "Teknik Informatika",
-        status: "selesai",
-        sudahDinilai: false,
-        tanggalSelesai: "2024-03-30",
-        foto: "AR",
-        filePenilaian: null
-    },
-    {
-        id: 6,
-        nama: "Rina Dewi",
-        nim: "3344556677",
-        universitas: "Universitas Airlangga",
-        prodi: "Komunikasi",
-        status: "selesai",
-        sudahDinilai: true,
-        tanggalSelesai: "2024-03-30",
-        foto: "RD",
-        filePenilaian: {
-            nama: "Evaluasi_Rina_Dewi.pdf",
-            ukuran: "2.7 MB",
-            tanggalUpload: "2024-03-26",
-            url: "#"
-        }
+// ============================
+// KONFIGURASI API (Backend-ready)
+// ============================
+const API_CONFIG = {
+    baseUrl: window.location.origin,
+    endpoints: {
+        // Peserta yang sudah selesai magang (siap dinilai)
+        pesertaSelesai: '/api/mentor/penilaian/peserta',
+        // Upload file penilaian
+        uploadPenilaian: '/api/mentor/penilaian/upload',
+        // Get detail file penilaian
+        getPenilaian: '/api/mentor/penilaian',
+        // Delete file penilaian
+        deletePenilaian: '/api/mentor/penilaian',
+        // Download file penilaian
+        downloadPenilaian: '/api/mentor/penilaian/download',
+        // Statistik penilaian
+        statsPenilaian: '/api/mentor/penilaian/stats'
     }
-];
+};
 
-// Pagination configuration
-const itemsPerPage = 5; // tampilkan maksimal 5 baris per halaman
-let currentPage = 1;    // halaman saat ini (1-based)
+// ============================
+// STATE MANAGEMENT
+// ============================
+let state = {
+    pesertaList: [],
+    filteredPeserta: [],
+    currentPage: 1,
+    itemsPerPage: 10,
+    totalItems: 0,
+    totalPages: 1,
+    currentFilters: {
+        search: '',
+        status: 'all'
+    },
+    selectedPeserta: null,
+    selectedFile: null
+};
 
-// Load daftar peserta (dengan pagination)
-function loadPesertaTable() {
-    const container = document.getElementById('pesertaTable');
-    const filteredData = filterPesertaData();
-    const totalItems = filteredData.length;
-    const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+// ============================
+// INISIALISASI
+// ============================
+document.addEventListener('DOMContentLoaded', function() {
+    setupCSRF();
+    loadInitialData();
+    setupEventListeners();
+});
 
-    if (currentPage > totalPages) currentPage = totalPages;
+function setupCSRF() {
+    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    if (token) {
+        window.csrfToken = token;
+    }
+}
 
-    if (totalItems === 0) {
-        container.innerHTML = `
-            <tr>
-                <td colspan="4" class="text-center py-8">
-                    <div class="text-gray-500">
-                        <i class='bx bx-search-alt text-4xl mb-3 block'></i>
-                        <div class="font-medium">Tidak ada peserta ditemukan</div>
-                        <div class="text-sm">Coba dengan filter yang berbeda</div>
-                    </div>
-                </td>
-            </tr>
-        `;
-        document.getElementById('pesertaCount').textContent = `0 peserta ditemukan`;
-        document.getElementById('pageInfo').textContent = `Menampilkan 0 - 0 dari 0 peserta`;
-        document.getElementById('prevPageBtn').disabled = true;
-        document.getElementById('nextPageBtn').disabled = true;
+async function loadInitialData() {
+    try {
+        showLoading(true);
+        
+        // 1. Load statistik
+        await loadStats();
+        
+        // 2. Load daftar peserta
+        await loadPesertaSelesai();
+        
+    } catch (error) {
+        console.error('Error loading initial data:', error);
+        showNotification('Gagal memuat data', 'error');
+    } finally {
+        showLoading(false);
+    }
+}
+
+// ============================
+// FUNGSI API (Backend-ready)
+// ============================
+
+async function loadStats() {
+    try {
+        const response = await fetch(API_CONFIG.endpoints.statsPenilaian, {
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': 'Bearer ' + localStorage.getItem('token')
+            }
+        });
+        
+        if (!response.ok) throw new Error('Gagal mengambil statistik');
+        
+        const data = await response.json();
+        state.stats = data.data || data;
+        
+        // Update UI stats
+        updateStatsUI();
+        
+    } catch (error) {
+        console.error('Error loading stats:', error);
+    }
+}
+
+async function loadPesertaSelesai() {
+    try {
+        const response = await fetch(
+            `${API_CONFIG.endpoints.pesertaSelesai}?page=${state.currentPage}&per_page=${state.itemsPerPage}`,
+            {
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                }
+            }
+        );
+        
+        if (!response.ok) throw new Error('Gagal mengambil data peserta');
+        
+        const data = await response.json();
+        
+        // **STRUKTUR RESPONSE BACKEND YANG DIHARAPKAN:**
+        // {
+        //     "data": [
+        //         {
+        //             "id": 1,
+        //             "nama": "John Doe",
+        //             "nim": "123456789",
+        //             "universitas": "Universitas Indonesia",
+        //             "program_studi": "Teknik Informatika",
+        //             "tanggal_mulai": "2024-01-15",
+        //             "tanggal_selesai": "2024-06-15",
+        //             "status_magang": "selesai",
+        //             "status_penilaian": "sudah", // atau "belum"
+        //             "file_penilaian": {
+        //                 "nama": "penilaian_john_doe.pdf",
+        //                 "ukuran": "2.4 MB",
+        //                 "tanggal_upload": "2024-06-16",
+        //                 "url": "/storage/penilaian/1.pdf"
+        //             }
+        //         }
+        //     ],
+        //     "meta": {
+        //         "total": 20,
+        //         "per_page": 10,
+        //         "current_page": 1,
+        //         "last_page": 2
+        //     }
+        // }
+        
+        state.pesertaList = data.data || [];
+        state.totalItems = data.meta?.total || data.total || state.pesertaList.length;
+        state.totalPages = data.meta?.last_page || Math.ceil(state.totalItems / state.itemsPerPage);
+        
+        filterPeserta();
+        updatePagination();
+        
+    } catch (error) {
+        console.error('Error loading peserta:', error);
+        renderEmptyTable('Terjadi kesalahan saat memuat data');
+    }
+}
+
+// ============================
+// UI FUNCTIONS
+// ============================
+
+
+function filterPeserta() {
+    const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+    const statusFilter = document.getElementById('statusFilter').value;
+    
+    state.currentFilters.search = searchQuery;
+    state.currentFilters.status = statusFilter;
+    
+    state.filteredPeserta = state.pesertaList.filter(peserta => {
+        // Filter berdasarkan pencarian
+        if (searchQuery) {
+            const searchText = `${peserta.nama} ${peserta.nim} ${peserta.universitas}`.toLowerCase();
+            if (!searchText.includes(searchQuery)) {
+                return false;
+            }
+        }
+        
+        // Filter berdasarkan status penilaian
+        if (statusFilter !== 'all') {
+            const statusPenilaian = peserta.status_penilaian || 
+                                  (peserta.file_penilaian ? 'sudah' : 'belum');
+            if (statusFilter !== statusPenilaian) {
+                return false;
+            }
+        }
+        
+        return true;
+    });
+    
+    renderPesertaTable();
+    updatePesertaCount();
+}
+
+function renderPesertaTable() {
+    const tbody = document.getElementById('pesertaTableBody');
+    
+    if (state.filteredPeserta.length === 0) {
+        renderEmptyTable(
+            state.currentFilters.search || state.currentFilters.status !== 'all'
+                ? 'Tidak ada peserta yang sesuai dengan filter' 
+                : 'Belum ada peserta yang selesai magang'
+        );
         return;
     }
-
-    const start = (currentPage - 1) * itemsPerPage;
-    const end = start + itemsPerPage;
-    const pageData = filteredData.slice(start, end);
-
-    container.innerHTML = pageData.map(peserta => {
-        let statusColor = 'bg-gray-100 text-gray-800';
-        let statusText = 'Belum Selesai';
-
-        if (peserta.status === 'selesai') {
-            statusColor = peserta.sudahDinilai ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
-            statusText = peserta.sudahDinilai ? 'Sudah Dinilai' : 'Belum Dinilai';
-        } else if (peserta.status === 'berjalan') {
-            statusColor = 'bg-blue-100 text-blue-800';
-            statusText = 'Sedang Berjalan';
-        }
-
+    
+    const start = (state.currentPage - 1) * state.itemsPerPage;
+    const end = start + state.itemsPerPage;
+    const pageData = state.filteredPeserta.slice(start, end);
+    
+    tbody.innerHTML = pageData.map(peserta => {
+        const hasFile = peserta.file_penilaian || peserta.filePenilaian;
+        const statusPenilaian = peserta.status_penilaian || 
+                               (hasFile ? 'sudah' : 'belum');
+        const fileData = peserta.file_penilaian || peserta.filePenilaian;
+        
         return `
             <tr>
                 <td>
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-accent rounded-full flex items-center justify-center text-primary font-bold">
-                            ${peserta.foto}
+                        <div class="peserta-avatar-mentor">
+                            ${getInitials(peserta.nama)}
                         </div>
                         <div>
-                            <div class="font-bold text-primary">${peserta.nama}</div>
-                            <div class="text-sm text-gray-600">${peserta.nim}</div>
-                            <div class="text-xs text-gray-500">${peserta.prodi}</div>
+                            <div class="peserta-name-mentor">${peserta.nama}</div>
+                            <div class="text-sm text-gray-500">${peserta.nim || 'N/A'}</div>
+                            <div class="text-xs text-gray-500">${peserta.program_studi || peserta.prodi || ''}</div>
                         </div>
                     </div>
                 </td>
                 <td>
-                    <div class="font-medium">${peserta.universitas}</div>
+                    <div class="font-medium">${peserta.universitas || '-'}</div>
                 </td>
                 <td>
-                    <span class="px-3 py-1 rounded-full text-xs font-medium ${statusColor}">
-                        ${statusText}
+                    <span class="status-badge-mentor ${peserta.status_magang === 'selesai' ? 'status-selesai' : 'status-menunggu'}">
+                        ${peserta.status_magang === 'selesai' ? 'Selesai' : 'Berlangsung'}
                     </span>
                 </td>
                 <td>
-                    <div class="flex gap-2">
-                        ${peserta.filePenilaian ? `
-                            <button onclick="previewFile(${peserta.id})" 
-                                    class="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition text-sm"
+                    <span class="status-badge-mentor ${statusPenilaian === 'sudah' ? 'status-aktif' : 'status-menunggu'}">
+                        ${statusPenilaian === 'sudah' ? 'Sudah Dinilai' : 'Belum Dinilai'}
+                    </span>
+                </td>
+                <td>
+                    <div class="mentor-action-buttons">
+                        ${hasFile ? `
+                            <button class="mentor-action-btn view" 
+                                    onclick="previewPenilaian('${peserta.id}', '${peserta.nama}')"
                                     title="Preview File">
                                 <i class='bx bx-show'></i>
                             </button>
-                        ` : ''}
-                        <button onclick="${peserta.filePenilaian ? `editFile(${peserta.id})` : `uploadFile(${peserta.id})`}" 
-                                class="px-3 py-1 ${peserta.filePenilaian ? 'bg-yellow-100 text-yellow-700' : 'bg-primary text-white'} rounded-lg hover:opacity-90 transition text-sm"
-                                title="${peserta.filePenilaian ? 'Edit File' : 'Upload File'}">
-                            <i class='bx ${peserta.filePenilaian ? 'bx-edit' : 'bx-upload'} mr-1'></i>
-                            ${peserta.filePenilaian ? 'Edit' : 'Upload'}
-                        </button>
-                        ${peserta.filePenilaian ? `
-                            <button onclick="deleteFile(${peserta.id})" 
-                                    class="px-3 py-1 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition text-sm"
+                            <button class="mentor-action-btn warning"
+                                    onclick="editPenilaian('${peserta.id}', '${peserta.nama}')"
+                                    title="Edit File">
+                                <i class='bx bx-edit'></i>
+                            </button>
+                            <button class="mentor-action-btn delete"
+                                    onclick="confirmDeletePenilaian('${peserta.id}', '${peserta.nama}')"
                                     title="Hapus File">
                                 <i class='bx bx-trash'></i>
                             </button>
-                        ` : ''}
+                        ` : `
+                            <button class="mentor-action-btn primary"
+                                    onclick="uploadPenilaian('${peserta.id}', '${peserta.nama}')"
+                                    title="Upload File Penilaian">
+                                <i class='bx bx-upload'></i>
+                            </button>
+                        `}
                     </div>
                 </td>
             </tr>
         `;
     }).join('');
-
-    // Update count and pagination display
-    document.getElementById('pesertaCount').textContent = `${totalItems} peserta ditemukan`;
-    document.getElementById('pageInfo').textContent = `Menampilkan ${start + 1} - ${Math.min(end, totalItems)} dari ${totalItems} peserta`;
-    document.getElementById('prevPageBtn').disabled = currentPage === 1;
-    document.getElementById('nextPageBtn').disabled = currentPage === totalPages;
 }
 
-// Filter data peserta
-function filterPesertaData() {
-    const searchTerm = document.getElementById('searchPeserta').value.toLowerCase();
-    const statusFilter = document.getElementById('statusFilter').value;
+function renderEmptyTable(message) {
+    const tbody = document.getElementById('pesertaTableBody');
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="5">
+                <div class="empty-state-mentor">
+                    <i class='bx bx-file-blank'></i>
+                    <h4>${message}</h4>
+                    ${state.currentFilters.search || state.currentFilters.status !== 'all' ? `
+                        <p>Silakan coba dengan filter yang berbeda</p>
+                        <button onclick="resetFilters()" class="btn btn-primary mt-4">
+                            Reset Filter
+                        </button>
+                    ` : `
+                        <p>Belum ada peserta yang menyelesaikan magang</p>
+                    `}
+                </div>
+            </td>
+        </tr>
+    `;
+}
+
+// ============================
+// UPLOAD FUNCTIONS
+// ============================
+
+function uploadPenilaian(pesertaId, pesertaNama) {
+    state.selectedPeserta = state.pesertaList.find(p => p.id == pesertaId);
+    if (!state.selectedPeserta) return;
     
-    return pesertaData.filter(peserta => {
-        // Search filter
-        const searchMatch = !searchTerm || 
-            peserta.nama.toLowerCase().includes(searchTerm) ||
-            peserta.nim.includes(searchTerm) ||
-            peserta.universitas.toLowerCase().includes(searchTerm) ||
-            peserta.prodi.toLowerCase().includes(searchTerm);
-        
-        // Status filter (berdasarkan status penilaian)
-        let statusMatch = true;
-        if (statusFilter === 'sudah') {
-            statusMatch = peserta.sudahDinilai;
-        } else if (statusFilter === 'belum') {
-            statusMatch = !peserta.sudahDinilai;
-        }
-        
-        return searchMatch && statusMatch;
-    });
-}
-
-// Fungsi untuk terapkan filter
-function filterPeserta() {
-    currentPage = 1;
-    loadPesertaTable();
-    updateStats();
-}
-
-// Reset filter
-function resetFilter() {
-    document.getElementById('searchPeserta').value = '';
-    document.getElementById('statusFilter').value = 'all';
-    currentPage = 1;
-    loadPesertaTable();
-    updateStats();
-}
-
-// Upload file penilaian
-function uploadFile(pesertaId) {
-    const peserta = pesertaData.find(p => p.id === pesertaId);
-    if (!peserta) return;
+    document.getElementById('modalTitle').textContent = `Upload File Penilaian - ${pesertaNama}`;
+    document.getElementById('pesertaId').value = pesertaId;
+    document.getElementById('submitBtn').innerHTML = '<i class="bx bx-upload"></i> Upload File';
     
-    document.getElementById('modalTitle').textContent = `Upload File Penilaian - ${peserta.nama}`;
-    
-    const formContent = `
+    const modalContent = `
         <div class="space-y-6">
-            <!-- Peserta Info -->
-            <div class="bg-gray-50 p-4 rounded-xl mb-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-blue-50 p-4 rounded-lg">
+                <div class="flex items-center gap-3">
+                    <i class='bx bx-info-circle text-blue-600 text-xl'></i>
                     <div>
-                        <div class="text-sm text-gray-600 mb-1">Nama Peserta</div>
-                        <div class="font-bold text-primary">${peserta.nama}</div>
-                    </div>
-                    <div>
-                        <div class="text-sm text-gray-600 mb-1">NIM</div>
-                        <div class="font-medium">${peserta.nim}</div>
-                    </div>
-                    <div>
-                        <div class="text-sm text-gray-600 mb-1">Universitas</div>
-                        <div class="font-medium">${peserta.universitas}</div>
-                    </div>
-                    <div>
-                        <div class="text-sm text-gray-600 mb-1">Periode Magang</div>
-                        <div class="font-medium">${peserta.periode}</div>
+                        <h4 class="font-bold text-blue-800">Informasi Peserta</h4>
+                        <p class="text-sm text-blue-700">Pastikan file penilaian sesuai dengan peserta yang dipilih</p>
                     </div>
                 </div>
             </div>
             
-            <!-- Form Upload -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="form-label-mentor">Nama Peserta</label>
+                    <div class="p-3 bg-gray-50 rounded-lg font-medium">${pesertaNama}</div>
+                </div>
+                <div>
+                    <label class="form-label-mentor">NIM</label>
+                    <div class="p-3 bg-gray-50 rounded-lg font-medium">${state.selectedPeserta.nim || '-'}</div>
+                </div>
+                <div>
+                    <label class="form-label-mentor">Universitas</label>
+                    <div class="p-3 bg-gray-50 rounded-lg font-medium">${state.selectedPeserta.universitas || '-'}</div>
+                </div>
+                <div>
+                    <label class="form-label-mentor">Program Studi</label>
+                    <div class="p-3 bg-gray-50 rounded-lg font-medium">${state.selectedPeserta.program_studi || state.selectedPeserta.prodi || '-'}</div>
+                </div>
+            </div>
+            
             <div>
-                <h4 class="font-bold text-primary mb-4">Upload File Penilaian</h4>
-                <div class="space-y-4"> 
-                    <div>
-                        <label class="block text-gray-700 mb-2">File Penilaian *</label>
-                        <div id="dropZone" class="border-2 border-dashed border-accent rounded-xl p-8 text-center cursor-pointer hover:bg-gray-50 transition"
-                             ondragover="event.preventDefault(); this.classList.add('border-primary', 'bg-blue-50');"
-                             ondragleave="this.classList.remove('border-primary', 'bg-blue-50');"
-                             ondrop="handleDrop(event)">
-                            <i class='bx bx-cloud-upload text-5xl text-accent mb-4'></i>
-                            <div class="font-bold text-primary mb-2">Seret dan lepas file di sini</div>
-                            <div class="text-gray-600 mb-4">atau</div>
-                            <button type="button" onclick="document.getElementById('fileInput').click()" 
-                                    class="px-6 py-3 bg-primary text-white rounded-lg font-medium hover:bg-blue-800 transition">
-                                <i class='bx bx-folder-open mr-2'></i> Pilih File
-                            </button>
-                            <div class="text-sm text-gray-500 mt-4">
-                                Format yang didukung: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG<br>
-                                Ukuran maksimal: 10MB
-                            </div>
-                        </div>
-                        <input type="file" id="fileInput" class="hidden" onchange="handleFileSelect(this)">
-                        <div id="filePreview" class="mt-4 hidden">
-                            <!-- Preview file akan muncul di sini -->
-                        </div>
-                    </div>
-                    
+                <label class="form-label-mentor">File Penilaian *</label>
+                <div id="dropZone" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer transition-all hover:border-primary hover:bg-blue-50"
+                     ondragover="handleDragOver(event)"
+                     ondragleave="handleDragLeave(event)"
+                     ondrop="handleDrop(event)">
+                    <i class='bx bx-cloud-upload text-4xl text-gray-400 mb-4'></i>
+                    <div class="font-medium text-gray-700 mb-2">Seret file ke sini atau klik untuk memilih</div>
+                    <div class="text-sm text-gray-500 mb-4">Format: PDF, DOC, DOCX (Maks: 10MB)</div>
+                    <button type="button" onclick="document.getElementById('fileInput').click()" 
+                            class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-800 transition">
+                        <i class='bx bx-folder-open mr-2'></i> Pilih File
+                    </button>
+                </div>
+                <input type="file" id="fileInput" class="hidden" accept=".pdf,.doc,.docx" 
+                       onchange="handleFileSelect(event)">
+                <div id="filePreview" class="mt-4">
+                    <!-- File preview akan muncul di sini -->
                 </div>
             </div>
-            
-            <!-- Tombol Aksi -->
-            <div class="flex gap-3 pt-4 border-t">
-                <button onclick="processUpload(${peserta.id})" 
-                        class="flex-1 bg-primary text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition text-lg">
-                    <i class='bx bx-upload'></i> UPLOAD FILE
-                </button>
-                <button onclick="closeUploadModal()" 
-                        class="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition">
-                    Batal
-                </button>
-            </div>
-            
-            <input type="hidden" id="currentPesertaId" value="${peserta.id}">
         </div>
     `;
     
-    document.getElementById('modalContent').innerHTML = formContent;
-    document.getElementById('uploadModal').classList.remove('hidden');
+    document.getElementById('modalContent').innerHTML = modalContent;
+    openModal('uploadModal');
+    
+    // Reset file preview
+    document.getElementById('filePreview').innerHTML = '';
+    state.selectedFile = null;
 }
 
-// Edit file penilaian
-function editFile(pesertaId) {
-    const peserta = pesertaData.find(p => p.id === pesertaId);
-    if (!peserta || !peserta.filePenilaian) return;
+function editPenilaian(pesertaId, pesertaNama) {
+    uploadPenilaian(pesertaId, pesertaNama);
+    document.getElementById('modalTitle').textContent = `Edit File Penilaian - ${pesertaNama}`;
+    document.getElementById('submitBtn').innerHTML = '<i class="bx bx-save"></i> Update File';
     
-    uploadFile(pesertaId);
-    document.getElementById('modalTitle').textContent = `Edit File Penilaian - ${peserta.nama}`;
-    document.querySelector('button[onclick^="processUpload"]').innerHTML = '<i class="bx bx-save"></i> UPDATE FILE';
-}
-
-// Handle file select
-function handleFileSelect(input) {
-    const file = input.files[0];
-    if (!file) return;
-    
-    handleFile(file);
-}
-
-// Handle drop
-function handleDrop(event) {
-    event.preventDefault();
-    const dropZone = document.getElementById('dropZone');
-    dropZone.classList.remove('border-primary', 'bg-blue-50');
-    
-    const file = event.dataTransfer.files[0];
-    if (file) {
-        handleFile(file);
+    // Jika ada file sebelumnya, tampilkan info
+    const peserta = state.pesertaList.find(p => p.id == pesertaId);
+    if (peserta && peserta.file_penilaian) {
+        const filePreview = document.getElementById('filePreview');
+        const fileIcon = getFileIcon(peserta.file_penilaian.nama);
+        
+        filePreview.innerHTML = `
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                            <i class='bx ${fileIcon} text-xl text-yellow-600'></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-800">File Saat Ini:</div>
+                            <div class="text-sm text-gray-600">${peserta.file_penilaian.nama}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-2 text-xs text-gray-500">
+                    Upload: ${formatDate(peserta.file_penilaian.tanggal_upload)} | 
+                    Ukuran: ${peserta.file_penilaian.ukuran}
+                </div>
+            </div>
+        `;
     }
 }
 
-// Handle file
-function handleFile(file) {
-    // Validasi ukuran file
-    if (file.size > 10 * 1024 * 1024) { // 10MB
-        showNotification('Error', 'Ukuran file terlalu besar. Maksimal 10MB.', 'error');
+// ============================
+// FILE HANDLING FUNCTIONS
+// ============================
+
+function handleDragOver(e) {
+    e.preventDefault();
+    const dropZone = document.getElementById('dropZone');
+    dropZone.classList.add('border-primary', 'bg-blue-50');
+}
+
+function handleDragLeave(e) {
+    e.preventDefault();
+    const dropZone = document.getElementById('dropZone');
+    dropZone.classList.remove('border-primary', 'bg-blue-50');
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    const dropZone = document.getElementById('dropZone');
+    dropZone.classList.remove('border-primary', 'bg-blue-50');
+    
+    const file = e.dataTransfer.files[0];
+    if (file) {
+        validateAndPreviewFile(file);
+    }
+}
+
+function handleFileSelect(e) {
+    const file = e.target.files[0];
+    if (file) {
+        validateAndPreviewFile(file);
+    }
+}
+
+function validateAndPreviewFile(file) {
+    // Validasi ukuran (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+        showNotification('Ukuran file terlalu besar. Maksimal 10MB.', 'error');
         return;
     }
     
@@ -477,25 +609,23 @@ function handleFile(file) {
     const allowedTypes = [
         'application/pdf',
         'application/msword',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'application/vnd.ms-excel',
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'image/jpeg',
-        'image/png'
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     ];
     
     if (!allowedTypes.includes(file.type)) {
-        showNotification('Error', 'Format file tidak didukung.', 'error');
+        showNotification('Format file tidak didukung. Hanya PDF dan DOC/DOCX.', 'error');
         return;
     }
     
-    // Tampilkan preview
-    const previewDiv = document.getElementById('filePreview');
-    const fileSize = (file.size / 1024 / 1024).toFixed(2);
-    const fileIcon = getFileIcon(file.type);
+    state.selectedFile = file;
     
-    previewDiv.innerHTML = `
-        <div class="bg-green-50 border border-green-200 rounded-xl p-4">
+    // Tampilkan preview
+    const filePreview = document.getElementById('filePreview');
+    const fileSize = (file.size / 1024 / 1024).toFixed(2);
+    const fileIcon = getFileIcon(file.name);
+    
+    filePreview.innerHTML = `
+        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -506,356 +636,415 @@ function handleFile(file) {
                         <div class="text-sm text-gray-600">${fileSize} MB • ${file.type}</div>
                     </div>
                 </div>
-                <button onclick="removeFile()" class="text-red-500 hover:text-red-700">
+                <button onclick="removeSelectedFile()" class="text-red-500 hover:text-red-700">
                     <i class='bx bx-trash text-xl'></i>
                 </button>
             </div>
-            <div class="mt-3">
-                <div class="text-sm font-medium text-gray-700 mb-1">Progress Upload:</div>
-                <div class="w-full bg-gray-200 rounded-full h-2">
-                    <div id="uploadProgress" class="bg-green-500 h-2 rounded-full" style="width: 0%"></div>
-                </div>
-            </div>
         </div>
     `;
-    
-    previewDiv.classList.remove('hidden');
 }
 
-// Get file icon based on type
-function getFileIcon(fileType) {
-    if (fileType.includes('pdf')) return 'bx-file-pdf';
-    if (fileType.includes('word') || fileType.includes('document')) return 'bx-file-doc';
-    if (fileType.includes('excel') || fileType.includes('sheet')) return 'bx-file-xls';
-    if (fileType.includes('image')) return 'bx-image';
-    return 'bx-file';
-}
-
-// Remove selected file
-function removeFile() {
+function removeSelectedFile() {
+    state.selectedFile = null;
     document.getElementById('fileInput').value = '';
-    document.getElementById('filePreview').classList.add('hidden');
     document.getElementById('filePreview').innerHTML = '';
 }
 
-// Process upload
-function processUpload(pesertaId) {
-    const peserta = pesertaData.find(p => p.id === pesertaId);
-    if (!peserta) return;
+// ============================
+// FORM SUBMISSION
+// ============================
+
+document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
     
-    const fileInput = document.getElementById('fileInput');
-    if (!fileInput.files[0]) {
-        showNotification('Peringatan', 'Pilih file terlebih dahulu.', 'warning');
+    if (!state.selectedFile) {
+        showNotification('Pilih file terlebih dahulu', 'error');
         return;
     }
     
-    const file = fileInput.files[0];
-    
-    // Simulate upload progress
-    const progressBar = document.getElementById('uploadProgress');
-    let progress = 0;
-    const interval = setInterval(() => {
-        progress += 10;
-        progressBar.style.width = `${progress}%`;
+    try {
+        showSubmitLoading(true);
         
-        if (progress >= 100) {
-            clearInterval(interval);
-            
-            // Update peserta data
-            peserta.filePenilaian = {
-                nama: file.name,
-                ukuran: (file.size / 1024 / 1024).toFixed(1) + ' MB',
-                tanggalUpload: new Date().toISOString().split('T')[0],
-                url: URL.createObjectURL(file)
-            };
-            peserta.sudahDinilai = true;
-            
-            // Close modal and update UI
-            setTimeout(() => {
-                closeUploadModal();
-                loadPesertaTable();
-                updateStats();
-                showNotification('Berhasil!', `File penilaian untuk ${peserta.nama} telah diupload.`, 'success');
-            }, 500);
+        const formData = new FormData();
+        formData.append('peserta_id', document.getElementById('pesertaId').value);
+        formData.append('file', state.selectedFile);
+        formData.append('_token', window.csrfToken);
+        
+        const response = await fetch(API_CONFIG.endpoints.uploadPenilaian, {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + localStorage.getItem('token')
+            },
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.message || 'Gagal mengupload file');
         }
-    }, 100);
+        
+        showNotification('File penilaian berhasil diupload', 'success');
+        closeUploadModal();
+        loadPesertaSelesai();
+        loadStats();
+        
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification(error.message || 'Gagal mengupload file', 'error');
+    } finally {
+        showSubmitLoading(false);
+    }
+});
+
+// ============================
+// PREVIEW & DELETE FUNCTIONS
+// ============================
+
+async function previewPenilaian(pesertaId, pesertaNama) {
+    try {
+        showLoading('preview', true);
+        
+        const response = await fetch(`${API_CONFIG.endpoints.getPenilaian}/${pesertaId}`, {
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': 'Bearer ' + localStorage.getItem('token')
+            }
+        });
+        
+        if (!response.ok) throw new Error('Gagal mengambil data penilaian');
+        
+        const data = await response.json();
+        const penilaian = data.data || data;
+        
+        renderPreviewModal(penilaian, pesertaNama);
+        openModal('previewModal');
+        
+    } catch (error) {
+        console.error('Error loading penilaian:', error);
+        showNotification('Gagal memuat file penilaian', 'error');
+    } finally {
+        showLoading('preview', false);
+    }
 }
 
-// Preview file
-function previewFile(pesertaId) {
-    const peserta = pesertaData.find(p => p.id === pesertaId);
-    if (!peserta || !peserta.filePenilaian) return;
-    
-    document.getElementById('previewTitle').textContent = `Preview - ${peserta.filePenilaian.nama}`;
+function renderPreviewModal(penilaian, pesertaNama) {
+    document.getElementById('previewTitle').textContent = `Penilaian - ${pesertaNama}`;
     
     const previewContent = `
         <div class="space-y-6">
-            <div class="bg-gray-50 p-4 rounded-xl">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <i class='bx ${getFileIconByExt(peserta.filePenilaian.nama)} text-3xl text-blue-600'></i>
-                        </div>
-                        <div>
-                            <div class="font-bold text-primary text-lg">${peserta.filePenilaian.nama}</div>
-                            <div class="text-sm text-gray-600">
-                                ${peserta.filePenilaian.ukuran} • Upload: ${peserta.filePenilaian.tanggalUpload}
-                            </div>
-                        </div>
+            <div class="bg-blue-50 p-4 rounded-lg">
+                <div class="flex items-center gap-3">
+                    <div class="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class='bx ${getFileIcon(penilaian.nama_file || penilaian.nama)} text-3xl text-blue-600'></i>
                     </div>
-                    <div class="flex gap-2">
-                        <button onclick="downloadFile(${peserta.id})" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-800 transition">
-                            <i class='bx bx-download mr-2'></i> Download
-                        </button>
+                    <div>
+                        <h4 class="font-bold text-primary text-lg">${penilaian.nama_file || penilaian.nama}</h4>
+                        <div class="text-sm text-gray-600">
+                            Ukuran: ${penilaian.ukuran_file || penilaian.ukuran} • 
+                            Upload: ${formatDate(penilaian.tanggal_upload || penilaian.created_at)}
+                        </div>
                     </div>
                 </div>
             </div>
             
-            <div class="border rounded-xl p-4">
-                <div class="text-center">
-                    <div class="text-gray-500 mb-4">
-                        <i class='bx bx-file text-6xl mb-4"></i>
-                        <div class="font-medium">File tidak dapat dipreview secara langsung</div>
-                        <div class="text-sm">Silakan download file untuk melihat isinya</div>
+            <div class="border rounded-lg p-4">
+                <div class="text-center py-8">
+                    <i class='bx bx-file text-6xl text-gray-400 mb-4'></i>
+                    <div class="font-medium text-gray-700 mb-2">File tidak dapat dipreview di browser</div>
+                    <div class="text-sm text-gray-500 mb-6">
+                        Silakan download file untuk melihat isi penilaian
                     </div>
-                    <div class="text-sm text-gray-600">
-                        File: ${peserta.filePenilaian.nama}<br>
-                        Ukuran: ${peserta.filePenilaian.ukuran}<br>
-                        Diupload: ${peserta.filePenilaian.tanggalUpload}
-                    </div>
+                    <button onclick="downloadPenilaian('${penilaian.id || penilaian.peserta_id}')" 
+                            class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-800 transition font-medium">
+                        <i class='bx bx-download mr-2'></i> Download File
+                    </button>
                 </div>
             </div>
             
-            <div class="flex gap-3 pt-4 border-t">
-                <button onclick="downloadFile(${peserta.id})" class="flex-1 bg-primary text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition">
-                    <i class='bx bx-download'></i> DOWNLOAD FILE
-                </button>
-                <button onclick="closePreviewModal()" class="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition">
-                    Tutup
-                </button>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-sm text-gray-500">Tanggal Upload</label>
+                    <div class="font-medium">${formatDate(penilaian.tanggal_upload || penilaian.created_at)}</div>
+                </div>
+                <div>
+                    <label class="text-sm text-gray-500">Ukuran File</label>
+                    <div class="font-medium">${penilaian.ukuran_file || penilaian.ukuran}</div>
+                </div>
             </div>
         </div>
     `;
     
     document.getElementById('previewContent').innerHTML = previewContent;
-    document.getElementById('previewModal').classList.remove('hidden');
 }
 
-// Get file icon by extension
-function getFileIconByExt(filename) {
+function confirmDeletePenilaian(pesertaId, pesertaNama) {
+    state.selectedPeserta = state.pesertaList.find(p => p.id == pesertaId);
+    if (!state.selectedPeserta) return;
+    
+    document.getElementById('deleteMessage').textContent = 
+        `Apakah Anda yakin ingin menghapus file penilaian ${pesertaNama}?`;
+    
+    // Setup delete button
+    const deleteBtn = document.getElementById('confirmDeleteBtn');
+    deleteBtn.onclick = () => deletePenilaian(pesertaId);
+    
+    openModal('deleteModal');
+}
+
+async function deletePenilaian(pesertaId) {
+    try {
+        showLoading('delete', true);
+        
+        const response = await fetch(`${API_CONFIG.endpoints.deletePenilaian}/${pesertaId}`, {
+            method: 'DELETE',
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                'X-CSRF-TOKEN': window.csrfToken
+            }
+        });
+        
+        if (!response.ok) throw new Error('Gagal menghapus file penilaian');
+        
+        showNotification('File penilaian berhasil dihapus', 'success');
+        closeDeleteModal();
+        loadPesertaSelesai();
+        loadStats();
+        
+    } catch (error) {
+        console.error('Error deleting penilaian:', error);
+        showNotification('Gagal menghapus file penilaian', 'error');
+    } finally {
+        showLoading('delete', false);
+    }
+}
+
+async function downloadPenilaian(penilaianId) {
+    try {
+        // Redirect ke endpoint download
+        window.open(`${API_CONFIG.endpoints.downloadPenilaian}/${penilaianId}`, '_blank');
+        
+    } catch (error) {
+        console.error('Error downloading penilaian:', error);
+        showNotification('Gagal mendownload file', 'error');
+    }
+}
+
+// ============================
+// UTILITY FUNCTIONS
+// ============================
+
+function getInitials(name) {
+    if (!name) return '--';
+    return name
+        .split(' ')
+        .map(n => n.charAt(0).toUpperCase())
+        .join('')
+        .substring(0, 2);
+}
+
+function formatDate(dateString) {
+    if (!dateString) return '-';
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('id-ID', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        });
+    } catch (e) {
+        return dateString;
+    }
+}
+
+function getFileIcon(filename) {
+    if (!filename) return 'bx-file';
     const ext = filename.split('.').pop().toLowerCase();
     if (ext === 'pdf') return 'bx-file-pdf';
     if (['doc', 'docx'].includes(ext)) return 'bx-file-doc';
-    if (['xls', 'xlsx'].includes(ext)) return 'bx-file-xls';
-    if (['jpg', 'jpeg', 'png', 'gif'].includes(ext)) return 'bx-image';
     return 'bx-file';
 }
 
-// Download file
-function downloadFile(pesertaId) {
-    const peserta = pesertaData.find(p => p.id === pesertaId);
-    if (!peserta || !peserta.filePenilaian) return;
+function setupEventListeners() {
+    document.getElementById('searchInput').addEventListener('input', 
+        debounce(filterPeserta, 300)
+    );
     
-    // Create temporary download link
-    const link = document.createElement('a');
-    link.href = peserta.filePenilaian.url;
-    link.download = peserta.filePenilaian.nama;
-    link.click();
+    document.getElementById('statusFilter').addEventListener('change', filterPeserta);
     
-    showNotification('Info', `Download ${peserta.filePenilaian.nama} dimulai.`, 'info');
+    document.getElementById('prevPage').addEventListener('click', prevPage);
+    document.getElementById('nextPage').addEventListener('click', nextPage);
 }
 
-// Delete file
-function deleteFile(pesertaId) {
-    const peserta = pesertaData.find(p => p.id === pesertaId);
-    if (!peserta || !peserta.filePenilaian) return;
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+function resetFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('statusFilter').value = 'all';
+    state.currentFilters.search = '';
+    state.currentFilters.status = 'all';
+    filterPeserta();
+}
+
+function updatePesertaCount() {
+    document.getElementById('pesertaCount').textContent = 
+        `${state.filteredPeserta.length} peserta`;
+}
+
+function updatePagination() {
+    const totalPages = Math.ceil(state.filteredPeserta.length / state.itemsPerPage);
+    const start = ((state.currentPage - 1) * state.itemsPerPage) + 1;
+    const end = Math.min(state.currentPage * state.itemsPerPage, state.filteredPeserta.length);
     
-    if (confirm(`Apakah Anda yakin ingin menghapus file penilaian ${peserta.nama}?`)) {
-        peserta.filePenilaian = null;
-        peserta.sudahDinilai = false;
-        loadPesertaTable();
-        updateStats();
-        showNotification('Berhasil', `File penilaian untuk ${peserta.nama} telah dihapus.`, 'success');
+    document.getElementById('pageInfo').textContent = 
+        `Menampilkan ${start} - ${end} dari ${state.filteredPeserta.length} peserta`;
+    
+    document.getElementById('prevPage').disabled = state.currentPage === 1;
+    document.getElementById('nextPage').disabled = state.currentPage === totalPages || totalPages === 0;
+}
+
+function prevPage() {
+    if (state.currentPage > 1) {
+        state.currentPage--;
+        renderPesertaTable();
+        updatePagination();
     }
 }
 
-// Close upload modal
+function nextPage() {
+    const totalPages = Math.ceil(state.filteredPeserta.length / state.itemsPerPage);
+    if (state.currentPage < totalPages) {
+        state.currentPage++;
+        renderPesertaTable();
+        updatePagination();
+    }
+}
+
+// ============================
+// MODAL FUNCTIONS
+// ============================
+
+function openModal(modalId) {
+    document.getElementById(modalId).style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
 function closeUploadModal() {
-    document.getElementById('uploadModal').classList.add('hidden');
-    removeFile(); // Reset file input
+    document.getElementById('uploadModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+    state.selectedFile = null;
+    state.selectedPeserta = null;
 }
 
-// Close preview modal
 function closePreviewModal() {
-    document.getElementById('previewModal').classList.add('hidden');
+    document.getElementById('previewModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
 }
 
-// Update stats
-function updateStats() {
-    const totalPeserta = pesertaData.length;
-    const pending = pesertaData.filter(p => p.status === 'selesai' && !p.sudahDinilai).length;
-    const completed = pesertaData.filter(p => p.sudahDinilai).length;
-    const totalFiles = pesertaData.filter(p => p.filePenilaian).length;
-    
-    // Update UI elements if they exist
-    const pendingCountEl = document.getElementById('pendingCount');
-    const completedCountEl = document.getElementById('completedCount');
-    const totalFilesEl = document.getElementById('totalFiles');
-    
-    if (pendingCountEl) pendingCountEl.textContent = pending;
-    if (completedCountEl) completedCountEl.textContent = completed;
-    if (totalFilesEl) totalFilesEl.textContent = totalFiles;
+function closeDeleteModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+    state.selectedPeserta = null;
 }
 
-// Download all files
-function downloadAllFiles() {
-    const files = pesertaData.filter(p => p.filePenilaian);
+// ============================
+// LOADING FUNCTIONS
+// ============================
+
+function showLoading(context, isLoading) {
+    const loaders = {
+        'table': () => {
+            const loadingRow = document.getElementById('loadingRow');
+            if (loadingRow) {
+                loadingRow.style.display = isLoading ? 'table-row' : 'none';
+            }
+        },
+        'preview': () => {
+            const previewContent = document.getElementById('previewContent');
+            if (previewContent && isLoading) {
+                previewContent.innerHTML = `
+                    <div class="text-center py-10">
+                        <i class='bx bx-loader-circle bx-spin text-4xl text-primary'></i>
+                        <div class="mt-4 text-gray-600">Memuat file penilaian...</div>
+                    </div>
+                `;
+            }
+        },
+        'delete': () => {
+            const btn = document.getElementById('confirmDeleteBtn');
+            if (btn) {
+                btn.disabled = isLoading;
+                btn.innerHTML = isLoading 
+                    ? '<i class="bx bx-loader-circle bx-spin"></i> Menghapus...'
+                    : '<i class="bx bx-trash"></i> Hapus File';
+            }
+        }
+    };
     
-    if (files.length === 0) {
-        showNotification('Info', 'Belum ada file penilaian untuk didownload', 'info');
-        return;
+    if (loaders[context]) {
+        loaders[context]();
     }
-    
-    if (confirm(`Download ${files.length} file penilaian?`)) {
-        // Simulate batch download
-        showNotification('Info', `Memulai download ${files.length} file...`, 'info');
-        
-        // In real implementation, this would download a zip file
-        files.forEach((peserta, index) => {
-            setTimeout(() => {
-                downloadFile(peserta.id);
-            }, index * 1000);
-        });
+}
+
+function showSubmitLoading(show) {
+    const btn = document.getElementById('submitBtn');
+    if (btn) {
+        btn.disabled = show;
+        btn.innerHTML = show 
+            ? '<i class="bx bx-loader-circle bx-spin"></i> Memproses...'
+            : '<i class="bx bx-upload"></i> Upload File';
     }
 }
 
-// Show notification
-function showNotification(title, message, type = 'info') {
+// ============================
+// NOTIFICATION FUNCTION
+// ============================
+
+function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
-    notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 transform transition-transform duration-300 ${
-        type === 'success' ? 'bg-green-500' :
-        type === 'error' ? 'bg-red-500' :
-        type === 'warning' ? 'bg-yellow-500' :
-        'bg-blue-500'
-    } text-white`;
+    notification.className = `notification notification-${type}`;
+    
+    const icon = type === 'success' ? 'bx-check-circle' : 
+                type === 'error' ? 'bx-error-circle' : 'bx-info-circle';
     
     notification.innerHTML = `
         <div class="flex items-center gap-3">
-            <i class='bx ${
-                type === 'success' ? 'bx-check-circle' :
-                type === 'error' ? 'bx-error' :
-                type === 'warning' ? 'bx-alarm-exclamation' :
-                'bx-info-circle'
-            } text-xl'></i>
-            <div>
-                <div class="font-bold">${title}</div>
-                <div class="text-sm opacity-90">${message}</div>
-            </div>
+            <i class='bx ${icon}'></i>
+            <span>${message}</span>
         </div>
+    `;
+    
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#d4edda' : 
+                     type === 'error' ? '#f8d7da' : '#d1ecf1'};
+        color: ${type === 'success' ? '#155724' : 
+                type === 'error' ? '#721c24' : '#0c5460'};
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        z-index: 9999;
+        animation: slideIn 0.3s ease;
     `;
     
     document.body.appendChild(notification);
     
     setTimeout(() => {
-        notification.style.transform = 'translateX(100%)';
-        setTimeout(() => notification.remove(), 300);
-    }, 3000);
+        notification.remove();
+    }, 5000);
 }
-
-// Pagination functions
-function nextPage() {
-    const filteredData = filterPesertaData();
-    const totalPages = Math.max(1, Math.ceil(filteredData.length / itemsPerPage));
-    if (currentPage < totalPages) {
-        currentPage++;
-        loadPesertaTable();
-    }
-}
-
-function prevPage() {
-    if (currentPage > 1) {
-        currentPage--;
-        loadPesertaTable();
-    }
-}
-
-// Initialize
-document.addEventListener('DOMContentLoaded', function() {
-    loadPesertaTable();
-    updateStats();
-    
-    // Search as you type
-    document.getElementById('searchPeserta').addEventListener('input', filterPeserta);
-    document.getElementById('statusFilter').addEventListener('change', filterPeserta);
-    
-    // Close modal on ESC
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            closeUploadModal();
-            closePreviewModal();
-        }
-    });
-});
 </script>
-
-<style>
-/* Custom styles for upload zone */
-#dropZone {
-    transition: all 0.3s ease;
-}
-
-#dropZone.drag-over {
-    border-color: var(--primary);
-    background-color: rgba(33, 52, 72, 0.05);
-}
-
-/* Animation for modal */
-@keyframes modalSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-#uploadModal > div,
-#previewModal > div {
-    animation: modalSlideIn 0.3s ease;
-}
-
-/* File icon colors */
-.bx-file-pdf {
-    color: #FF6B6B;
-}
-
-.bx-file-doc {
-    color: #2B579A;
-}
-
-.bx-file-xls {
-    color: #217346;
-}
-
-.bx-image {
-    color: #FFA726;
-}
-
-/* Print styles */
-@media print {
-    .sidebar, .header, .menu-toggle, button {
-        display: none !important;
-    }
-    
-    .main-content {
-        margin-left: 0 !important;
-    }
-    
-    .content-wrapper {
-        padding: 0 !important;
-    }
-}
-</style>
 @endsection

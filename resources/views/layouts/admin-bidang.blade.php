@@ -90,10 +90,12 @@
 
                 <div class="header-right">
                     <div class="user-profile" onclick="window.location.href='/admin-bidang/profil'">
-                        <div class="avatar" id="userAvatar">AB</div>
+                        <div class="avatar" id="userAvatar">
+                            {{-- Avatar akan diisi oleh JavaScript --}}
+                        </div>
                         <div class="user-info">
-                            <h4 id="userName">Dr. Budi Setiawan, M.Si.</h4>
-                            <p>Admin Bidang Informatika</p>
+                            <h4 id="userName">{{ Auth::check() ? Auth::user()->name : 'Admin Bidang' }}</h4>
+                            <p>Admin Bidang</p>
                         </div>
                     </div>
                 </div>
@@ -212,7 +214,7 @@
                 if (homeItem) homeItem.classList.add('active');
             }
             
-            // Update avatar dengan inisial
+            // Update avatar dengan inisial dari nama user yang login
             const userName = document.getElementById('userName').textContent;
             const avatar = document.getElementById('userAvatar');
             

@@ -32,17 +32,9 @@ Route::post('/register', [RegisteredUserController::class, 'store'])
 
 // Dashboard routes dengan middleware auth 
 Route::prefix('admin')->group(function () {
-    Route::get('/dashboard', function() {
-        return view('admin.dashboard');
-    }) -> name('admin.dashboard');
-
     Route::get('/verifikasi-berkas', function () {
         return view('admin.verifikasi-berkas');
     })->name('admin.verifikasiberkas');
-    
-    Route::get('/peserta', function () {
-        return view('admin.peserta.index');
-    })->name('admin.peserta');
     
     Route::get('/manajemen-akun', [ManajemenAkunController::class, 'index'])
     ->name('admin.manajemen-akun');
@@ -50,10 +42,6 @@ Route::prefix('admin')->group(function () {
     Route::get('/manajemen-bidang', function () {
         return view('admin.manajemenbidang');
     })->name('admin.manajemen-bidang');
-    
-    Route::get('/mentor', function () {
-        return view('admin.mentor.index');
-    })->name('admin.mentor');
     
     Route::get('/sertifikat', function () {
         return view('admin.sertifikat');
@@ -81,18 +69,10 @@ Route::prefix('peserta')->group(function () {
     Route::get('/penilaian-sertifikat', function () {
         return view('peserta.penilaian-sertifikat');
     })->name('peserta.penilaian-sertifikat');
-    
-    Route::get('/profil', function () {
-        return view('peserta.profil');
-    })->name('peserta.profil');
 });
 
 // Routes untuk Mentor Magang
 Route::prefix('mentor')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('mentor.dashboard');
-    })->name('mentor.dashboard');
-    
     Route::get('/bimbingan', function () {
         return view('mentor.bimbingan');
     })->name('mentor.bimbingan');

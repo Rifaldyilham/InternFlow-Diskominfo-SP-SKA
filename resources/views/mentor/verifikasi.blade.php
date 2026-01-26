@@ -1,90 +1,194 @@
 @extends('layouts.mentor')
 
-@section('title', 'Verifikasi Absensi & Logbook')
+@section('title', 'Verifikasi Peserta')
+@section('subtitle', 'Verifikasi logbook dan absensi peserta')
+
+@section('styles')
+<link rel="stylesheet" href="{{ asset('css/mentor/mentor.css') }}">
+@endsection
 
 @section('content')
-
-<!-- Tab Navigation -->
-<div class="bg-white rounded-2xl shadow-sm mb-8">
-    <div class="border-b border-gray-200">
-        <nav class="flex overflow-x-auto" style="scrollbar-width: none;">
-            <button id="tab-logbook" class="tab-btn active px-6 py-4 font-medium text-lg border-b-2 border-primary text-primary whitespace-nowrap">
-                <i class='bx bx-book mr-2'></i> Logbook
-                <span class="ml-2 bg-primary text-white text-xs px-2 py-1 rounded-full" id="tabLogbookCount">1</span>
-            </button>
-            <button id="tab-absensi" class="tab-btn px-6 py-4 font-medium text-lg border-b-2 border-transparent text-gray-500 hover:text-gray-700 whitespace-nowrap">
-                <i class='bx bx-calendar-check mr-2'></i> Absensi
-                <span class="ml-2 bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded-full" id="tabAbsensiCount">2</span>
-            </button>
-        </nav>
-    </div>
-</div>
-
-<!-- Search and Filter -->
-<div class="form-card mb-8">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div>
-            <label class="block text-gray-700 mb-2">Cari Kegiatan/Tanggal</label>
-            <div class="relative">
-                <input type="text" id="searchInput" placeholder="Kegiatan atau tanggal..." 
-                       class="w-full p-3 pl-10 border border-gray-300 rounded-lg">
-                <i class='bx bx-search absolute left-3 top-3 text-gray-400'></i>
+<div class="mentor-dashboard">
+    <!-- Info Peserta yang Dipilih -->
+    <div id="pesertaInfo" class="peserta-info-card mb-6">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="peserta-info-avatar" id="selectedPesertaAvatar">
+                    <!-- Avatar akan diisi JavaScript -->
+                </div>
+                <div>
+                    <h3 id="selectedPesertaName" class="text-xl font-bold text-white"></h3>
+                    <div class="peserta-info-meta">
+                        <span id="selectedPesertaNim"></span>
+                        <span id="selectedPesertaUniv"></span>
+                        <span id="selectedPesertaBidang"></span>
+                    </div>
+                </div>
             </div>
-        </div>
-        
-        <div>
-            <label class="block text-gray-700 mb-2">Tanggal</label>
-            <input type="date" id="dateFilter" class="w-full p-3 border border-gray-300 rounded-lg">
-        </div>
-    </div>
-    
-    <div class="flex gap-3">
-        <button onclick="filterData()" class="btn btn-primary">
-            <i class='bx bx-filter'></i> Terapkan Filter
-        </button>
-        <button onclick="resetFilter()" class="btn" style="background: #f8fafc; color: #666;">
-            <i class='bx bx-reset'></i> Reset
-        </button>
-    </div>
-</div>
-
-<!-- Logbook Tab Content -->
-<div id="logbook-content" class="tab-content active">
-    <div class="form-card">
-        <div class="flex justify-between items-center mb-6">
-            <h3 class="text-xl font-bold text-primary flex items-center gap-2">
-                <i class='bx bx-book'></i> Logbook John Doe
-            </h3>
-            <span class="text-gray-600" id="logbookTotal">1 logbook menunggu</span>
-        </div>
-        
-        <div id="logbook-list" class="space-y-4">
-            <!-- Logbook items will be loaded here -->
-        </div>
-        
-        <div class="mt-8 border-t pt-6">
-            <h4 class="font-bold text-primary mb-4 flex items-center gap-2">
-                <i class='bx bx-history'></i> Logbook Terverifikasi
-            </h4>
-            <div id="verified-logbook-list" class="space-y-3">
-                <!-- Verified logbooks will be loaded here -->
+            <div class="peserta-info-right">
+                <a href="/mentor/bimbingan" class="btn btn-white">
+                    <i class='bx bx-arrow-back'></i> Kembali
+                </a>
+                <button onclick="clearSelectedPeserta()" class="text-white hover:text-gray-200">
+                    <i class='bx bx-x text-2xl'></i>
+                </button>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Absensi Tab Content -->
-<div id="absensi-content" class="tab-content hidden">
-    <div class="form-card">
-        <div class="flex justify-between items-center mb-6">
-            <h3 class="text-xl font-bold text-primary flex items-center gap-2">
-                <i class='bx bx-calendar-check'></i> Absensi John Doe
-            </h3>
-            <span class="text-gray-600" id="absensiTotal">2 absensi</span>
+    <!-- Tab Navigation -->
+    <div class="tabs-mentor mb-6">
+        <button id="tab-logbook" class="tab-mentor active" onclick="switchTab('logbook')">
+            <i class='bx bx-book mr-2'></i> Logbook
+            <span class="tab-badge" id="logbookBadge">0</span>
+        </button>
+        <button id="tab-absensi" class="tab-mentor" onclick="switchTab('absensi')">
+            <i class='bx bx-calendar-check mr-2'></i> Absensi
+            <span class="tab-badge" id="absensiBadge">0</span>
+        </button>
+    </div>
+
+    <!-- Tab Content: Logbook -->
+    <div id="logbook-content" class="tab-content-mentor active">
+        <div class="filter-container-mentor mb-6">
+            <div class="filter-grid-mentor">
+                <div class="filter-group-mentor">
+                    <label for="searchLogbook" class="filter-label-mentor">
+                        <i class='bx bx-search'></i> Pencarian Logbook
+                    </label>
+                    <input type="text" id="searchLogbook" placeholder="Cari kegiatan atau deskripsi..." 
+                           class="filter-input-mentor">
+                </div>
+                
+                <div class="filter-group-mentor">
+                    <label for="dateLogbook" class="filter-label-mentor">
+                        <i class='bx bx-calendar'></i> Tanggal
+                    </label>
+                    <input type="date" id="dateLogbook" class="filter-input-mentor">
+                </div>
+                
+                <div class="filter-group-mentor">
+                    <label for="statusLogbook" class="filter-label-mentor">
+                        <i class='bx bx-filter-alt'></i> Status
+                    </label>
+                    <select id="statusLogbook" class="filter-select-mentor">
+                        <option value="all">Semua Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Disetujui</option>
+                        <option value="rejected">Ditolak</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="flex gap-3 mt-4">
+                <button onclick="filterLogbookData()" class="btn btn-primary">
+                    <i class='bx bx-filter'></i> Terapkan Filter
+                </button>
+                <button onclick="resetLogbookFilter()" class="btn btn-secondary">
+                    <i class='bx bx-reset'></i> Reset
+                </button>
+            </div>
         </div>
-        
-        <div class="table-container">
-            <table class="data-table">
+
+        <div class="mentor-table-container">
+            <div class="mentor-table-header">
+                <h3>Daftar Logbook</h3>
+                <span class="mentor-table-count" id="logbookCount">0 logbook</span>
+            </div>
+            
+            <table class="mentor-table">
+                <thead>
+                    <tr>
+                        <th>Tanggal</th>
+                        <th>Kegiatan</th>
+                        <th>Waktu</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="logbookTableBody">
+                    <!-- Data akan diisi oleh JavaScript -->
+                    <tr id="loadingRow">
+                        <td colspan="5" class="text-center py-12">
+                            <div class="loading-skeleton-mentor flex flex-col items-center gap-5">
+                                <i class='bx bx-loader-circle bx-spin text-4xl text-primary'></i>
+                                <div class="text-center text-gray-600">
+                                    <div class="font-semibold mb-2">Memuat data logbook...</div>
+                                    <div class="text-sm">Mohon tunggu sebentar</div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <!-- Pagination -->
+            <div class="pagination-mentor">
+                <div class="pagination-info-mentor" id="logbookPageInfo">
+                    Menampilkan 0 - 0 dari 0 logbook
+                </div>
+                <div class="pagination-controls-mentor">
+                    <button id="logbookPrevPage" class="pagination-btn-mentor" disabled>
+                        <i class='bx bx-chevron-left'></i>
+                    </button>
+                    <button id="logbookNextPage" class="pagination-btn-mentor" disabled>
+                        <i class='bx bx-chevron-right'></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab Content: Absensi -->
+    <div id="absensi-content" class="tab-content-mentor">
+        <div class="filter-container-mentor mb-6">
+            <div class="filter-grid-mentor">
+                <div class="filter-group-mentor">
+                    <label for="searchAbsensi" class="filter-label-mentor">
+                        <i class='bx bx-search'></i> Pencarian Absensi
+                    </label>
+                    <input type="text" id="searchAbsensi" placeholder="Cari berdasarkan status atau lokasi..." 
+                           class="filter-input-mentor">
+                </div>
+                
+                <div class="filter-group-mentor">
+                    <label for="dateAbsensi" class="filter-label-mentor">
+                        <i class='bx bx-calendar'></i> Tanggal
+                    </label>
+                    <input type="date" id="dateAbsensi" class="filter-input-mentor">
+                </div>
+                
+                <div class="filter-group-mentor">
+                    <label for="statusAbsensi" class="filter-label-mentor">
+                        <i class='bx bx-filter-alt'></i> Status
+                    </label>
+                    <select id="statusAbsensi" class="filter-select-mentor">
+                        <option value="all">Semua Status</option>
+                        <option value="hadir">Hadir</option>
+                        <option value="izin">Izin</option>
+                        <option value="sakit">Sakit</option>
+                        <option value="alpha">Alpha</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="flex gap-3 mt-4">
+                <button onclick="filterAbsensiData()" class="btn btn-primary">
+                    <i class='bx bx-filter'></i> Terapkan Filter
+                </button>
+                <button onclick="resetAbsensiFilter()" class="btn btn-secondary">
+                    <i class='bx bx-reset'></i> Reset
+                </button>
+            </div>
+        </div>
+
+        <div class="mentor-table-container">
+            <div class="mentor-table-header">
+                <h3>Daftar Absensi</h3>
+                <span class="mentor-table-count" id="absensiCount">0 absensi</span>
+            </div>
+            
+            <table class="mentor-table">
                 <thead>
                     <tr>
                         <th>Tanggal</th>
@@ -94,600 +198,1355 @@
                         <th>Bukti</th>
                     </tr>
                 </thead>
-                <tbody id="absensi-table">
-                    <!-- Absensi data will be loaded here -->
+                <tbody id="absensiTableBody">
+                    <!-- Data akan diisi oleh JavaScript -->
+                    <tr id="loadingRowAbsensi">
+                        <td colspan="5" class="text-center py-12">
+                            <div class="loading-skeleton-mentor flex flex-col items-center gap-5">
+                                <i class='bx bx-loader-circle bx-spin text-4xl text-primary'></i>
+                                <div class="text-center text-gray-600">
+                                    <div class="font-semibold mb-2">Memuat data absensi...</div>
+                                    <div class="text-sm">Mohon tunggu sebentar</div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
+            
+            <!-- Pagination -->
+            <div class="pagination-mentor">
+                <div class="pagination-info-mentor" id="absensiPageInfo">
+                    Menampilkan 0 - 0 dari 0 absensi
+                </div>
+                <div class="pagination-controls-mentor">
+                    <button id="absensiPrevPage" class="pagination-btn-mentor" disabled>
+                        <i class='bx bx-chevron-left'></i>
+                    </button>
+                    <button id="absensiNextPage" class="pagination-btn-mentor" disabled>
+                        <i class='bx bx-chevron-right'></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Detail Logbook -->
+<div id="logbookModal" class="modal-mentor">
+    <div class="modal-content-mentor" style="max-width: 800px;">
+        <div class="modal-header-mentor">
+            <h3 class="modal-title-mentor" id="logbookModalTitle">Detail Logbook</h3>
+            <button class="modal-close-mentor" onclick="closeLogbookModal()">&times;</button>
+        </div>
+        <div class="modal-body-mentor">
+            <div id="logbookModalContent">
+                <!-- Konten akan diisi oleh JavaScript -->
+            </div>
+        </div>
+        <div class="modal-footer-mentor">
+            <button type="button" class="btn btn-secondary" onclick="closeLogbookModal()">Tutup</button>
+            <button type="button" class="btn btn-primary" id="verifyBtn" onclick="openVerificationModal()">
+                <i class='bx bx-check'></i> Verifikasi
+            </button>
         </div>
     </div>
 </div>
 
 <!-- Modal Verifikasi Logbook -->
-<div id="verificationModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 hidden">
-    <div class="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
-        <div class="p-6">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold text-primary" id="modalTitle">Verifikasi Logbook</h3>
-                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
-                    <i class='bx bx-x text-2xl'></i>
-                </button>
-            </div>
-            
-            <div id="modalContent">
-                <!-- Modal content will be loaded here -->
-            </div>
+<div id="verificationModal" class="modal-mentor">
+    <div class="modal-content-mentor" style="max-width: 600px;">
+        <div class="modal-header-mentor">
+            <h3 class="modal-title-mentor">Verifikasi Logbook</h3>
+            <button class="modal-close-mentor" onclick="closeVerificationModal()">&times;</button>
+        </div>
+        <div class="modal-body-mentor">
+            <form id="verificationForm">
+                @csrf
+                <input type="hidden" id="logbookId" name="logbook_id">
+                
+                <div class="mb-6 p-4 bg-blue-50 rounded-lg">
+                    <h4 class="font-bold text-primary mb-2" id="verificationPesertaName"></h4>
+                    <div class="text-sm text-gray-600">
+                        <div id="verificationLogbookInfo"></div>
+                    </div>
+                </div>
+                
+                <div class="form-group-mentor">
+                    <label class="form-label-mentor">Status Verifikasi *</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="verification-option">
+                            <input type="radio" name="status" value="approved" required>
+                            <div class="verification-card">
+                                <i class='bx bx-check-circle text-2xl text-green-600'></i>
+                                <div>
+                                    <div class="font-semibold">Disetujui</div>
+                                    <div class="text-xs text-gray-500">Logbook diterima</div>
+                                </div>
+                            </div>
+                        </label>
+                        <label class="verification-option">
+                            <input type="radio" name="status" value="rejected" required>
+                            <div class="verification-card">
+                                <i class='bx bx-x-circle text-2xl text-red-600'></i>
+                                <div>
+                                    <div class="font-semibold">Ditolak</div>
+                                    <div class="text-xs text-gray-500">Logbook ditolak</div>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-group-mentor">
+                    <label for="catatan" class="form-label-mentor">Catatan (Opsional)</label>
+                    <textarea id="catatan" name="catatan" rows="4" 
+                              class="form-textarea-mentor" 
+                              placeholder="Berikan catatan atau masukan untuk peserta..."></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer-mentor">
+            <button type="button" class="btn btn-secondary" onclick="closeVerificationModal()">Batal</button>
+            <button type="submit" form="verificationForm" class="btn btn-primary">
+                <i class='bx bx-check'></i> Simpan Verifikasi
+            </button>
         </div>
     </div>
 </div>
 
+<!-- Modal Detail Absensi -->
+<div id="absensiModal" class="modal-mentor">
+    <div class="modal-content-mentor" style="max-width: 800px;">
+        <div class="modal-header-mentor">
+            <h3 class="modal-title-mentor" id="absensiModalTitle">Detail Absensi</h3>
+            <button class="modal-close-mentor" onclick="closeAbsensiModal()">&times;</button>
+        </div>
+        <div class="modal-body-mentor">
+            <div id="absensiModalContent">
+                <!-- Konten akan diisi oleh JavaScript -->
+            </div>
+        </div>
+        <div class="modal-footer-mentor">
+            <button type="button" class="btn btn-secondary" onclick="closeAbsensiModal()">Tutup</button>
+        </div>
+    </div>
+</div>
+@endsection
+
+@section('scripts')
 <script>
-    // Data - Hanya untuk John Doe
-    const logbookData = [
-        {
-            id: 1,
-            peserta: 'John Doe',
-            tanggal: '16 Mar 2024',
-            kegiatan: 'Pengembangan dashboard admin',
-            deskripsi: 'Mengembangkan fitur dashboard admin untuk monitoring magang dengan tambahan grafik statistik.',
-            status: 'pending',
-            waktu: '08:00 - 16:00',
-            bukti: 'dashboard_screenshot.jpg',
-            catatan: ''
-        }
-    ];
-    
-    const absensiData = [
-        {
-            id: 1,
-            peserta: 'John Doe',
-            tanggal: '16 Mar 2024',
-            status: 'hadir',
-            waktu: '08:15 - 16:30',
-            lokasi: 'Dalam kantor',
-            bukti: 'foto_kantor.jpg'
-        },
-        {
-            id: 2,
-            peserta: 'John Doe',
-            tanggal: '15 Mar 2024',
-            status: 'hadir',
-            waktu: '08:30 - 17:00',
-            lokasi: 'Dalam kantor',
-            bukti: 'foto_kantor2.jpg'
-        },
-        {
-            id: 3,
-            peserta: 'John Doe',
-            tanggal: '14 Mar 2024',
-            status: 'hadir',
-            waktu: '08:45 - 16:45',
-            lokasi: 'Dalam kantor',
-            bukti: 'foto_kantor3.jpg'
-        }
-    ];
-    
-    const verifiedLogbooks = [
-        {
-            id: 2,
-            peserta: 'John Doe',
-            tanggal: '15 Mar 2024',
-            kegiatan: 'Analisis data statistik',
-            status: 'approved',
-            catatan: 'Analisis data sangat detail dan rapi'
-        },
-        {
-            id: 3,
-            peserta: 'John Doe',
-            tanggal: '14 Mar 2024',
-            kegiatan: 'Maintenance server',
-            status: 'approved',
-            catatan: 'Maintenance dilakukan dengan baik'
-        }
-    ];
-    
-    // Get query parameters from URL
+// ============================
+// KONFIGURASI API (Backend-ready)
+// ============================
+const API_CONFIG = {
+    baseUrl: window.location.origin,
+    endpoints: {
+        // Data dari URL parameter (peserta yang dipilih)
+        detailPeserta: '/api/mentor/peserta',
+        // Logbook peserta yang dipilih
+        logbookPeserta: '/api/mentor/logbook',
+        // Verifikasi logbook
+        verifyLogbook: '/api/mentor/logbook/verify',
+        // Absensi peserta yang dipilih
+        absensiPeserta: '/api/mentor/absensi',
+        // Statistik verifikasi
+        statsVerifikasi: '/api/mentor/verifikasi/stats'
+    }
+};
+
+// ============================
+// STATE MANAGEMENT
+// ============================
+let state = {
+    selectedPeserta: null,  // Peserta yang dipilih dari halaman bimbingan
+    currentTab: 'logbook',   // Tab aktif
+    // Logbook state
+    logbookList: [],
+    filteredLogbook: [],
+    logbookCurrentPage: 1,
+    logbookItemsPerPage: 10,
+    logbookTotalItems: 0,
+    // Absensi state
+    absensiList: [],
+    filteredAbsensi: [],
+    absensiCurrentPage: 1,
+    absensiItemsPerPage: 10,
+    absensiTotalItems: 0,
+    // Filters
+    logbookFilters: {
+        search: '',
+        date: '',
+        status: 'all'
+    },
+    absensiFilters: {
+        search: '',
+        date: '',
+        status: 'all'
+    },
+    currentLogbook: null
+};
+
+// ============================
+// INISIALISASI
+// ============================
+document.addEventListener('DOMContentLoaded', function() {
+    setupCSRF();
+    checkSelectedPeserta();
+    setupEventListeners();
+});
+
+function setupCSRF() {
+    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    if (token) {
+        window.csrfToken = token;
+    }
+}
+
+function checkSelectedPeserta() {
+    // Cek parameter URL untuk peserta yang dipilih
     const urlParams = new URLSearchParams(window.location.search);
-    const initialTab = urlParams.get('tab') || 'logbook';
+    const pesertaId = urlParams.get('peserta');
+    const type = urlParams.get('type'); // 'logbook' atau 'absensi'
     
-    function setupTabs() {
-        const tabs = document.querySelectorAll('.tab-btn');
-        const contents = document.querySelectorAll('.tab-content');
-        
-        // Set active tab based on URL parameter
-        let activeTabId = initialTab;
-        if (!activeTabId || !['logbook', 'absensi'].includes(activeTabId)) {
-            activeTabId = 'logbook';
+    if (pesertaId) {
+        loadSelectedPeserta(pesertaId, type);
+    } else {
+        // Jika tidak ada peserta yang dipilih, coba dari localStorage
+        const savedPeserta = localStorage.getItem('selectedPeserta');
+        if (savedPeserta) {
+            try {
+                const peserta = JSON.parse(savedPeserta);
+                loadSelectedPeserta(peserta.id, peserta.type);
+            } catch (e) {
+                console.error('Error parsing saved peserta:', e);
+                showNoPesertaSelected();
+            }
+        } else {
+            // Jika tidak ada data sama sekali, tampilkan pesan
+            showNoPesertaSelected();
         }
+    }
+}
+
+async function loadSelectedPeserta(pesertaId, type = 'logbook') {
+    try {
+        // Simulate loading
+        showLoading('logbook', true);
         
-        // Remove active class from all
-        tabs.forEach(t => {
-            t.classList.remove('active');
-            t.classList.add('text-gray-500', 'border-transparent');
-            t.classList.remove('text-primary', 'border-primary');
+        // **API BACKEND:** GET /api/mentor/peserta/{id}
+        const response = await fetch(`${API_CONFIG.endpoints.detailPeserta}/${pesertaId}`, {
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': 'Bearer ' + localStorage.getItem('token')
+            }
         });
         
-        contents.forEach(c => c.classList.add('hidden'));
+        if (!response.ok) throw new Error('Gagal mengambil data peserta');
         
-        // Activate selected tab
-        const activeTab = document.getElementById(`tab-${activeTabId}`);
-        const activeContent = document.getElementById(`${activeTabId}-content`);
+        const data = await response.json();
+        const peserta = data.data || data;
         
-        if (activeTab) {
-            activeTab.classList.remove('text-gray-500', 'border-transparent');
-            activeTab.classList.add('text-primary', 'border-primary');
-            activeTab.classList.add('active');
-        }
+        // Simpan data peserta ke state
+        state.selectedPeserta = {
+            id: peserta.id,
+            nama: peserta.nama,
+            nim: peserta.nim,
+            universitas: peserta.universitas,
+            bidang: peserta.bidang,
+            foto: peserta.foto
+        };
         
-        if (activeContent) {
-            activeContent.classList.remove('hidden');
-            activeContent.classList.add('active');
-        }
-        
-        // Add click handlers
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                // Remove active class from all tabs and contents
-                tabs.forEach(t => {
-                    t.classList.remove('active');
-                    t.classList.add('text-gray-500', 'border-transparent');
-                    t.classList.remove('text-primary', 'border-primary');
-                });
-                
-                contents.forEach(c => c.classList.add('hidden'));
-                
-                // Add active class to clicked tab
-                tab.classList.remove('text-gray-500', 'border-transparent');
-                tab.classList.add('text-primary', 'border-primary');
-                
-                // Show corresponding content
-                const tabId = tab.id.replace('tab-', '');
-                const content = document.getElementById(`${tabId}-content`);
-                if (content) {
-                    content.classList.remove('hidden');
-                }
-                
-                // Update URL without reloading
-                const newUrl = `/mentor/verifikasi?tab=${tabId}`;
-                window.history.replaceState({}, '', newUrl);
-                
-                // Update tab badge colors
-                updateTabBadges();
-                
-                // Load data for active tab
-                loadTabData(tabId);
-            });
-        });
+        // Tampilkan info peserta
+        showPesertaInfo(state.selectedPeserta);
         
         // Load initial data
-        loadTabData(activeTabId);
+        await loadInitialData();
+        
+        // Set tab based on type
+        if (type) {
+            state.currentTab = type;
+            setTimeout(() => switchTab(type), 100);
+        }
+        
+    } catch (error) {
+        console.error('Error loading peserta:', error);
+        showNotification('Gagal memuat data peserta', 'error');
+        showNoPesertaSelected();
+    } finally {
+        showLoading('logbook', false);
     }
+}
+
+async function loadInitialData() {
+    if (!state.selectedPeserta) return;
     
-    function updateTabBadges() {
-        const pendingLogbooks = logbookData.filter(l => l.status === 'pending').length;
-        const totalAbsensi = absensiData.length;
+    try {
+        // Load statistik
+        await loadStats();
         
-        // Update counts
-        document.getElementById('tabLogbookCount').textContent = pendingLogbooks;
-        document.getElementById('tabAbsensiCount').textContent = totalAbsensi;
+        // Load data berdasarkan tab aktif
+        if (state.currentTab === 'logbook') {
+            await loadLogbookData();
+        } else if (state.currentTab === 'absensi') {
+            await loadAbsensiData();
+        }
         
-        // Update badge colors
-        const activeTab = document.querySelector('.tab-btn.active').id;
-        document.querySelectorAll('.tab-btn span').forEach(badge => {
-            badge.classList.remove('bg-primary', 'text-white', 'bg-gray-200', 'text-gray-700');
+    } catch (error) {
+        console.error('Error loading initial data:', error);
+        showNotification('Gagal memuat data', 'error');
+    }
+}
+
+// ============================
+// FUNGSI API (Backend-ready)
+// ============================
+
+async function loadStats() {
+    if (!state.selectedPeserta) return;
+    
+    try {
+        // **API BACKEND:** GET /api/mentor/verifikasi/stats/{pesertaId}
+        const response = await fetch(`${API_CONFIG.endpoints.statsVerifikasi}/${state.selectedPeserta.id}`, {
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': 'Bearer ' + localStorage.getItem('token')
+            }
         });
         
-        if (activeTab === 'tab-logbook') {
-            document.getElementById('tabLogbookCount').classList.add('bg-primary', 'text-white');
-            document.getElementById('tabAbsensiCount').classList.add('bg-gray-200', 'text-gray-700');
-        } else if (activeTab === 'tab-absensi') {
-            document.getElementById('tabLogbookCount').classList.add('bg-gray-200', 'text-gray-700');
-            document.getElementById('tabAbsensiCount').classList.add('bg-primary', 'text-white');
-        }
-    }
-    
-    // Load Data
-    function loadTabData(tabId) {
-        if (tabId === 'logbook') {
-            renderLogbookList();
-            renderVerifiedLogbooks();
-            document.getElementById('logbookTotal').textContent = 
-                `${logbookData.filter(l => l.status === 'pending').length} logbook menunggu`;
-        } else if (tabId === 'absensi') {
-            renderAbsensiTable();
-            document.getElementById('absensiTotal').textContent = 
-                `${absensiData.length} absensi`;
-        }
-    }
-    
-    function renderLogbookList() {
-        const container = document.getElementById('logbook-list');
-        const pendingLogbooks = logbookData.filter(l => l.status === 'pending');
+        if (!response.ok) throw new Error('Gagal mengambil statistik');
         
-        if (pendingLogbooks.length === 0) {
-            container.innerHTML = `
-                <div class="text-center py-12">
-                    <i class='bx bx-check-circle text-5xl text-green-500 mb-4'></i>
-                    <h4 class="text-xl font-semibold text-gray-700 mb-2">Tidak ada logbook menunggu</h4>
-                    <p class="text-gray-500">Semua logbook telah diverifikasi</p>
+        const data = await response.json();
+        state.stats = data.data || data;
+        
+        // Update UI stats
+        updateStatsUI();
+        
+    } catch (error) {
+        console.error('Error loading stats:', error);
+    }
+}
+
+async function loadLogbookData() {
+    if (!state.selectedPeserta) return;
+    
+    try {
+        showLoading('logbook', true);
+        
+        // **API BACKEND:** GET /api/mentor/logbook/{pesertaId}
+        const response = await fetch(
+            `${API_CONFIG.endpoints.logbookPeserta}/${state.selectedPeserta.id}?page=${state.logbookCurrentPage}&per_page=${state.logbookItemsPerPage}`,
+            {
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                }
+            }
+        );
+        
+        if (!response.ok) throw new Error('Gagal mengambil data logbook');
+        
+        const data = await response.json();
+        
+        // **STRUKTUR RESPONSE BACKEND YANG DIHARAPKAN:**
+        // {
+        //     "data": [
+        //         {
+        //             "id": 1,
+        //             "tanggal": "2024-03-16",
+        //             "kegiatan": "Pengembangan dashboard admin",
+        //             "deskripsi": "Mengembangkan fitur dashboard admin...",
+        //             "waktu_mulai": "08:00",
+        //             "waktu_selesai": "16:00",
+        //             "waktu": "08:00 - 16:00", // Format gabungan
+        //             "status": "pending", // pending, approved, rejected
+        //             "catatan_mentor": null,
+        //             "created_at": "2024-03-16 16:30:00"
+        //         }
+        //     ],
+        //     "meta": {
+        //         "total": 20,
+        //         "per_page": 10,
+        //         "current_page": 1,
+        //         "last_page": 2
+        //     }
+        // }
+        
+        state.logbookList = data.data || [];
+        state.logbookTotalItems = data.meta?.total || data.total || state.logbookList.length;
+        
+        filterLogbookData();
+        updateLogbookPagination();
+        
+    } catch (error) {
+        console.error('Error loading logbook:', error);
+        renderEmptyLogbookTable('Terjadi kesalahan saat memuat data logbook');
+    } finally {
+        showLoading('logbook', false);
+    }
+}
+
+async function loadAbsensiData() {
+    if (!state.selectedPeserta) return;
+    
+    try {
+        showLoading('absensi', true);
+        
+        // **API BACKEND:** GET /api/mentor/absensi/{pesertaId}
+        const response = await fetch(
+            `${API_CONFIG.endpoints.absensiPeserta}/${state.selectedPeserta.id}?page=${state.absensiCurrentPage}&per_page=${state.absensiItemsPerPage}`,
+            {
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                }
+            }
+        );
+        
+        if (!response.ok) throw new Error('Gagal mengambil data absensi');
+        
+        const data = await response.json();
+        
+        // **STRUKTUR RESPONSE BACKEND YANG DIHARAPKAN:**
+        // {
+        //     "data": [
+        //         {
+        //             "id": 1,
+        //             "tanggal": "2024-03-16",
+        //             "waktu_submit": "08:15", // Waktu realtime saat submit
+        //             "status": "hadir", // hadir, izin, sakit, alpha
+        //             "lokasi": "Jl. Sudirman No. 2, Surakarta", // Alamat dari GPS
+        //             "bukti": "foto_kantor.jpg",
+        //             "koordinat": "-6.200000,106.816666",
+        //             "keterangan": "Dalam kantor",
+        //             "created_at": "2024-03-16 08:15:00"
+        //         }
+        //     ],
+        //     "meta": {
+        //         "total": 30,
+        //         "per_page": 10,
+        //         "current_page": 1,
+        //         "last_page": 3
+        //     }
+        // }
+        
+        state.absensiList = data.data || [];
+        state.absensiTotalItems = data.meta?.total || data.total || state.absensiList.length;
+        
+        filterAbsensiData();
+        updateAbsensiPagination();
+        
+    } catch (error) {
+        console.error('Error loading absensi:', error);
+        renderEmptyAbsensiTable('Terjadi kesalahan saat memuat data absensi');
+    } finally {
+        showLoading('absensi', false);
+    }
+}
+
+// ============================
+// UI FUNCTIONS
+// ============================
+
+function showPesertaInfo(peserta) {
+    const avatar = document.getElementById('selectedPesertaAvatar');
+    const name = document.getElementById('selectedPesertaName');
+    const nim = document.getElementById('selectedPesertaNim');
+    const univ = document.getElementById('selectedPesertaUniv');
+    const bidang = document.getElementById('selectedPesertaBidang');
+    
+    // Update UI
+    avatar.textContent = getInitials(peserta.nama);
+    name.textContent = peserta.nama;
+    nim.textContent = `NIM: ${peserta.nim || 'N/A'}`;
+    univ.textContent = peserta.universitas || '-';
+    bidang.textContent = peserta.bidang || '-';
+}
+
+function clearSelectedPeserta() {
+    state.selectedPeserta = null;
+    localStorage.removeItem('selectedPeserta');
+    window.location.href = '/mentor/bimbingan';
+}
+
+function showNoPesertaSelected() {
+    const logbookTable = document.getElementById('logbookTableBody');
+    const absensiTable = document.getElementById('absensiTableBody');
+    const pesertaInfo = document.getElementById('pesertaInfo');
+    
+    const message = `
+        <tr>
+            <td colspan="5">
+                <div class="empty-state-mentor">
+                    <i class='bx bx-user-x'></i>
+                    <h4>Belum ada peserta yang dipilih</h4>
+                    <p>Silakan pilih peserta dari halaman Daftar Bimbingan</p>
+                    <a href="/mentor/bimbingan" class="btn btn-primary mt-4">
+                        <i class='bx bx-list-ul'></i> Ke Daftar Bimbingan
+                    </a>
                 </div>
-            `;
-            return;
+            </td>
+        </tr>
+    `;
+    
+    if (logbookTable) logbookTable.innerHTML = message;
+    if (absensiTable) absensiTable.innerHTML = message;
+    if (pesertaInfo) pesertaInfo.style.display = 'none';
+}
+
+function switchTab(tabName) {
+    state.currentTab = tabName;
+    
+    // Update tab UI
+    document.querySelectorAll('.tab-mentor').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.querySelectorAll('.tab-content-mentor').forEach(content => {
+        content.classList.remove('active');
+    });
+    
+    // Activate selected tab
+    document.getElementById(`tab-${tabName}`).classList.add('active');
+    document.getElementById(`${tabName}-content`).classList.add('active');
+    
+    // Load data for selected tab
+    if (tabName === 'logbook') {
+        loadLogbookData();
+    } else if (tabName === 'absensi') {
+        loadAbsensiData();
+    }
+}
+
+// ============================
+// LOGBOOK FUNCTIONS
+// ============================
+
+function filterLogbookData() {
+    const searchQuery = document.getElementById('searchLogbook').value.toLowerCase();
+    const dateFilter = document.getElementById('dateLogbook').value;
+    const statusFilter = document.getElementById('statusLogbook').value;
+    
+    state.logbookFilters.search = searchQuery;
+    state.logbookFilters.date = dateFilter;
+    state.logbookFilters.status = statusFilter;
+    
+    state.filteredLogbook = state.logbookList.filter(logbook => {
+        // Filter berdasarkan pencarian
+        if (searchQuery) {
+            const searchText = `${logbook.kegiatan} ${logbook.deskripsi}`.toLowerCase();
+            if (!searchText.includes(searchQuery)) {
+                return false;
+            }
         }
         
-        container.innerHTML = pendingLogbooks.map(logbook => `
-            <div class="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow">
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+        // Filter berdasarkan tanggal
+        if (dateFilter) {
+            if (logbook.tanggal !== dateFilter) {
+                return false;
+            }
+        }
+        
+        // Filter berdasarkan status
+        if (statusFilter !== 'all') {
+            if (logbook.status !== statusFilter) {
+                return false;
+            }
+        }
+        
+        return true;
+    });
+    
+    renderLogbookTable();
+    updateLogbookCount();
+}
+
+function renderLogbookTable() {
+    const tbody = document.getElementById('logbookTableBody');
+    
+    if (!state.filteredLogbook || state.filteredLogbook.length === 0) {
+        renderEmptyLogbookTable('Tidak ada data logbook yang sesuai dengan filter');
+        return;
+    }
+    
+    const start = (state.logbookCurrentPage - 1) * state.logbookItemsPerPage;
+    const end = start + state.logbookItemsPerPage;
+    const pageData = state.filteredLogbook.slice(start, end);
+    
+    tbody.innerHTML = pageData.map(logbook => {
+        const statusClass = getLogbookStatusClass(logbook.status);
+        const statusText = getLogbookStatusText(logbook.status);
+        // Gunakan format waktu dari backend (contoh: "08:00 - 16:00")
+        const waktuDisplay = logbook.waktu || `${logbook.waktu_mulai || '08:00'} - ${logbook.waktu_selesai || '16:00'}`;
+        
+        return `
+            <tr>
+                <td>
+                    <div class="font-medium">${formatDate(logbook.tanggal)}</div>
+                </td>
+                <td>
+                    <div class="font-medium truncate max-w-xs">${logbook.kegiatan}</div>
+                    <div class="text-sm text-gray-500 truncate">${logbook.deskripsi?.substring(0, 60)}...</div>
+                </td>
+                <td>${waktuDisplay}</td>
+                <td>
+                    <span class="status-badge-mentor ${statusClass}">${statusText}</span>
+                </td>
+                <td>
+                    <div class="mentor-action-buttons">
+                        <button class="mentor-action-btn view" 
+                                onclick="viewLogbookDetail('${logbook.id}')"
+                                title="Lihat Detail">
+                            <i class='bx bx-show'></i>
+                        </button>
+                        ${logbook.status === 'pending' ? `
+                            <button class="mentor-action-btn primary"
+                                    onclick="openVerificationModal('${logbook.id}')"
+                                    title="Verifikasi">
+                                <i class='bx bx-check'></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function renderEmptyLogbookTable(message) {
+    const tbody = document.getElementById('logbookTableBody');
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="5">
+                <div class="empty-state-mentor">
+                    <i class='bx bx-notepad'></i>
+                    <h4>${message}</h4>
+                    ${state.logbookFilters.search || state.logbookFilters.date || state.logbookFilters.status !== 'all' ? `
+                        <button onclick="resetLogbookFilter()" class="btn btn-primary mt-4">
+                            Reset Filter
+                        </button>
+                    ` : ''}
+                </div>
+            </td>
+        </tr>
+    `;
+}
+
+// ============================
+// ABSENSI FUNCTIONS
+// ============================
+
+function filterAbsensiData() {
+    const searchQuery = document.getElementById('searchAbsensi').value.toLowerCase();
+    const dateFilter = document.getElementById('dateAbsensi').value;
+    const statusFilter = document.getElementById('statusAbsensi').value;
+    
+    state.absensiFilters.search = searchQuery;
+    state.absensiFilters.date = dateFilter;
+    state.absensiFilters.status = statusFilter;
+    
+    state.filteredAbsensi = state.absensiList.filter(absensi => {
+        // Filter berdasarkan pencarian
+        if (searchQuery) {
+            const searchText = `${absensi.status} ${absensi.lokasi} ${absensi.keterangan}`.toLowerCase();
+            if (!searchText.includes(searchQuery)) {
+                return false;
+            }
+        }
+        
+        // Filter berdasarkan tanggal
+        if (dateFilter) {
+            if (absensi.tanggal !== dateFilter) {
+                return false;
+            }
+        }
+        
+        // Filter berdasarkan status
+        if (statusFilter !== 'all') {
+            if (absensi.status !== statusFilter) {
+                return false;
+            }
+        }
+        
+        return true;
+    });
+    
+    renderAbsensiTable();
+    updateAbsensiCount();
+}
+
+function renderAbsensiTable() {
+    const tbody = document.getElementById('absensiTableBody');
+    
+    if (!state.filteredAbsensi || state.filteredAbsensi.length === 0) {
+        renderEmptyAbsensiTable('Tidak ada data absensi yang sesuai dengan filter');
+        return;
+    }
+    
+    const start = (state.absensiCurrentPage - 1) * state.absensiItemsPerPage;
+    const end = start + state.absensiItemsPerPage;
+    const pageData = state.filteredAbsensi.slice(start, end);
+    
+    tbody.innerHTML = pageData.map(absensi => {
+        const statusClass = getAbsensiStatusClass(absensi.status);
+        const statusText = getAbsensiStatusText(absensi.status);
+        // Waktu submit absensi (realtime saat peserta submit)
+        const waktuSubmit = absensi.waktu_submit || absensi.created_at?.split(' ')[1]?.substring(0, 5) || '-';
+        
+        return `
+            <tr>
+                <td>
+                    <div class="font-medium">${formatDate(absensi.tanggal)}</div>
+                </td>
+                <td>
+                    <span class="status-badge-mentor ${statusClass}">${statusText}</span>
+                </td>
+                <td>${waktuSubmit}</td>
+                <td>
+                    <div class="text-sm text-gray-600 truncate max-w-xs">${absensi.lokasi || '-'}</div>
+                    ${absensi.koordinat ? `
+                        <div class="text-xs text-gray-500">${absensi.koordinat}</div>
+                    ` : ''}
+                </td>
+                <td>
+                    ${absensi.bukti ? `
+                        <button onclick="viewAbsensiBukti('${absensi.id}')" 
+                                class="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1">
+                            <i class='bx bx-image'></i> Lihat
+                        </button>
+                    ` : '-'}
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function renderEmptyAbsensiTable(message) {
+    const tbody = document.getElementById('absensiTableBody');
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="5">
+                <div class="empty-state-mentor">
+                    <i class='bx bx-calendar-x'></i>
+                    <h4>${message}</h4>
+                    ${state.absensiFilters.search || state.absensiFilters.date || state.absensiFilters.status !== 'all' ? `
+                        <button onclick="resetAbsensiFilter()" class="btn btn-primary mt-4">
+                            Reset Filter
+                        </button>
+                    ` : ''}
+                </div>
+            </td>
+        </tr>
+    `;
+}
+
+// ============================
+// MODAL FUNCTIONS
+// ============================
+
+async function viewLogbookDetail(logbookId) {
+    try {
+        showModalLoading('logbook', true);
+        
+        // **API BACKEND:** GET /api/mentor/logbook/{pesertaId}/{logbookId}
+        const response = await fetch(`${API_CONFIG.endpoints.logbookPeserta}/${state.selectedPeserta.id}/${logbookId}`, {
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': 'Bearer ' + localStorage.getItem('token')
+            }
+        });
+        
+        if (!response.ok) throw new Error('Gagal mengambil detail logbook');
+        
+        const data = await response.json();
+        const logbook = data.data || data;
+        
+        state.currentLogbook = logbook;
+        renderLogbookDetailModal(logbook);
+        openModal('logbookModal');
+        
+    } catch (error) {
+        console.error('Error loading logbook detail:', error);
+        showNotification('Gagal memuat detail logbook', 'error');
+    } finally {
+        showModalLoading('logbook', false);
+    }
+}
+
+function renderLogbookDetailModal(logbook) {
+    const waktuDisplay = logbook.waktu || `${logbook.waktu_mulai || '08:00'} - ${logbook.waktu_selesai || '16:00'}`;
+    const statusClass = getLogbookStatusClass(logbook.status);
+    const statusText = getLogbookStatusText(logbook.status);
+    
+    document.getElementById('logbookModalTitle').textContent = `Logbook - ${formatDate(logbook.tanggal)}`;
+    
+    const verifyBtn = document.getElementById('verifyBtn');
+    if (logbook.status === 'pending') {
+        verifyBtn.style.display = 'inline-flex';
+        verifyBtn.onclick = () => openVerificationModal(logbook.id);
+    } else {
+        verifyBtn.style.display = 'none';
+    }
+    
+    document.getElementById('logbookModalContent').innerHTML = `
+        <div class="space-y-6">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-sm text-gray-500">Tanggal</label>
+                    <div class="font-medium">${formatDate(logbook.tanggal)}</div>
+                </div>
+                <div>
+                    <label class="text-sm text-gray-500">Waktu</label>
+                    <div class="font-medium">${waktuDisplay}</div>
+                </div>
+                <div>
+                    <label class="text-sm text-gray-500">Status</label>
                     <div>
-                        <h4 class="font-bold text-lg text-primary mb-1">${logbook.peserta}</h4>
-                        <p class="text-gray-600 mb-2">${logbook.kegiatan}</p>
-                        <div class="flex items-center gap-4 text-sm text-gray-500">
-                            <span class="flex items-center gap-1">
-                                <i class='bx bx-calendar'></i> ${logbook.tanggal}
-                            </span>
-                            <span class="flex items-center gap-1">
-                                <i class='bx bx-time'></i> ${logbook.waktu}
-                            </span>
+                        <span class="status-badge-mentor ${statusClass}">${statusText}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <label class="text-sm text-gray-500 mb-2">Kegiatan</label>
+                <div class="font-medium text-lg text-primary">${logbook.kegiatan}</div>
+            </div>
+            
+            <div>
+                <label class="text-sm text-gray-500 mb-2">Deskripsi Kegiatan</label>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    ${logbook.deskripsi || 'Tidak ada deskripsi'}
+                </div>
+            </div>
+            
+            ${logbook.hasil ? `
+                <div>
+                    <label class="text-sm text-gray-500 mb-2">Hasil / Progress</label>
+                    <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+                        ${logbook.hasil}
+                    </div>
+                </div>
+            ` : ''}
+            
+            ${logbook.kendala ? `
+                <div>
+                    <label class="text-sm text-gray-500 mb-2">Kendala</label>
+                    <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                        ${logbook.kendala}
+                    </div>
+                </div>
+            ` : ''}
+            
+            ${logbook.catatan_mentor ? `
+                <div>
+                    <label class="text-sm text-gray-500 mb-2">Catatan Mentor</label>
+                    <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                        <div class="font-semibold text-primary mb-1">${formatDate(logbook.updated_at)}</div>
+                        <div>${logbook.catatan_mentor}</div>
+                    </div>
+                </div>
+            ` : ''}
+        </div>
+    `;
+}
+
+function openVerificationModal(logbookId = null) {
+    const logbook = logbookId ? 
+        state.logbookList.find(l => l.id == logbookId) : 
+        state.currentLogbook;
+    
+    if (!logbook) return;
+    
+    document.getElementById('logbookId').value = logbook.id;
+    document.getElementById('verificationPesertaName').textContent = state.selectedPeserta.nama;
+    document.getElementById('verificationLogbookInfo').innerHTML = `
+        ${formatDate(logbook.tanggal)} • ${logbook.kegiatan}
+    `;
+    
+    // Reset form
+    document.getElementById('verificationForm').reset();
+    document.getElementById('catatan').value = logbook.catatan_mentor || '';
+    
+    openModal('verificationModal');
+    closeLogbookModal();
+}
+
+// Verifikasi form submission
+document.getElementById('verificationForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    try {
+        showSubmitLoading(true);
+        
+        const formData = new FormData(this);
+        formData.append('_token', window.csrfToken);
+        
+        // **API BACKEND:** POST /api/mentor/logbook/verify
+        const response = await fetch(API_CONFIG.endpoints.verifyLogbook, {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + localStorage.getItem('token')
+            },
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.message || 'Gagal melakukan verifikasi');
+        }
+        
+        showNotification('Logbook berhasil diverifikasi', 'success');
+        closeVerificationModal();
+        loadLogbookData();
+        loadStats();
+        
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification(error.message || 'Gagal melakukan verifikasi', 'error');
+    } finally {
+        showSubmitLoading(false);
+    }
+});
+
+async function viewAbsensiBukti(absensiId) {
+    try {
+        const absensi = state.absensiList.find(a => a.id == absensiId);
+        if (!absensi) return;
+        
+        renderAbsensiDetailModal(absensi);
+        openModal('absensiModal');
+        
+    } catch (error) {
+        console.error('Error loading absensi detail:', error);
+        showNotification('Gagal memuat detail absensi', 'error');
+    }
+}
+
+function renderAbsensiDetailModal(absensi) {
+    const statusClass = getAbsensiStatusClass(absensi.status);
+    const statusText = getAbsensiStatusText(absensi.status);
+    const waktuSubmit = absensi.waktu_submit || absensi.created_at?.split(' ')[1]?.substring(0, 5) || '-';
+    
+    document.getElementById('absensiModalTitle').textContent = `Absensi - ${formatDate(absensi.tanggal)}`;
+    
+    let buktiHtml = '';
+    if (absensi.bukti) {
+        const isImage = ['jpg', 'jpeg', 'png', 'gif'].includes(absensi.bukti.split('.').pop().toLowerCase());
+        
+        if (isImage) {
+            buktiHtml = `
+                <div class="mt-4">
+                    <label class="text-sm text-gray-500 mb-2">Bukti Kehadiran</label>
+                    <div class="border rounded-lg p-4 text-center">
+                        <img src="/storage/absensi/${absensi.bukti}" 
+                             alt="Bukti Absensi" 
+                             class="max-w-full h-auto rounded-lg mx-auto max-h-96">
+                        <div class="mt-3 text-sm text-gray-600">
+                            Foto bukti absensi ${state.selectedPeserta.nama}
                         </div>
                     </div>
-                    <div class="flex gap-2">
-                        <button onclick="viewDetail(${logbook.id}, 'logbook')" 
-                                class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
-                            <i class='bx bx-show'></i> Detail
-                        </button>
-                        <button onclick="openVerificationModal(${logbook.id}, 'logbook')" 
-                                class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-800 transition">
-                            <i class='bx bx-check'></i> Verifikasi
-                        </button>
-                    </div>
                 </div>
-                <div class="text-gray-600 line-clamp-2">${logbook.deskripsi}</div>
-            </div>
-        `).join('');
-    }
-    
-    function renderVerifiedLogbooks() {
-        const container = document.getElementById('verified-logbook-list');
-        container.innerHTML = verifiedLogbooks.map(logbook => `
-            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                        <i class='bx bx-check text-xl text-green-600'></i>
-                    </div>
-                    <div>
-                        <div class="font-medium text-gray-800">${logbook.peserta}</div>
-                        <div class="text-sm text-gray-500">${logbook.kegiatan}</div>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <div class="text-sm font-medium text-gray-700">${logbook.tanggal}</div>
-                    <div class="text-xs text-gray-500">${logbook.catatan}</div>
-                </div>
-            </div>
-        `).join('');
-    }
-    
-    function renderAbsensiTable() {
-        const container = document.getElementById('absensi-table');
-        
-        container.innerHTML = absensiData.map(absensi => {
-            const statusColor = absensi.status === 'hadir' ? 'status-approved' :
-                              absensi.status === 'izin' ? 'status-waiting' : 'status-rejected';
-            
-            const statusText = absensi.status === 'hadir' ? 'HADIR' :
-                             absensi.status === 'izin' ? 'IZIN' : 'SAKIT';
-            
-            return `
-                <tr>
-                    <td>${absensi.tanggal}</td>
-                    <td>
-                        <span class="status-badge ${statusColor}">
-                            ${statusText}
-                        </span>
-                    </td>
-                    <td>${absensi.waktu}</td>
-                    <td>${absensi.lokasi}</td>
-                    <td>
-                        <button onclick="viewBukti('${absensi.bukti}')" 
-                                class="text-blue-600 hover:text-blue-800 text-sm flex items-center">
-                            <i class='bx ${absensi.bukti.includes('.pdf') ? 'bx-file' : 'bx-image'} mr-1'></i>
-                            Lihat
-                        </button>
-                    </td>
-                </tr>
             `;
-        }).join('');
-    }
-    
-    // Modal Functions
-    function openVerificationModal(id, type) {
-        let data;
-        
-        data = logbookData.find(l => l.id === id);
-        const title = 'Verifikasi Logbook';
-        const content = `
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-gray-700 mb-1">Peserta</label>
-                    <div class="font-medium">${data.peserta}</div>
-                </div>
-                
-                <div>
-                    <label class="block text-gray-700 mb-1">Tanggal</label>
-                    <div class="font-medium">${data.tanggal} • ${data.waktu}</div>
-                </div>
-                
-                <div>
-                    <label class="block text-gray-700 mb-1">Kegiatan</label>
-                    <div>${data.kegiatan}</div>
-                </div>
-                
-                <div>
-                    <label class="block text-gray-700 mb-1">Deskripsi</label>
-                    <div class="bg-gray-50 p-3 rounded-lg">${data.deskripsi}</div>
-                </div>
-                
-                <div>
-                    <label class="block text-gray-700 mb-2">Catatan Evaluasi</label>
-                    <textarea id="verificationNote" 
-                              class="w-full p-3 border border-gray-300 rounded-lg" 
-                              rows="3" 
-                              placeholder="Berikan catatan atau masukan..."></textarea>
-                </div>
-                
-                <div>
-                    <label class="block text-gray-700 mb-2">Status Verifikasi</label>
-                    <div class="grid grid-cols-2 gap-3">
-                        <button onclick="setVerificationStatus('approved')" 
-                                class="p-3 border-2 border-green-500 text-green-600 rounded-lg font-medium hover:bg-green-50 transition">
-                            <i class='bx bx-check'></i> Setujui
-                        </button>
-                        <button onclick="setVerificationStatus('rejected')" 
-                                class="p-3 border-2 border-red-500 text-red-600 rounded-lg font-medium hover:bg-red-50 transition">
-                            <i class='bx bx-x'></i> Tolak
-                        </button>
-                    </div>
-                </div>
-                
-                <input type="hidden" id="verificationId" value="${id}">
-                <input type="hidden" id="verificationType" value="${type}">
-            </div>
-            
-            <div class="mt-6 flex gap-3">
-                <button onclick="submitVerification()" 
-                        class="flex-1 bg-primary text-white py-3 rounded-lg font-medium hover:bg-blue-800 transition">
-                    Simpan
-                </button>
-                <button onclick="closeModal()" 
-                        class="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-200 transition">
-                    Batal
-                </button>
-            </div>
-        `;
-        
-        document.getElementById('modalTitle').textContent = title;
-        document.getElementById('modalContent').innerHTML = content;
-        document.getElementById('verificationModal').classList.remove('hidden');
-    }
-    
-    function setVerificationStatus(status) {
-        const buttons = document.querySelectorAll('#modalContent button[onclick*="setVerificationStatus"]');
-        buttons.forEach(btn => {
-            btn.style.background = '';
-            btn.style.color = btn.textContent.includes('Setujui') ? 
-                '#10b981' : '#ef4444';
-        });
-        
-        const selectedBtn = event.target.closest('button');
-        selectedBtn.style.background = selectedBtn.textContent.includes('Setujui') ? 
-            '#10b981' : '#ef4444';
-        selectedBtn.style.color = 'white';
-    }
-    
-    function submitVerification() {
-        const id = parseInt(document.getElementById('verificationId').value);
-        const type = document.getElementById('verificationType').value;
-        const note = document.getElementById('verificationNote')?.value || '';
-        
-        const index = logbookData.findIndex(l => l.id === id);
-        if (index !== -1) {
-            logbookData[index].status = 'approved';
-            logbookData[index].catatan = note;
-            
-            // Move to verified logbooks
-            verifiedLogbooks.unshift({
-                id: logbookData[index].id,
-                peserta: logbookData[index].peserta,
-                tanggal: logbookData[index].tanggal,
-                kegiatan: logbookData[index].kegiatan,
-                status: 'approved',
-                catatan: note
-            });
-            
-            // Remove from pending
-            logbookData.splice(index, 1);
-        }
-        
-        closeModal();
-        
-        // Show success message
-        showNotification('Berhasil!', 'Logbook berhasil diverifikasi.', 'success');
-        
-        // Reload current tab
-        const activeTab = document.querySelector('.tab-btn.active').id.replace('tab-', '');
-        loadTabData(activeTab);
-        updateTabBadges();
-    }
-    
-    function closeModal() {
-        document.getElementById('verificationModal').classList.add('hidden');
-    }
-    
-    function viewDetail(id, type) {
-        let data;
-        let title;
-        
-        if (type === 'logbook') {
-            data = logbookData.find(l => l.id === id);
-            title = 'Detail Logbook';
         } else {
-            data = absensiData.find(a => a.id === id);
-            title = 'Detail Absensi';
-        }
-        
-        alert(`${title}\n\nPeserta: ${data.peserta}\nTanggal: ${data.tanggal}\n${type === 'logbook' ? 'Kegiatan: ' + data.kegiatan : 'Status: ' + data.status}`);
-    }
-    
-    // Filter Functions
-    function filterData() {
-        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-        const statusFilter = document.getElementById('statusFilter').value;
-        const dateFilter = document.getElementById('dateFilter').value;
-        
-        // Implementation depends on backend
-        showNotification('Filter', 'Filter diterapkan.', 'info');
-    }
-    
-    function resetFilter() {
-        document.getElementById('searchInput').value = '';
-        document.getElementById('statusFilter').value = 'all';
-        document.getElementById('dateFilter').value = '';
-        showNotification('Reset', 'Filter direset.', 'info');
-    }
-    
-    // Utility Functions
-    function showNotification(title, message, type = 'info') {
-        const notification = document.createElement('div');
-        notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 transform transition-transform duration-300 ${
-            type === 'success' ? 'bg-green-500' :
-            type === 'error' ? 'bg-red-500' :
-            'bg-blue-500'
-        } text-white`;
-        
-        notification.innerHTML = `
-            <div class="flex items-center gap-3">
-                <i class='bx ${
-                    type === 'success' ? 'bx-check-circle' :
-                    type === 'error' ? 'bx-error' :
-                    'bx-info-circle'
-                } text-xl'></i>
-                <div>
-                    <div class="font-bold">${title}</div>
-                    <div class="text-sm opacity-90">${message}</div>
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-            notification.style.transform = 'translateX(100%)';
-            setTimeout(() => notification.remove(), 300);
-        }, 3000);
-    }
-
-    // Fungsi untuk melihat bukti absensi
-    function viewBukti(filename) {
-        const fileExt = filename.split('.').pop().toLowerCase();
-        const imageExtensions = ['jpg', 'jpeg', 'png', 'gif'];
-        const pdfExtensions = ['pdf'];
-        
-        if (imageExtensions.includes(fileExt)) {
-            // Simulasi modal untuk melihat gambar
-            const modal = `
-                <div class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-                    <div class="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-                        <div class="flex justify-between items-center p-4 border-b">
-                            <h3 class="text-lg font-bold text-primary">Preview Bukti Absensi</h3>
-                            <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600">
-                                <i class='bx bx-x text-2xl'></i>
+            buktiHtml = `
+                <div class="mt-4">
+                    <label class="text-sm text-gray-500 mb-2">File Bukti</label>
+                    <div class="border rounded-lg p-4">
+                        <div class="flex items-center gap-3">
+                            <i class='bx bx-file text-3xl text-gray-400'></i>
+                            <div>
+                                <div class="font-medium">${absensi.bukti}</div>
+                                <div class="text-sm text-gray-500">File bukti kehadiran</div>
+                            </div>
+                            <button onclick="downloadBukti('${absensi.bukti}')" 
+                                    class="ml-auto px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-800">
+                                <i class='bx bx-download'></i> Download
                             </button>
                         </div>
-                        <div class="p-4 overflow-auto">
-                            <div class="text-center">
-                                <img src="/images/dummy/${filename}" 
-                                     alt="Bukti Absensi" 
-                                     class="max-w-full h-auto rounded-lg mx-auto">
-                                <div class="mt-4 text-gray-600 text-sm">
-                                    <div class="font-medium">${filename}</div>
-                                    <div>Bukti absensi John Doe</div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             `;
-            document.body.insertAdjacentHTML('beforeend', modal);
-        } else if (pdfExtensions.includes(fileExt)) {
-            // Untuk file PDF, buka di tab baru atau tampilkan preview
-            window.open(`/documents/${filename}`, '_blank');
-        } else {
-            alert(`Membuka file: ${filename}\n\nFile akan diunduh atau dibuka di aplikasi yang sesuai.`);
         }
     }
     
-    // Initialize
-    document.addEventListener('DOMContentLoaded', function() {
-        setupTabs();
-        loadTabData('logbook');
-        updateTabBadges();
-        
-        // Add real-time search
-        document.getElementById('searchInput').addEventListener('input', filterData);
-        document.getElementById('statusFilter').addEventListener('change', filterData);
-        document.getElementById('dateFilter').addEventListener('change', filterData);
-        
-        // Close modal on ESC key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeModal();
-        });
-    });
-</script>
+    let alasanHtml = '';
+    if (absensi.status === 'izin' || absensi.status === 'sakit') {
+        alasanHtml = `
+            <div>
+                <label class="text-sm text-gray-500 mb-2">Alasan ${absensi.status === 'izin' ? 'Izin' : 'Sakit'}</label>
+                <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                    ${absensi.keterangan || 'Tidak ada keterangan'}
+                </div>
+            </div>
+        `;
+    }
+    
+    document.getElementById('absensiModalContent').innerHTML = `
+        <div class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-sm text-gray-500">Tanggal</label>
+                    <div class="font-medium">${formatDate(absensi.tanggal)}</div>
+                </div>
+                <div>
+                    <label class="text-sm text-gray-500">Status</label>
+                    <div>
+                        <span class="status-badge-mentor ${statusClass}">${statusText}</span>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-sm text-gray-500">Waktu Submit</label>
+                    <div class="font-medium">${waktuSubmit}</div>
+                </div>
+                <div>
+                    <label class="text-sm text-gray-500">Lokasi</label>
+                    <div class="font-medium truncate">${absensi.lokasi || '-'}</div>
+                </div>
+            </div>
+            
+            ${absensi.koordinat ? `
+                <div>
+                    <label class="text-sm text-gray-500">Koordinat GPS</label>
+                    <div class="bg-gray-50 p-3 rounded-lg text-sm font-mono">${absensi.koordinat}</div>
+                    <div class="mt-2">
+                        <a href="https://maps.google.com/?q=${absensi.koordinat}" 
+                           target="_blank" 
+                           class="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1">
+                            <i class='bx bx-map'></i> Lihat di Google Maps
+                        </a>
+                    </div>
+                </div>
+            ` : ''}
+            
+            ${alasanHtml}
+            
+            ${buktiHtml}
+        </div>
+    `;
+}
 
-<style>
-    /* Additional styles for the verification page */
-    .tab-btn {
-        transition: all 0.3s ease;
-        position: relative;
+function downloadBukti(filename) {
+    // Redirect ke endpoint download
+    window.open(`/api/mentor/absensi/download/${filename}`, '_blank');
+}
+
+// ============================
+// UTILITY FUNCTIONS
+// ============================
+
+function getInitials(name) {
+    if (!name) return '--';
+    return name
+        .split(' ')
+        .map(n => n.charAt(0).toUpperCase())
+        .join('')
+        .substring(0, 2);
+}
+
+function formatDate(dateString) {
+    if (!dateString) return '-';
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('id-ID', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        });
+    } catch (e) {
+        return dateString;
     }
+}
+
+function getLogbookStatusClass(status) {
+    switch(status) {
+        case 'approved': return 'status-approved';
+        case 'rejected': return 'status-rejected';
+        case 'pending': return 'status-pending';
+        default: return 'status-pending';
+    }
+}
+
+function getLogbookStatusText(status) {
+    switch(status) {
+        case 'approved': return 'Disetujui';
+        case 'rejected': return 'Ditolak';
+        case 'pending': return 'Menunggu';
+        default: return 'Unknown';
+    }
+}
+
+function getAbsensiStatusClass(status) {
+    switch(status) {
+        case 'hadir': return 'status-approved';
+        case 'izin': return 'status-pending';
+        case 'sakit': return 'status-rejected';
+        case 'alpha': return 'status-rejected';
+        default: return 'status-pending';
+    }
+}
+
+function getAbsensiStatusText(status) {
+    switch(status) {
+        case 'hadir': return 'Hadir';
+        case 'izin': return 'Izin';
+        case 'sakit': return 'Sakit';
+        case 'alpha': return 'Alpha';
+        default: return 'Unknown';
+    }
+}
+
+function setupEventListeners() {
+    // Logbook filter event listeners
+    document.getElementById('searchLogbook').addEventListener('input', 
+        debounce(filterLogbookData, 300)
+    );
+    document.getElementById('dateLogbook').addEventListener('change', filterLogbookData);
+    document.getElementById('statusLogbook').addEventListener('change', filterLogbookData);
     
-    .tab-btn.active {
-        font-weight: 600;
-    }
+    // Absensi filter event listeners
+    document.getElementById('searchAbsensi').addEventListener('input', 
+        debounce(filterAbsensiData, 300)
+    );
+    document.getElementById('dateAbsensi').addEventListener('change', filterAbsensiData);
+    document.getElementById('statusAbsensi').addEventListener('change', filterAbsensiData);
     
-    .tab-content {
-        animation: fadeIn 0.3s ease;
-    }
+    // Logbook pagination
+    document.getElementById('logbookPrevPage').addEventListener('click', logbookPrevPage);
+    document.getElementById('logbookNextPage').addEventListener('click', logbookNextPage);
     
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
+    // Absensi pagination
+    document.getElementById('absensiPrevPage').addEventListener('click', absensiPrevPage);
+    document.getElementById('absensiNextPage').addEventListener('click', absensiNextPage);
+}
+
+function resetLogbookFilter() {
+    document.getElementById('searchLogbook').value = '';
+    document.getElementById('dateLogbook').value = '';
+    document.getElementById('statusLogbook').value = 'all';
     
-    .line-clamp-2 {
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
+    state.logbookFilters.search = '';
+    state.logbookFilters.date = '';
+    state.logbookFilters.status = 'all';
     
-    /* Custom scrollbar for tables */
-    .table-container::-webkit-scrollbar {
-        height: 6px;
-        width: 6px;
-    }
+    filterLogbookData();
+}
+
+function resetAbsensiFilter() {
+    document.getElementById('searchAbsensi').value = '';
+    document.getElementById('dateAbsensi').value = '';
+    document.getElementById('statusAbsensi').value = 'all';
     
-    .table-container::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 3px;
-    }
+    state.absensiFilters.search = '';
+    state.absensiFilters.date = '';
+    state.absensiFilters.status = 'all';
     
-    .table-container::-webkit-scrollbar-thumb {
-        background: #c1c1c1;
-        border-radius: 3px;
-    }
+    filterAbsensiData();
+}
+
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// ============================
+// PAGINATION FUNCTIONS
+// ============================
+
+// Logbook pagination
+function updateLogbookCount() {
+    document.getElementById('logbookCount').textContent = 
+        `${state.filteredLogbook.length} logbook`;
+}
+
+function updateLogbookPagination() {
+    const totalPages = Math.ceil(state.filteredLogbook.length / state.logbookItemsPerPage);
+    const start = ((state.logbookCurrentPage - 1) * state.logbookItemsPerPage) + 1;
+    const end = Math.min(state.logbookCurrentPage * state.logbookItemsPerPage, state.filteredLogbook.length);
     
-    .table-container::-webkit-scrollbar-thumb:hover {
-        background: #a1a1a1;
+    document.getElementById('logbookPageInfo').textContent = 
+        `Menampilkan ${start} - ${end} dari ${state.filteredLogbook.length} logbook`;
+    
+    document.getElementById('logbookPrevPage').disabled = state.logbookCurrentPage === 1;
+    document.getElementById('logbookNextPage').disabled = state.logbookCurrentPage === totalPages || totalPages === 0;
+}
+
+function logbookPrevPage() {
+    if (state.logbookCurrentPage > 1) {
+        state.logbookCurrentPage--;
+        renderLogbookTable();
+        updateLogbookPagination();
     }
-</style>
+}
+
+function logbookNextPage() {
+    const totalPages = Math.ceil(state.filteredLogbook.length / state.logbookItemsPerPage);
+    if (state.logbookCurrentPage < totalPages) {
+        state.logbookCurrentPage++;
+        renderLogbookTable();
+        updateLogbookPagination();
+    }
+}
+
+// Absensi pagination
+function updateAbsensiCount() {
+    document.getElementById('absensiCount').textContent = 
+        `${state.filteredAbsensi.length} absensi`;
+}
+
+function updateAbsensiPagination() {
+    const totalPages = Math.ceil(state.filteredAbsensi.length / state.absensiItemsPerPage);
+    const start = ((state.absensiCurrentPage - 1) * state.absensiItemsPerPage) + 1;
+    const end = Math.min(state.absensiCurrentPage * state.absensiItemsPerPage, state.filteredAbsensi.length);
+    
+    document.getElementById('absensiPageInfo').textContent = 
+        `Menampilkan ${start} - ${end} dari ${state.filteredAbsensi.length} absensi`;
+    
+    document.getElementById('absensiPrevPage').disabled = state.absensiCurrentPage === 1;
+    document.getElementById('absensiNextPage').disabled = state.absensiCurrentPage === totalPages || totalPages === 0;
+}
+
+function absensiPrevPage() {
+    if (state.absensiCurrentPage > 1) {
+        state.absensiCurrentPage--;
+        renderAbsensiTable();
+        updateAbsensiPagination();
+    }
+}
+
+function absensiNextPage() {
+    const totalPages = Math.ceil(state.filteredAbsensi.length / state.absensiItemsPerPage);
+    if (state.absensiCurrentPage < totalPages) {
+        state.absensiCurrentPage++;
+        renderAbsensiTable();
+        updateAbsensiPagination();
+    }
+}
+
+// ============================
+// MODAL UTILITIES
+// ============================
+
+function openModal(modalId) {
+    document.getElementById(modalId).style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLogbookModal() {
+    document.getElementById('logbookModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+    state.currentLogbook = null;
+}
+
+function closeVerificationModal() {
+    document.getElementById('verificationModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+function closeAbsensiModal() {
+    document.getElementById('absensiModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+// ============================
+// LOADING FUNCTIONS
+// ============================
+
+function showLoading(context, isLoading) {
+    const loaders = {
+        'logbook': () => {
+            const loadingRow = document.getElementById('loadingRow');
+            if (loadingRow) {
+                loadingRow.style.display = isLoading ? 'table-row' : 'none';
+            }
+        },
+        'absensi': () => {
+            const loadingRow = document.getElementById('loadingRowAbsensi');
+            if (loadingRow) {
+                loadingRow.style.display = isLoading ? 'table-row' : 'none';
+            }
+        }
+    };
+    
+    if (loaders[context]) {
+        loaders[context]();
+    }
+}
+
+function showModalLoading(context, isLoading) {
+    const loaders = {
+        'logbook': () => {
+            const modalContent = document.getElementById('logbookModalContent');
+            if (modalContent && isLoading) {
+                modalContent.innerHTML = `
+                    <div class="text-center py-10">
+                        <i class='bx bx-loader-circle bx-spin text-4xl text-primary'></i>
+                        <div class="mt-4 text-gray-600">Memuat detail logbook...</div>
+                    </div>
+                `;
+            }
+        }
+    };
+    
+    if (loaders[context]) {
+        loaders[context]();
+    }
+}
+
+function showSubmitLoading(show) {
+    const btn = document.querySelector('#verificationModal .btn-primary');
+    if (btn) {
+        btn.disabled = show;
+        btn.innerHTML = show 
+            ? '<i class="bx bx-loader-circle bx-spin"></i> Memproses...'
+            : '<i class="bx bx-check"></i> Simpan Verifikasi';
+    }
+}
+
+// ============================
+// NOTIFICATION FUNCTION
+// ============================
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    
+    const icon = type === 'success' ? 'bx-check-circle' : 
+                type === 'error' ? 'bx-error-circle' : 'bx-info-circle';
+    
+    notification.innerHTML = `
+        <div class="flex items-center gap-3">
+            <i class='bx ${icon}'></i>
+            <span>${message}</span>
+        </div>
+    `;
+    
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#d4edda' : 
+                     type === 'error' ? '#f8d7da' : '#d1ecf1'};
+        color: ${type === 'success' ? '#155724' : 
+                type === 'error' ? '#721c24' : '#0c5460'};
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        z-index: 9999;
+        animation: slideIn 0.3s ease;
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 5000);
+}
+</script>
 @endsection

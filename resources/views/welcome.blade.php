@@ -169,25 +169,6 @@
                     Lihat Alur Magang
                 </a>
             </div>
-            <!-- Stats Mini Preview -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
-                <div class="bg-white/10 backdrop-blur-sm p-4 rounded-2xl border border-accent/30">
-                    <div class="text-3xl font-bold text-accent" x-data="{ count: 0 }" x-init="() => { let start = 0; const end = 124; const duration = 2000; const step = (end - start) / (duration / 16); const counter = setInterval(() => { start += step; if (start >= end) { start = end; clearInterval(counter); } $el.textContent = Math.floor(start); }, 16); }">124</div>
-                    <div class="text-sm">Peserta Aktif</div>
-                </div>
-                <div class="bg-white/10 backdrop-blur-sm p-4 rounded-2xl border border-accent/30">
-                    <div class="text-3xl font-bold text-accent" x-data="{ count: 0 }" x-init="() => { let start = 0; const end = 18; const duration = 2000; const step = (end - start) / (duration / 16); const counter = setInterval(() => { start += step; if (start >= end) { start = end; clearInterval(counter); } $el.textContent = Math.floor(start); }, 16); }">18</div>
-                    <div class="text-sm">Bidang Tersedia</div>
-                </div>
-                <div class="bg-white/10 backdrop-blur-sm p-4 rounded-2xl border border-accent/30">
-                    <div class="text-3xl font-bold text-accent" x-data="{ count: 0 }" x-init="() => { let start = 0; const end = 42; const duration = 2000; const step = (end - start) / (duration / 16); const counter = setInterval(() => { start += step; if (start >= end) { start = end; clearInterval(counter); } $el.textContent = Math.floor(start); }, 16); }">42</div>
-                    <div class="text-sm">Mentor Berpengalaman</div>
-                </div>
-                <div class="bg-white/10 backdrop-blur-sm p-4 rounded-2xl border border-accent/30">
-                    <div class="text-3xl font-bold text-accent" x-data="{ count: 0 }" x-init="() => { let start = 0; const end = 890; const duration = 2000; const step = (end - start) / (duration / 16); const counter = setInterval(() => { start += step; if (start >= end) { start = end; clearInterval(counter); } $el.textContent = Math.floor(start); }, 16); }">890</div>
-                    <div class="text-sm">Alumni Sukses</div>
-                </div>
-            </div>
         </div>
     </section>
 
@@ -294,14 +275,7 @@
                 </div>
             </div>
         </section>
-        <!-- CTA Section -->
-        <section class="bg-gradient-to-r from-primary to-secondary text-white rounded-3xl p-12 text-center mb-20 shadow-2xl">
-            <h2 class="text-3xl md:text-4xl font-bold mb-6">Siap Memulai Perjalanan Magang Digital?</h2>
-            <p class="text-xl mb-10 max-w-2xl mx-auto opacity-90">Bergabunglah dengan ratusan peserta dan institusi yang telah merasakan kemudahan <strong>InternFlow</strong>.</p>
-            <a href="/register" class="inline-block bg-background text-primary font-bold px-10 py-4 rounded-xl text-lg hover:shadow-2xl hover:scale-105 transition duration-300 shadow-lg">
-                Daftar Sebagai Peserta Magang
-            </a>
-        </section>
+
     </main>
 
     <!-- Footer -->
