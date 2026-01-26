@@ -21,21 +21,5 @@ class UserInternalSeeder extends Seeder
             'id_role' => 1,
             'status_aktif' => 1,
         ]);
-
-        user::create([
-            'name' => 'Admin Bidang Statistika',
-            'email' => 'bidangstatistika@diskominfo.ac.id',
-            'password' => Hash::make('BidangStatistika100'),
-            'id_role' => 2,
-            'status_aktif' => 1,
-        ]);
-
-        user::create([
-            'name' => 'Admin Bidang Informatika',
-            'email' => 'bidanginformatika@diskominfo.ac.id',
-            'password' => Hash::make('BidangInformatika100'),
-            'id_role' => 2,
-            'status_aktif' => 1,
-        ]);
     }
 }
