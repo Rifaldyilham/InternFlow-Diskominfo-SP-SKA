@@ -145,7 +145,7 @@
                             <option value="2">Admin Bidang</option>
                             <option value="3">Mentor</option>
                         </select>
-                            <!-- Options akan diisi via JavaScript --   
+                            <!-- Options akan diisi via JavaScript -->  
                     </div>
 
                     <!-- Bidang (hanya untuk Admin Bidang & Mentor) -->
@@ -267,7 +267,6 @@ let totalPages = 1;
 let perPage = 10;
 let currentSearch = '';
 let currentRoleFilter = '';
-let currentStatusFilter = '';
 let userToDelete = null;
 let currentDetailUser = null;
 
@@ -309,12 +308,10 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('userForm').addEventListener('submit', handleSubmit);
     document.getElementById('searchInput').addEventListener('input', debounce(searchUsers, 300));
     document.getElementById('roleFilter').addEventListener('change', filterUsers);
-    document.getElementById('statusFilter').addEventListener('change', filterUsers);
-    
     setupCSRF();
 });
 
-Setup CSRF
+//Setup CSRF
 function setupCSRF() {
     const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     if (token) {
@@ -363,8 +360,7 @@ async function fetchUsers() {
         const params = [];
         if (currentSearch) params.push(`search=${encodeURIComponent(currentSearch)}`);
         if (currentRoleFilter) params.push(`role=${currentRoleFilter}`);
-        if (currentStatusFilter) params.push(`status=${currentStatusFilter}`);
-        
+
         if (params.length > 0) {
             url += `&${params.join('&')}`;
         }
@@ -728,6 +724,12 @@ async function handleSubmit(e) {
         formData.forEach((value, key) => {
             jsonData[key] = value;
         });
+
+        if (jsonData.password && jsonData.password !== jsonData.password_confirmation) {
+            showNotification('Password dan konfirmasi tidak sama', 'error');
+            showSubmitLoading(false);
+            return;
+        }
         
         // Add CSRF token
         // jsonData._token = window.csrfToken;
@@ -737,16 +739,6 @@ async function handleSubmit(e) {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
                 'X-CSRF-TOKEN': window.csrfToken
-            },
-            body: JSON.stringify(jsonData)
-        });
-
-        
-        const response = await fetch(url, {
-            method: method,
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
             },
             body: JSON.stringify(jsonData)
         });
@@ -771,12 +763,6 @@ async function handleSubmit(e) {
     } finally {
         showSubmitLoading(false);
     }
-}
-
-if (jsonData.password && jsonData.password !== jsonData.password_confirmation) {
-    showNotification('Password dan konfirmasi tidak sama', 'error');
-    showSubmitLoading(false);
-    return;
 }
 
 function showSubmitLoading(show) {
@@ -840,7 +826,6 @@ function searchUsers() {
 
 function filterUsers() {
     currentRoleFilter = document.getElementById('roleFilter').value;
-    currentStatusFilter = document.getElementById('statusFilter').value;
     currentPage = 1;
     fetchUsers();
 }
@@ -897,11 +882,9 @@ function updatePagination(data) {
 function refreshData() {
     currentSearch = '';
     currentRoleFilter = '';
-    currentStatusFilter = '';
     
     document.getElementById('searchInput').value = '';
     document.getElementById('roleFilter').value = '';
-    document.getElementById('statusFilter').value = '';
     
     currentPage = 1;
     fetchUsers();
