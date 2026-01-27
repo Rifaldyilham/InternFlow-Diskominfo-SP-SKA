@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Role;
+use App\Models\Pegawai;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -35,67 +37,43 @@ class UserApiController extends Controller
         return response()->json($users);
     }
 
+    public function show($id)
+    {
+        return User::with(['role', 'pegawai'])->findOrFail($id_user = $id);
+     }
+
     public function store(Request $request)
     {
         $request->validate([
             'name'     => 'required|string',
             'email'    => 'required|email|unique:users,email',
             'password' => 'required|min:8|confirmed',
-            'id_role'  => 'required|integer'
-        ]);
-
-        User::create([
-            'name'         => $request->name,
-            'email'        => $request->email,
-            'password'     => Hash::make($request->password),
-            'id_role'      => $request->id_role,
-            'status_aktif' => 1,
-        ]);
-
-        return response()->json(['message' => 'User berhasil ditambahkan'], 201);
-    }
-
-    public function show($id)
-    {
-        return User::with('role')->findOrFail($id);
-    }
-
-    public function update(Request $request, $id)
-    {
-        $user = User::findOrFail($id);
-
-    //     $user->update([
-    //     'name'    => $request->name,
-    //     'email'   => $request->email,
-    //     'id_role' => $request->id_role,
-    // ]);
-
-        $request->validate([
-            'name'     => 'required|string',
-            'email'    => 'required|email|unique:users,email,' . $id . ',id_user',
             'id_role'  => 'required|integer',
-            'status_aktif' => 'required|boolean',
+            'nip'      => 'nullable|string',
+            'id_bidang'=> 'nullable|integer',
         ]);
 
-        $user->update([
-            'name'         => $request->name,
-            'email'        => $request->email,
-            'id_role'      => $request->id_role,
-            'status_aktif' => $request->status_aktif,
-        ]);
+        DB::transaction(function () use ($request) {
 
-        if ($request->filled('password')) {
-            $user->update([
-                'password' => Hash::make($request->password),
+            $user = User::create([
+                'name'         => $request->name,
+                'email'        => $request->email,
+                'password'     => Hash::make($request->password),
+                'id_role'      => $request->id_role,
+                'status_aktif' => 1,
             ]);
-        }
 
-        return response()->json(['message' => 'User berhasil diupdate']);
+            Pegawai::updateOrCreate(
+                ['id_user' => $user->id_user],
+                [
+                    'nip'       => $request->nip,
+                    'nama'      => $request->name,
+                    'id_bidang' => $request->id_bidang,
+                ]
+            );
+        });
+
+        return response()->json(['message' => 'Berhasil ditambahkan'], 201);
     }
 
-    public function destroy($id)
-    {
-        User::findOrFail($id)->delete();
-        return response()->json(['message' => 'User berhasil dihapus']);
-    }
 }

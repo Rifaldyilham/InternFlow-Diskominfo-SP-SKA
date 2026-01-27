@@ -13,10 +13,11 @@ return new class extends Migration
     {
         Schema::create('pegawai', function (Blueprint $table) {
              $table->id('id_pegawai');
-            $table->unsignedBigInteger('id_user');
-            $table->unsignedBigInteger('id_bidang');
-            $table->string('nama', 100);
-            $table->string('nip', 20);
+             $table->unsignedBigInteger('id_user');
+             $table->unsignedBigInteger('id_bidang');
+             $table->string('nama', 100);
+             $table->string('nip', 20);
+             $table->timestamps();
 
 
             $table->foreign('id_user')

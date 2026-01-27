@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Admin\UserApiController;
+use App\Http\Controllers\Api\Admin\RoleApiController;
 
 Route::prefix('admin')->group(function () {
 
@@ -10,5 +11,6 @@ Route::prefix('admin')->group(function () {
     Route::get('/users/{id}', [UserApiController::class, 'show']);
     Route::put('/users/{id}', [UserApiController::class, 'update']);
     Route::delete('/users/{id}', [UserApiController::class, 'destroy']);
+    Route::get('/roles', [RoleApiController::class, 'index']);
 
 });

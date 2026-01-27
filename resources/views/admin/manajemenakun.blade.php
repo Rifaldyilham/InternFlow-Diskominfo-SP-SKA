@@ -151,12 +151,12 @@
                     <!-- Bidang (hanya untuk Admin Bidang & Mentor) -->
                     <div class="form-group" id="bidangWrapper" style="display: none;">
                         <label for="bidang">Bidang *</label>
-                        <select id="bidang" name="bidang">
+                        <select id="bidang" name="id_bidang">
                             <option value="">Pilih Bidang</option>
-                            <option value="Teknologi_Informatika">Teknologi & Informatika</option>
-                            <option value="statistika">Statistika</option>
-                            <option value="komunikasi_publik">Komunikasi Publik dan Media</option>
-                            <option value="sekretariat">Sekretariat</option>
+                            <option value="1">Teknologi & Informatika</option>
+                            <option value="2">Statistika</option>
+                            <option value="3">Komunikasi Publik dan Media</option>
+                            <option value="4">Sekretariat</option>
                         </select>
                     </div>
 
@@ -197,6 +197,14 @@
                         <div class="info-row">
                             <span class="info-label">Role:</span>
                             <span class="info-value" id="detailRole">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">NIP:</span>
+                            <span class="info-value" id="detailNip">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Bidang:</span>
+                            <span class="info-value" id="detailBidang">-</span>
                         </div>
                         <div class="info-row">
                             <span class="info-label">Status:</span>
@@ -270,35 +278,35 @@ let currentRoleFilter = '';
 let userToDelete = null;
 let currentDetailUser = null;
 
-// Inisialisasi
-// document.addEventListener('DOMContentLoaded', function () {
-//     const roleSelect = document.getElementById('id_role');
-//     const bidangWrapper = document.getElementById('bidangWrapper');
-//     const nipWrapper = document.getElementById('nipWrapper');
-//     const nipInput = document.getElementById('nip');
+//Inisialisasi
+document.addEventListener('DOMContentLoaded', function () {
+    const roleSelect = document.getElementById('id_role');
+    const bidangWrapper = document.getElementById('bidangWrapper');
+    const nipWrapper = document.getElementById('nipWrapper');
+    const nipInput = document.getElementById('nip');
 
-//     if (!roleSelect) return;
+    if (!roleSelect) return;
 
-//     roleSelect.addEventListener('change', function () {
-//         const roleId = this.value;
+    roleSelect.addEventListener('change', function () {
+        const roleId = this.value;
 
-//         // BIDANG: Admin Bidang & Mentor
-//         if (roleId === '2' || roleId === '3') {
-//             bidangWrapper.style.display = 'block';
-//         } else {
-//             bidangWrapper.style.display = 'none';
-//             document.getElementById('bidang').value = '';
-//         }
+        // BIDANG: Admin Bidang & Mentor
+        if (roleId === '2' || roleId === '3') {
+            bidangWrapper.style.display = 'block';
+        } else {
+            bidangWrapper.style.display = 'none';
+            document.getElementById('bidang').value = '';
+        }
 
-//         // NIP: Admin Kepegawaian & Admin Bidang
-//         if (roleId === '1' || roleId === '2') {
-//             nipWrapper.style.display = 'block';
-//         } else {
-//             nipWrapper.style.display = 'none';
-//             nipInput.value = '';
-//         }
-//     });
-// });
+        // NIP: Admin Kepegawaian & Admin Bidang
+        if (roleId === '2' || roleId === '3') {
+            nipWrapper.style.display = 'block';
+        } else {
+            nipWrapper.style.display = 'none';
+            nipInput.value = '';
+        }
+    });
+});
 
 document.addEventListener('DOMContentLoaded', function() {
     fetchRoles()
@@ -594,6 +602,8 @@ async function editUser(id) {
         document.getElementById('editUserId').value = user.id || user.id_user;
         document.getElementById('name').value = user.name;
         document.getElementById('email').value = user.email;
+        document.getElementById('nip').value = user.pegawai?.nip ?? '';
+        document.getElementById('bidang').value = user.pegawai?.id_bidang ?? '';
         document.getElementById('status_aktif').value = user.status_aktif || '1';
         document.getElementById('id_role').value = user.role_id || user.id_role;
         // Tampilkan bidang jika role Admin Bidang / Mentor saat edit
@@ -640,6 +650,8 @@ async function showDetail(id) {
         document.getElementById('detailStatus').innerHTML = user.status_aktif == 1 
             ? '<span class="status-active">Aktif</span>'
             : '<span class="status-inactive">Nonaktif</span>';
+        document.getElementById('detailNip').textContent = user.pegawai?.nip ?? '-';
+        document.getElementById('detailBidang').textContent = user.pegawai?.id_bidang ?? '-';
         document.getElementById('detailJoinDate').textContent = formatDate(user.created_at);
         document.getElementById('detailLastLogin').textContent = user.last_login_at 
             ? `${formatDate(user.last_login_at)} ${formatTime(user.last_login_at)}`
@@ -647,8 +659,8 @@ async function showDetail(id) {
         
         // Update edit button
         document.getElementById('detailEditBtn').onclick = function() {
-            closeDetailModal();
-            editUser(user.id || user.id_user);
+            closeAllModals();
+            editUser(user.id_user);
         };
         
         openModal('detailModal');
@@ -660,6 +672,7 @@ async function showDetail(id) {
 }
 
 function openModal(modalId) {
+    closeAllModals();
     document.getElementById(modalId).style.display = 'flex';
 }
 
@@ -669,6 +682,12 @@ function closeModal() {
 
 function closeDetailModal() {
     document.getElementById('detailModal').style.display = 'none';
+}
+
+function closeAllModals() {
+    document.querySelectorAll('.modal').forEach(m => {
+        m.style.display = 'none';
+    });
 }
 
 // Tampilkan bidang jika role Admin Bidang atau Mentor
@@ -683,24 +702,24 @@ function closeDetailModal() {
 //         document.getElementById('bidang').value = '';
 //     }
 // });
-document.addEventListener('DOMContentLoaded', function () {
-    const roleSelect = document.getElementById('id_role');
-    const bidangWrapper = document.getElementById('bidangWrapper');
-    const bidangSelect = document.getElementById('bidang');
+// document.addEventListener('DOMContentLoaded', function () {
+//     const roleSelect = document.getElementById('id_role');
+//     const bidangWrapper = document.getElementById('bidangWrapper');
+//     const bidangSelect = document.getElementById('bidang');
 
-    if (!roleSelect) return;
+//     if (!roleSelect) return;
 
-    roleSelect.addEventListener('change', function () {
-        const roleId = this.value;
+//     roleSelect.addEventListener('change', function () {
+//         const roleId = this.value;
 
-        if (roleId === '2' || roleId === '3') {
-            bidangWrapper.style.display = 'block';
-        } else {
-            bidangWrapper.style.display = 'none';
-            bidangSelect.value = '';
-        }
-    });
-});
+//         if (roleId === '2' || roleId === '3') {
+//             bidangWrapper.style.display = 'block';
+//         } else {
+//             bidangWrapper.style.display = 'none';
+//             bidangSelect.value = '';
+//         }
+//     });
+// });
 
 
 // Form submission
