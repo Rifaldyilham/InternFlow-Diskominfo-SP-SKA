@@ -22,6 +22,8 @@ return new class extends Migration
             $table->string('asal_univ', 100);
             $table->string('program_studi', 100);
             $table->string('no_telp', 15);
+            $table->enum('status', ['aktif', 'nonaktif'])
+                  ->default('aktif');
             $table->timestamps();
 
             $table->foreign('id_user')

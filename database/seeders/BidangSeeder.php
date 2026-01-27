@@ -13,11 +13,44 @@ class BidangSeeder extends Seeder
      */
     public function run(): void
     {
-        Bidang::insert([
-            ['nama_bidang'=> 'Teknologi dan Informatika'],
-            ['nama_bidang'=> 'Statistika'],
-            ['nama_bidang'=> 'Komunikasi Publik dan Media'],
-            ['nama_bidang'=> 'Sekretariat'],
-        ]);
+            Bidang::insert([
+        [
+            'nama_bidang' => 'Teknologi dan Informatika',
+            'deskripsi' => null,
+            'kuota' => 10,
+            'status' => 'aktif',
+            'id_admin' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+        [
+            'nama_bidang' => 'Statistika',
+            'deskripsi' => null,
+            'kuota' => 10,
+            'status' => 'aktif',
+            'id_admin' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+        [
+            'nama_bidang' => 'Komunikasi Publik dan Media',
+            'deskripsi' => null,
+            'kuota' => 10,
+            'status' => 'aktif',
+            'id_admin' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+        [
+            'nama_bidang' => 'Sekretariat',
+            'deskripsi' => null,
+            'kuota' => 10,
+            'status' => 'aktif',
+            'id_admin' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+    ]);
+
     }
 }

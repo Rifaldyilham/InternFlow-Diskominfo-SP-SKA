@@ -78,9 +78,9 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="kuota_maksimal">Kuota Maksimal *</label>
+                    <label for="kuota">Kuota</label>
                     <div class="input-with-info">
-                        <input type="number" id="kuota_maksimal" name="kuota_maksimal" 
+                        <input type="number" id="kuota" name="kuota" 
                                required min="1" max="50" value="10">
                         <div class="input-info">
                             <i class='bx bx-info-circle'></i>
@@ -172,9 +172,8 @@ const API_CONFIG = {
     baseUrl: window.location.origin,
     endpoints: {
         bidang: '/api/admin/bidang',
-        bidangWithAdmin: '/api/admin/bidang/with-admin',
-        adminByBidang: '/api/admin/users/by-bidang',
-        pesertaByBidang: '/api/admin/peserta/by-bidang'
+        adminByBidang: '/api/admin/bidang',
+        pesertaByBidang: '/api/admin/bidang',
     }
 };
 
@@ -213,7 +212,7 @@ async function fetchBidangData() {
     try {
         showLoading(true);
         
-        const response = await fetch(API_CONFIG.endpoints.bidangWithAdmin, {
+        const response = await fetch(API_CONFIG.endpoints.bidang, {
             headers: {
                 'Accept': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest'
@@ -228,7 +227,7 @@ async function fetchBidangData() {
         
     } catch (error) {
         console.error('Error:', error);
-        showNotification('Gagal memuat data bidang', 'error');
+        localNotification('Gagal memuat data bidang', 'error');
         renderEmptyTable('Terjadi kesalahan saat memuat data');
     } finally {
         showLoading(false);
@@ -245,9 +244,13 @@ function renderBidangTable() {
     }
     
     tbody.innerHTML = state.bidangList.map(bidang => {
-        const kuotaPercent = Math.round((bidang.peserta_aktif / bidang.kuota_maksimal) * 100);
-        const kuotaTersedia = bidang.kuota_maksimal - bidang.peserta_aktif;
-        
+        const kuota = bidang.kuota || 0;
+        const aktif = bidang.peserta_aktif || 0;
+
+        const kuotaPercent = kuota > 0 ? Math.round((aktif / kuota) * 100) : 0;
+
+        const kuotaTersedia = kuota - aktif;
+
         return `
             <tr>
                 <td>
@@ -270,7 +273,7 @@ function renderBidangTable() {
                         <div class="kuota-info">
                             <span class="kuota-current">${bidang.peserta_aktif || 0}</span>
                             <span class="kuota-separator">/</span>
-                            <span class="kuota-max">${bidang.kuota_maksimal}</span>
+                            <span class="kuota-max">${bidang.kuota}</span>
                             <span class="kuota-label">peserta</span>
                         </div>
                         <div class="kuota-progress-small">
@@ -288,13 +291,13 @@ function renderBidangTable() {
                 </td>
                 <td>
                     <div class="action-buttons">
-                        <button class="action-btn view" title="Lihat Detail" onclick="showDetailModal('${bidang.id}')">
+                        <button class="action-btn view" title="Lihat Detail" onclick="showDetailModal('${bidang.id_bidang}')">
                             <i class='bx bx-show'></i>
                         </button>
-                        <button class="action-btn edit" title="Edit" onclick="editBidang('${bidang.id}')">
+                        <button class="action-btn edit" title="Edit" onclick="editBidang('${bidang.id_bidang}')">
                             <i class='bx bx-edit'></i>
                         </button>
-                        <button class="action-btn delete" title="Hapus" onclick="showDeleteBidangModal('${bidang.id}', '${bidang.nama_bidang}')">
+                        <button class="action-btn delete" title="Hapus" onclick="showDeleteBidangModal('${bidang.id_bidang}', '${bidang.nama_bidang}')">
                             <i class='bx bx-trash'></i>
                         </button>
                     </div>
@@ -334,14 +337,13 @@ function renderEmptyTable(message) {
 // Helper functions
 function getBidangColor(bidangName) {
     const colors = {
+        'Teknologi dan Informatika': '#2ecc71',
         'Statistik': '#3498db',
-        'Informatika': '#2ecc71',
+        'Komunikasi dan ': '#f39c12',
         'Sekretariat': '#9b59b6',
-        'E-Goverment': '#e74c3c',
-        'Komunikasi': '#f39c12',
-        'Administrasi': '#1abc9c'
+        'Komunikasi Publik dan Media': '#f39c12'
     };
-    return colors[bidangName] || var('--primary');
+    return colors[bidangName] || getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
 }
 
 function getProgressBarColor(percent) {
@@ -356,7 +358,7 @@ function showAddBidangModal() {
     document.getElementById('modalBidangTitle').textContent = 'Tambah Bidang Baru';
     document.getElementById('bidangForm').reset();
     document.getElementById('editBidangId').value = '';
-    document.getElementById('kuota_maksimal').value = '10';
+    document.getElementById('kuota').value = '10';
     document.getElementById('status_bidang').value = 'aktif';
     document.getElementById('submitBtnText').textContent = 'Simpan Bidang';
     openModal('bidangModal');
@@ -379,10 +381,10 @@ async function editBidang(id) {
         const bidang = data.data || data;
         
         document.getElementById('modalBidangTitle').textContent = 'Edit Bidang';
-        document.getElementById('editBidangId').value = bidang.id;
+        document.getElementById('editBidangId').value = bidang.id_bidang;
         document.getElementById('nama_bidang').value = bidang.nama_bidang;
         document.getElementById('deskripsi').value = bidang.deskripsi || '';
-        document.getElementById('kuota_maksimal').value = bidang.kuota_maksimal;
+        document.getElementById('kuota').value = bidang.kuota;
         document.getElementById('status_bidang').value = bidang.status || 'aktif';
         document.getElementById('submitBtnText').textContent = 'Update Bidang';
         
@@ -390,7 +392,7 @@ async function editBidang(id) {
         
     } catch (error) {
         console.error('Error:', error);
-        showNotification('Gagal memuat data bidang', 'error');
+        localNotification('Gagal memuat data bidang', 'error');
     } finally {
         showLoading('modal', false);
     }
@@ -445,7 +447,7 @@ async function handleBidangSubmit(e) {
             throw new Error(data.message || 'Request failed');
         }
         
-        showNotification(
+        localNotification(
             isEdit ? 'Data bidang berhasil diupdate' : 'Bidang berhasil ditambahkan',
             'success'
         );
@@ -455,7 +457,7 @@ async function handleBidangSubmit(e) {
         
     } catch (error) {
         console.error('Error:', error);
-        showNotification(error.message || 'Gagal menyimpan data', 'error');
+        localNotification(error.message || 'Gagal menyimpan data', 'error');
     } finally {
         showSubmitLoading(false);
     }
@@ -479,7 +481,7 @@ async function showDetailModal(id) {
         // Fetch admin data
         let admin = null;
         if (bidang.id_admin) {
-            const adminResponse = await fetch(`${API_CONFIG.endpoints.adminByBidang}/${id}`, {
+            const adminResponse = await fetch(`${API_CONFIG.endpoints.adminByBidang}/${id}/admin`, {
                 headers: { 'Accept': 'application/json' }
             });
             if (adminResponse.ok) {
@@ -490,7 +492,7 @@ async function showDetailModal(id) {
         
         // Fetch peserta data
         let peserta = [];
-        const pesertaResponse = await fetch(`${API_CONFIG.endpoints.pesertaByBidang}/${id}`, {
+        const pesertaResponse = await fetch(`${API_CONFIG.endpoints.pesertaByBidang}/${id}/peserta`, {
             headers: { 'Accept': 'application/json' }
         });
         if (pesertaResponse.ok) {
@@ -502,7 +504,7 @@ async function showDetailModal(id) {
         
     } catch (error) {
         console.error('Error:', error);
-        showNotification('Gagal memuat detail bidang', 'error');
+        localNotification('Gagal memuat detail bidang', 'error');
     } finally {
         showLoading('detail', false);
     }
@@ -511,8 +513,13 @@ async function showDetailModal(id) {
 function renderDetailModal(bidang, admin, peserta) {
     state.currentBidangDetail = bidang;
     
-    const kuotaPercent = Math.round(((bidang.peserta_aktif || 0) / bidang.kuota_maksimal) * 100);
-    const kuotaTersedia = bidang.kuota_maksimal - (bidang.peserta_aktif || 0);
+    const kuota = bidang.kuota || 0;
+    const aktif = bidang.peserta_aktif || 0;
+
+    const kuotaPercent = kuota > 0? Math.round((aktif / kuota) * 100): 0;
+
+    const kuotaTersedia = kuota - aktif;
+
     
     document.getElementById('detailBidangTitle').textContent = `Detail Bidang - ${bidang.nama_bidang}`;
     
@@ -552,7 +559,7 @@ function renderDetailModal(bidang, admin, peserta) {
                     <label>Kuota Saat Ini:</label>
                     <div style="font-weight: 600; font-size: 1.1rem;">
                         <span style="color: var(--primary);">${bidang.peserta_aktif || 0}</span>
-                        <span style="color: #666;"> / ${bidang.kuota_maksimal} peserta</span>
+                        <span style="color: #666;"> / ${bidang.kuota} peserta</span>
                     </div>
                 </div>
                 
@@ -719,13 +726,13 @@ async function confirmDeleteBidang() {
             throw new Error('Failed to delete bidang');
         }
         
-        showNotification('Bidang berhasil dihapus', 'success');
+        localNotification('Bidang berhasil dihapus', 'success');
         closeDeleteBidangModal();
         fetchBidangData();
         
     } catch (error) {
         console.error('Error:', error);
-        showNotification(error.message || 'Gagal menghapus bidang', 'error');
+        localNotification(error.message || 'Gagal menghapus bidang', 'error');
     } finally {
         showLoading('delete', false);
     }
@@ -800,7 +807,7 @@ function getInitials(name) {
 
 function refreshData() {
     fetchBidangData();
-    showNotification('Data bidang diperbarui', 'success');
+    localNotification('Data bidang diperbarui', 'success');
 }
 
 // Input with info styling
@@ -848,7 +855,7 @@ style.textContent = `
 document.head.appendChild(style);
 
 // Notification function (reuse from other files)
-function showNotification(message, type = 'info') {
+function localNotification(message, type = 'info') {
     // Reuse existing notification function or create simple one
     if (typeof window.showNotification === 'function') {
         window.showNotification(message, type);

@@ -28,6 +28,6 @@ class Pegawai extends Model
 
     public function pesertamagang()
     {
-        return $this->hasMany(pesertamagang::class, 'id_pegawai', 'id_pegawai');
+        return $this->hasMany(PesertaMagang::class, 'id_pegawai', 'id_pegawai');
     }
 }

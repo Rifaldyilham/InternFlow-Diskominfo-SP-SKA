@@ -15,6 +15,16 @@ return new class extends Migration
             $table->id('id_bidang');
             $table->string('nama_bidang', 100);
             $table->text('deskripsi')->nullable();
+            $table->integer('kuota')->default(0);
+            $table->enum('status', ['aktif','nonaktif','penuh'])->default('aktif');
+
+            $table->unsignedBigInteger('id_admin')->nullable(); // admin bidang
+            $table->timestamps();
+
+            $table->foreign('id_admin')
+                ->references('id_user')
+                ->on('users')
+                ->nullOnDelete();
         });
     }
 

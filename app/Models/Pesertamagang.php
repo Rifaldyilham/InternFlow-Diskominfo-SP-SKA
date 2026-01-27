@@ -4,10 +4,23 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class pesertamagang extends Model
+class PesertaMagang extends Model
 {
     protected $table = 'pesertamagang';
     protected $primaryKey = 'id_pesertamagang';
+
+    protected $fillable = [
+        'id_user',
+        'id_bidang',
+        'id_pegawai',
+        'email',
+        'nama',
+        'nim',
+        'asal_univ',
+        'program_studi',
+        'no_telp',
+        'status'
+    ];
 
     public function pegawai()
     {
