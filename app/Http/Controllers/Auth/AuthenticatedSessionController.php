@@ -50,7 +50,6 @@ class AuthenticatedSessionController extends Controller
             return redirect('/admin/verifikasi-berkas');
         }
 
-        // Fallback (jaga-jaga)
         return redirect('/');
     }
 

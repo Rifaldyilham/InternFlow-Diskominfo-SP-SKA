@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Admin\ManajemenAkunController;
+use App\Http\Controllers\AdminBidang\DashboardController;
 
 // Route untuk dashboard utama
 Route::get('/', function () {
@@ -87,12 +88,12 @@ Route::prefix('mentor')->group(function () {
 });
 
 // Routes untuk Admin Bidang
-Route::prefix('admin-bidang')->group(function () { 
-    Route::get('/mentor', function () {
-        return view('admin-bidang.mentor');
-    })->name('admin-bidang.mentor');
+Route::middleware(['auth'])
+    ->prefix('admin-bidang')->group(function () { 
 
-    Route::get('/penempatan', function () {
-        return view('admin-bidang.penempatan');
-    })->name('admin-bidang.penempatan');
-});
+        Route::get('/mentor', [DashboardController::class, 'index']) 
+            ->name('admin-bidang.mentor');
+
+        Route::post('/penempatan', [DashboardController::class, 'assignMentor']) 
+            ->name('admin-bidang.penempatan');
+    });
