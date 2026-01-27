@@ -25,12 +25,6 @@
             <option value="1">Admin Kepegawaian</option>
             <option value="2">Admin Bidang</option>
             <option value="3">Mentor</option>
-            <option value="4">Peserta Magang</option>
-        </select>
-        <select class="filter-select" id="statusFilter">
-            <option value="">Semua Status</option>
-            <option value="1">Aktif</option>
-            <option value="0">Nonaktif</option>
         </select>
     </div>
 </div>
@@ -130,6 +124,17 @@
                         <input type="password" id="password_confirmation" name="password_confirmation" required placeholder="Ulangi password">
                     </div>
                 </div>
+
+                <!-- ERROR MESSAGE FULL WIDTH -->
+                <small id="passwordError" class="password-error">
+                    Password harus minimal 8 karakter dan mengandung huruf serta angka
+                </small>
+
+                <div class="form-group" id="nipWrapper" style="display: none;">
+                    <label for="nip">NIP Pegawai *</label>
+                    <input type="text" id="nip" name="nip">
+                </div>
+
                 
                 <div class="form-row">
                     <div class="form-group">
@@ -139,20 +144,29 @@
                             <option value="1">Admin Kepegawaian</option>
                             <option value="2">Admin Bidang</option>
                             <option value="3">Mentor</option>
-                            <option value="4">Peserta Magang</option>
                         </select>
-                            <!-- Options akan diisi via JavaScript -->
+                            <!-- Options akan diisi via JavaScript --   
+                    </div>
+
+                    <!-- Bidang (hanya untuk Admin Bidang & Mentor) -->
+                    <div class="form-group" id="bidangWrapper" style="display: none;">
+                        <label for="bidang">Bidang *</label>
+                        <select id="bidang" name="bidang">
+                            <option value="">Pilih Bidang</option>
+                            <option value="Teknologi_Informatika">Teknologi & Informatika</option>
+                            <option value="statistika">Statistika</option>
+                            <option value="komunikasi_publik">Komunikasi Publik dan Media</option>
+                            <option value="sekretariat">Sekretariat</option>
                         </select>
                     </div>
-                    
-                    <div class="form-group">
-                        <label for="status_aktif">Status Akun</label>
-                        <select id="status_aktif" name="status_aktif">
-                            <option value="1">Aktif</option>
-                            <option value="0">Nonaktif</option>
-                        </select>
-                    </div>
-                </div>
+
+                <div class="form-group">
+                    <label for="status_aktif">Status Aktif *</label>
+                    <select id="status_aktif" name="status_aktif" required>
+                        <option value="1">Aktif</option>
+                        <option value="0">Nonaktif</option>
+                    </select>
+
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" onclick="closeModal()">Batal</button>
@@ -258,8 +272,37 @@ let userToDelete = null;
 let currentDetailUser = null;
 
 // Inisialisasi
+// document.addEventListener('DOMContentLoaded', function () {
+//     const roleSelect = document.getElementById('id_role');
+//     const bidangWrapper = document.getElementById('bidangWrapper');
+//     const nipWrapper = document.getElementById('nipWrapper');
+//     const nipInput = document.getElementById('nip');
+
+//     if (!roleSelect) return;
+
+//     roleSelect.addEventListener('change', function () {
+//         const roleId = this.value;
+
+//         // BIDANG: Admin Bidang & Mentor
+//         if (roleId === '2' || roleId === '3') {
+//             bidangWrapper.style.display = 'block';
+//         } else {
+//             bidangWrapper.style.display = 'none';
+//             document.getElementById('bidang').value = '';
+//         }
+
+//         // NIP: Admin Kepegawaian & Admin Bidang
+//         if (roleId === '1' || roleId === '2') {
+//             nipWrapper.style.display = 'block';
+//         } else {
+//             nipWrapper.style.display = 'none';
+//             nipInput.value = '';
+//         }
+//     });
+// });
+
 document.addEventListener('DOMContentLoaded', function() {
-    fetchRoles();
+    fetchRoles()
     fetchUsers();
     
     // Event listeners
@@ -271,7 +314,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setupCSRF();
 });
 
-// Setup CSRF
+Setup CSRF
 function setupCSRF() {
     const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     if (token) {
@@ -477,14 +520,65 @@ function showLoading(show) {
     }
 }
 
+// document.addEventListener('DOMContentLoaded', function () {
+//     const passwordInput = document.getElementById('password');
+//     const confirmInput = document.getElementById('password_confirmation');
+
+//     const passwordError = document.getElementById('passwordError');
+//     const confirmError = document.getElementById('passwordConfirmError');
+
+//     if (!passwordInput || !confirmInput) return;
+
+//     function validatePassword() {
+//         const password = passwordInput.value;
+//         const regex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
+
+//         if (password.length === 0) {
+//             passwordError.style.display = 'none';
+//             return false;
+//         }
+
+//         if (!regex.test(password)) {
+//             passwordError.style.display = 'block';
+//             return false;
+//         } else {
+//             passwordError.style.display = 'none';
+//             return true;
+//         }
+//     }
+
+//     function validateConfirmPassword() {
+//         if (confirmInput.value.length === 0) {
+//             confirmError.style.display = 'none';
+//             return false;
+//         }
+
+//         if (confirmInput.value !== passwordInput.value) {
+//             confirmError.style.display = 'block';
+//             return false;
+//         } else {
+//             confirmError.style.display = 'none';
+//             return true;
+//         }
+//     }
+
+//     passwordInput.addEventListener('input', validatePassword);
+//     confirmInput.addEventListener('input', validateConfirmPassword);
+// });
+
 // Modal functions
 function showAddModal() {
     document.getElementById('modalTitle').textContent = 'Tambah Akun Baru';
     document.getElementById('userForm').reset();
     document.getElementById('editUserId').value = '';
+    document.getElementById('status_aktif').value = '1';
     document.getElementById('password').required = true;
     document.getElementById('password_confirmation').required = true;
-    document.getElementById('status_aktif').value = '1';
+    document.getElementById('bidangWrapper').style.display = 'none';
+    document.getElementById('bidang').value = '';
+    document.getElementById('nipWrapper').style.display = 'none';
+    document.getElementById('nip').value = '';
+
     openModal('userModal');
 }
 
@@ -504,7 +598,17 @@ async function editUser(id) {
         document.getElementById('editUserId').value = user.id || user.id_user;
         document.getElementById('name').value = user.name;
         document.getElementById('email').value = user.email;
+        document.getElementById('status_aktif').value = user.status_aktif || '1';
         document.getElementById('id_role').value = user.role_id || user.id_role;
+        // Tampilkan bidang jika role Admin Bidang / Mentor saat edit
+        const bidangWrapper = document.getElementById('bidangWrapper');
+        const roleId = user.role_id || user.id_role;
+
+        if (roleId == 2 || roleId == 3) {
+            bidangWrapper.style.display = 'block';
+        } else {
+            bidangWrapper.style.display = 'none';
+        }
         document.getElementById('status_aktif').value = user.status_aktif || '1';
         
         // Password tidak wajib untuk edit
@@ -571,6 +675,38 @@ function closeDetailModal() {
     document.getElementById('detailModal').style.display = 'none';
 }
 
+// Tampilkan bidang jika role Admin Bidang atau Mentor
+// document.getElementById('id_role').addEventListener('change', function () {
+//     const bidangWrapper = document.getElementById('bidangWrapper');
+//     const roleId = this.value;
+
+//     if (roleId === '2' || roleId === '3') {
+//         bidangWrapper.style.display = 'block';
+//     } else {
+//         bidangWrapper.style.display = 'none';
+//         document.getElementById('bidang').value = '';
+//     }
+// });
+document.addEventListener('DOMContentLoaded', function () {
+    const roleSelect = document.getElementById('id_role');
+    const bidangWrapper = document.getElementById('bidangWrapper');
+    const bidangSelect = document.getElementById('bidang');
+
+    if (!roleSelect) return;
+
+    roleSelect.addEventListener('change', function () {
+        const roleId = this.value;
+
+        if (roleId === '2' || roleId === '3') {
+            bidangWrapper.style.display = 'block';
+        } else {
+            bidangWrapper.style.display = 'none';
+            bidangSelect.value = '';
+        }
+    });
+});
+
+
 // Form submission
 async function handleSubmit(e) {
     e.preventDefault();
@@ -594,7 +730,17 @@ async function handleSubmit(e) {
         });
         
         // Add CSRF token
-        jsonData._token = window.csrfToken;
+        // jsonData._token = window.csrfToken;
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': window.csrfToken
+            },
+            body: JSON.stringify(jsonData)
+        });
+
         
         const response = await fetch(url, {
             method: method,
@@ -625,6 +771,12 @@ async function handleSubmit(e) {
     } finally {
         showSubmitLoading(false);
     }
+}
+
+if (jsonData.password && jsonData.password !== jsonData.password_confirmation) {
+    showNotification('Password dan konfirmasi tidak sama', 'error');
+    showSubmitLoading(false);
+    return;
 }
 
 function showSubmitLoading(show) {
@@ -840,6 +992,17 @@ detailStyle.textContent = `
         padding: 0 15px;
     }
 `;
+//event listeners
+document.addEventListener('DOMContentLoaded', function () {
+    setupCSRF();
+    fetchUsers();
+
+    const form = document.getElementById('userForm');
+    if (form) {
+        form.addEventListener('submit', handleSubmit);
+    }
+});
+
 document.head.appendChild(detailStyle);
 </script>
 @endsection

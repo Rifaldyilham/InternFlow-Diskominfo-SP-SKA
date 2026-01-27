@@ -41,7 +41,7 @@ class UserApiController extends Controller
             'name'     => 'required|string',
             'email'    => 'required|email|unique:users,email',
             'password' => 'required|min:8|confirmed',
-            'id_role'  => 'required|integer',
+            'id_role'  => 'required|integer'
         ]);
 
         User::create([
@@ -49,7 +49,7 @@ class UserApiController extends Controller
             'email'        => $request->email,
             'password'     => Hash::make($request->password),
             'id_role'      => $request->id_role,
-            'status_aktif' => $request->status_aktif ?? 1,
+            'status_aktif' => 1,
         ]);
 
         return response()->json(['message' => 'User berhasil ditambahkan'], 201);
@@ -63,6 +63,12 @@ class UserApiController extends Controller
     public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
+
+    //     $user->update([
+    //     'name'    => $request->name,
+    //     'email'   => $request->email,
+    //     'id_role' => $request->id_role,
+    // ]);
 
         $request->validate([
             'name'     => 'required|string',
@@ -78,7 +84,7 @@ class UserApiController extends Controller
             'status_aktif' => $request->status_aktif,
         ]);
 
-        if ($request->password) {
+        if ($request->filled('password')) {
             $user->update([
                 'password' => Hash::make($request->password),
             ]);

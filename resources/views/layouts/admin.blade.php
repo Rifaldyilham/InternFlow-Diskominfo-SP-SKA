@@ -38,7 +38,7 @@
     @yield('styles')
 </head>
 
-<body x-data="{ sidebarOpen: false, overlayOpen: false }">
+<body x-data="app">
     <!-- OVERLAY UNTUK MOBILE -->
     <div class="sidebar-overlay" :class="overlayOpen ? 'active' : ''" 
          @click="sidebarOpen = false; overlayOpen = false;"></div>
@@ -117,6 +117,37 @@
     </div>
 
     <script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('app', () => ({
+        sidebarOpen: false,
+        overlayOpen: false,
+
+        isActive(path) {
+            return window.location.pathname.startsWith(path);
+        },
+
+        init() {
+            this.updateUserAvatar();
+        },
+
+        updateUserAvatar() {
+            const nameEl = document.getElementById('userName');
+            const avatarEl = document.getElementById('userAvatar');
+            if (!nameEl || !avatarEl) return;
+
+            const initials = nameEl.textContent
+                .split(' ')
+                .map(word => word.charAt(0).toUpperCase())
+                .join('')
+                .substring(0, 2);
+
+            avatarEl.textContent = initials;
+        }
+    }))
+})
+</script>
+
+    {{-- <script>
         // Inisialisasi Alpine.js
         document.addEventListener('alpine:init', () => {
             Alpine.data('app', () => ({
@@ -238,7 +269,7 @@
                 avatar.textContent = getInitials(userName);
             }
         });
-    </script>
+    </script> --}}
 
     @yield('scripts')
 </body>

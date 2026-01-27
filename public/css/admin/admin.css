@@ -1393,6 +1393,14 @@
     margin: 0;
     font-size: 0.9rem;
 }
+.password-error {
+    display: none;
+    color: #e74c3c;
+    font-size: 0.85rem;
+    margin-top: 6px;
+    margin-bottom: 4px;
+    width: 100%;
+}
 
 /* SECTION DESCRIPTION */
 .section-description {
