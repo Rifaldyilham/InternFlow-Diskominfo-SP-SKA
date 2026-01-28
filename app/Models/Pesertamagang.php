@@ -22,13 +22,18 @@ class PesertaMagang extends Model
         'status'
     ];
 
-    public function pegawai()
+    public function user()
     {
-        return $this->belongsTo(Pegawai::class, 'id_pegawai', 'id_pegawai');
+        return $this->belongsTo(User::class, 'id_user', 'id_user');
     }
 
     public function bidang()
     {
         return $this->belongsTo(Bidang::class, 'id_bidang', 'id_bidang');
+    }
+
+    public function pegawai()
+    {
+        return $this->belongsTo(Pegawai::class, 'id_pegawai', 'id_pegawai');
     }
 }

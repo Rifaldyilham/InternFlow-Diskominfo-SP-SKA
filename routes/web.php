@@ -36,14 +36,14 @@ Route::prefix('admin')->group(function () {
     Route::get('/verifikasi-berkas', function () {
         return view('admin.verifikasi-berkas');
     })->name('admin.verifikasiberkas');
-    
+
     Route::get('/manajemen-akun', [ManajemenAkunController::class, 'index'])
-    ->name('admin.manajemen-akun');
-    
+        ->name('admin.manajemen-akun');
+
     Route::get('/manajemen-bidang', function () {
         return view('admin.manajemenbidang');
     })->name('admin.manajemen-bidang');
-    
+
     Route::get('/sertifikat', function () {
         return view('admin.sertifikat');
     })->name('admin.sertifikat');
@@ -54,19 +54,19 @@ Route::prefix('peserta')->group(function () {
     Route::get('/dashboard', function () {
         return view('peserta.dashboard');
     })->name('peserta.dashboard');
-    
+
     Route::get('/pendaftaran', function () {
         return view('peserta.pendaftaran');
     })->name('peserta.pendaftaran');
-    
+
     Route::get('/logbook', function () {
         return view('peserta.logbook');
     })->name('peserta.logbook');
-    
+
     Route::get('/absensi', function () {
         return view('peserta.absensi');
     })->name('peserta.absensi');
-    
+
     Route::get('/penilaian-sertifikat', function () {
         return view('peserta.penilaian-sertifikat');
     })->name('peserta.penilaian-sertifikat');
@@ -77,23 +77,24 @@ Route::prefix('mentor')->group(function () {
     Route::get('/bimbingan', function () {
         return view('mentor.bimbingan');
     })->name('mentor.bimbingan');
-    
+
     Route::get('/verifikasi', function () {
         return view('mentor.verifikasi');
     })->name('mentor.verifikasi');
-    
+
     Route::get('/penilaian', function () {
         return view('mentor.penilaian');
     })->name('mentor.penilaian');
 });
 
 // Routes untuk Admin Bidang
-Route::middleware(['auth'])
-    ->prefix('admin-bidang')->group(function () { 
+Route::prefix('admin-bidang')->middleware(['auth'])->group(function () {
+    Route::get('/mentor', [DashboardController::class, 'index'])
+        ->name('admin-bidang.mentor');
 
-        Route::get('/mentor', [DashboardController::class, 'index']) 
-            ->name('admin-bidang.mentor');
+    Route::get('/penempatan', [DashboardController::class, 'penempatan'])
+        ->name('admin-bidang.penempatan');
 
-        Route::post('/penempatan', [DashboardController::class, 'assignMentor']) 
-            ->name('admin-bidang.penempatan');
-    });
+    Route::post('/penempatan', [DashboardController::class, 'assignMentor'])
+        ->name('admin-bidang.penempatan.store');
+});

@@ -117,6 +117,26 @@
     </div>
 
     <script>
+                function confirmLogout() {
+            if (confirm('Apakah Anda yakin ingin keluar?')) {
+                // Gunakan form POST untuk logout Laravel
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = "{{ route('logout') }}";
+                
+                // CSRF token
+                const token = document.querySelector('meta[name="csrf-token"]').content;
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_token';
+                csrfInput.value = token;
+                form.appendChild(csrfInput);
+                
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+        
 document.addEventListener('alpine:init', () => {
     Alpine.data('app', () => ({
         sidebarOpen: false,
@@ -200,27 +220,6 @@ document.addEventListener('alpine:init', () => {
                 }
             }));
         });
-
-        // Fungsi logout
-        function confirmLogout() {
-            if (confirm('Apakah Anda yakin ingin keluar?')) {
-                // Gunakan form POST untuk logout Laravel
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = "{{ route('logout') }}";
-                
-                // CSRF token
-                const token = document.querySelector('meta[name="csrf-token"]').content;
-                const csrfInput = document.createElement('input');
-                csrfInput.type = 'hidden';
-                csrfInput.name = '_token';
-                csrfInput.value = token;
-                form.appendChild(csrfInput);
-                
-                document.body.appendChild(form);
-                form.submit();
-            }
-        }
 
         // Tutup sidebar saat link diklik di mobile
         document.querySelectorAll('.menu-item').forEach(item => {

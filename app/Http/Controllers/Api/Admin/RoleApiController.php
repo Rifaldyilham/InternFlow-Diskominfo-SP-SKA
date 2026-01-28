@@ -3,13 +3,14 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Role;
+use Illuminate\Http\Request;
 
 class RoleApiController extends Controller
 {
-   public function index()
-   {
-    return Role::all();
-   }
+    public function index(Request $request)
+    {
+        $roles = Role::all();
+        return response()->json($roles);
+    }
 }

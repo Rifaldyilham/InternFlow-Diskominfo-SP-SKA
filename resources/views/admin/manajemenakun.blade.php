@@ -116,7 +116,6 @@
                     <div class="form-group">
                         <label for="password">Password *</label>
                         <input type="password" id="password" name="password" required placeholder="Minimal 8 karakter">
-                        <small>Minimal 8 karakter dengan huruf dan angka</small>
                     </div>
                     
                     <div class="form-group">
@@ -125,10 +124,12 @@
                     </div>
                 </div>
 
-                <!-- ERROR MESSAGE FULL WIDTH -->
-                <small id="passwordError" class="password-error">
-                    Password harus minimal 8 karakter dan mengandung huruf serta angka
-                </small>
+                <!-- ERROR MESSAGE -->
+                <div class="password-error-container" id="passwordErrorContainer" style="display: none;">
+                    <div class="password-error" id="passwordError">
+                        <!-- Pesan error akan ditampilkan di sini -->
+                    </div>
+                </div>
 
                 <div class="form-group" id="nipWrapper" style="display: none;">
                     <label for="nip">NIP Pegawai *</label>
@@ -145,7 +146,6 @@
                             <option value="2">Admin Bidang</option>
                             <option value="3">Mentor</option>
                         </select>
-                            <!-- Options akan diisi via JavaScript -->  
                     </div>
 
                     <!-- Bidang (hanya untuk Admin Bidang & Mentor) -->
@@ -159,6 +159,7 @@
                             <option value="4">Sekretariat</option>
                         </select>
                     </div>
+                </div>
 
                 <div class="form-group">
                     <label for="status_aktif">Status Aktif *</label>
@@ -166,7 +167,7 @@
                         <option value="1">Aktif</option>
                         <option value="0">Nonaktif</option>
                     </select>
-
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" onclick="closeModal()">Batal</button>
@@ -251,12 +252,15 @@
         </div>
         <div class="modal-footer">
             <button class="btn btn-secondary" onclick="closeDeleteModal()">Batal</button>
-            <button class="btn btn-danger" onclick="confirmDelete()">
+            <button class="btn btn-danger" onclick="confirmDelete()" id="deleteConfirmBtn">
                 <i class='bx bx-trash'></i> Hapus
             </button>
         </div>
     </div>
 </div>
+
+<!-- Notification Container -->
+<div id="notificationContainer" style="position: fixed; top: 20px; right: 20px; z-index: 9999; max-width: 400px;"></div>
 @endsection
 
 @section('scripts')
@@ -278,48 +282,29 @@ let currentRoleFilter = '';
 let userToDelete = null;
 let currentDetailUser = null;
 
-//Inisialisasi
+// Inisialisasi
 document.addEventListener('DOMContentLoaded', function () {
-    const roleSelect = document.getElementById('id_role');
-    const bidangWrapper = document.getElementById('bidangWrapper');
-    const nipWrapper = document.getElementById('nipWrapper');
-    const nipInput = document.getElementById('nip');
-
-    if (!roleSelect) return;
-
-    roleSelect.addEventListener('change', function () {
-        const roleId = this.value;
-
-        // BIDANG: Admin Bidang & Mentor
-        if (roleId === '2' || roleId === '3') {
-            bidangWrapper.style.display = 'block';
-        } else {
-            bidangWrapper.style.display = 'none';
-            document.getElementById('bidang').value = '';
-        }
-
-        // NIP: Admin Kepegawaian & Admin Bidang
-        if (roleId === '2' || roleId === '3') {
-            nipWrapper.style.display = 'block';
-        } else {
-            nipWrapper.style.display = 'none';
-            nipInput.value = '';
-        }
-    });
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-    fetchRoles()
+    fetchRoles();
     fetchUsers();
+    setupCSRF();
     
     // Event listeners
-    document.getElementById('userForm').addEventListener('submit', handleSubmit);
+    const userForm = document.getElementById('userForm');
+    if (userForm) {
+        userForm.addEventListener('submit', handleSubmit);
+    }
+    
     document.getElementById('searchInput').addEventListener('input', debounce(searchUsers, 300));
     document.getElementById('roleFilter').addEventListener('change', filterUsers);
-    setupCSRF();
+    
+    // Password validation
+    setupPasswordValidation();
+    
+    // Role change handler
+    setupRoleChangeHandler();
 });
 
-//Setup CSRF
+// Setup CSRF
 function setupCSRF() {
     const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     if (token) {
@@ -327,11 +312,94 @@ function setupCSRF() {
     }
 }
 
+// Setup password validation
+function setupPasswordValidation() {
+    const passwordInput = document.getElementById('password');
+    const confirmInput = document.getElementById('password_confirmation');
+    
+    if (passwordInput && confirmInput) {
+        passwordInput.addEventListener('input', validatePassword);
+        confirmInput.addEventListener('input', validateConfirmPassword);
+    }
+}
+
+function validatePassword() {
+    const password = document.getElementById('password').value;
+    const passwordErrorContainer = document.getElementById('passwordErrorContainer');
+    const passwordError = document.getElementById('passwordError');
+    const regex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
+    
+    if (password.length === 0) {
+        passwordErrorContainer.style.display = 'none';
+        passwordError.textContent = '';
+        return false;
+    }
+    
+    if (!regex.test(password)) {
+        passwordErrorContainer.style.display = 'block';
+        passwordError.textContent = 'Password harus minimal 8 karakter dan mengandung huruf serta angka';
+        passwordError.style.color = '#e74c3c';
+        return false;
+    } else {
+        passwordErrorContainer.style.display = 'none';
+        return true;
+    }
+}
+
+function validateConfirmPassword() {
+    const password = document.getElementById('password').value;
+    const confirm = document.getElementById('password_confirmation').value;
+    const passwordErrorContainer = document.getElementById('passwordErrorContainer');
+    const passwordError = document.getElementById('passwordError');
+    
+    if (confirm.length === 0) {
+        passwordErrorContainer.style.display = 'none';
+        return false;
+    }
+    
+    if (password !== confirm) {
+        passwordErrorContainer.style.display = 'block';
+        passwordError.textContent = 'Password dan konfirmasi password tidak cocok';
+        passwordError.style.color = '#e74c3c';
+        return false;
+    } else {
+        passwordErrorContainer.style.display = 'none';
+        return true;
+    }
+}
+
+// Setup role change handler
+function setupRoleChangeHandler() {
+    const roleSelect = document.getElementById('id_role');
+    const bidangWrapper = document.getElementById('bidangWrapper');
+    const nipWrapper = document.getElementById('nipWrapper');
+    
+    if (!roleSelect) return;
+    
+    roleSelect.addEventListener('change', function () {
+        const roleId = this.value;
+        
+        // BIDANG: Admin Bidang & Mentor
+        if (roleId === '2' || roleId === '3') {
+            bidangWrapper.style.display = 'block';
+            nipWrapper.style.display = 'block';
+        } else {
+            bidangWrapper.style.display = 'none';
+            nipWrapper.style.display = 'none';
+            document.getElementById('bidang').value = '';
+            document.getElementById('nip').value = '';
+        }
+    });
+}
+
 // Fetch roles
 async function fetchRoles() {
     try {
         const response = await fetch(API_CONFIG.endpoints.roles, {
-            headers: { 'Accept': 'application/json' }
+            headers: { 
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': window.csrfToken 
+            }
         });
         
         if (!response.ok) throw new Error('Failed to fetch roles');
@@ -348,6 +416,8 @@ async function fetchRoles() {
 // Populate role select
 function populateRoleSelect(roles) {
     const select = document.getElementById('id_role');
+    if (!select) return;
+    
     select.innerHTML = '<option value="">Pilih Role</option>';
     
     roles.forEach(role => {
@@ -374,15 +444,31 @@ async function fetchUsers() {
         }
         
         const response = await fetch(url, {
-            headers: { 'Accept': 'application/json' }
+            headers: { 
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': window.csrfToken 
+            }
         });
         
-        if (!response.ok) throw new Error('Failed to fetch users');
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to fetch users');
+        }
         
         const data = await response.json();
-        renderTable(data.data || data);
-        updatePagination(data);
-        document.getElementById('totalUsers').textContent = data.meta?.total || data.total || 0;
+        
+        // Perbaiki struktur data untuk kompatibilitas
+        const users = data.data || data;
+        const meta = data.meta || {
+            current_page: currentPage,
+            per_page: perPage,
+            total: data.total || users.length || 0,
+            last_page: Math.ceil((data.total || users.length || 0) / perPage)
+        };
+        
+        renderTable(users);
+        updatePagination(meta);
+        document.getElementById('totalUsers').textContent = meta.total || 0;
         
     } catch (error) {
         console.error('Error:', error);
@@ -397,6 +483,8 @@ async function fetchUsers() {
 function renderTable(users) {
     const tbody = document.getElementById('pesertaTableBody');
     
+    if (!tbody) return;
+    
     if (!users || users.length === 0) {
         renderEmptyTable('Tidak ada data akun ditemukan');
         return;
@@ -406,11 +494,12 @@ function renderTable(users) {
     
     users.forEach(user => {
         const row = document.createElement('tr');
-        const roleClass = getRoleClass(user.id_role || user.role_id);
-        const roleName = user.role?.name || user.role?.nama_role || getRoleName(user.id_role || user.role_id);
+        const roleClass = getRoleClass(user.id_role);
+        const roleName = getRoleName(user.id_role);
+        const userId = user.id_user || user.id;
         
         row.innerHTML = `
-            <td><strong>#${user.id || user.id_user}</strong></td>
+            <td><strong>#${userId}</strong></td>
             <td>
                 <div class="user-cell">
                     <div class="avatar">${getInitials(user.name)}</div>
@@ -434,13 +523,13 @@ function renderTable(users) {
             </td>
             <td>
                 <div class="action-buttons">
-                    <button class="action-btn view" title="Detail" onclick="showDetail(${user.id || user.id_user})">
+                    <button class="action-btn view" title="Detail" onclick="showDetail(${userId})">
                         <i class='bx bx-show'></i>
                     </button>
-                    <button class="action-btn edit" title="Edit" onclick="editUser(${user.id || user.id_user})">
+                    <button class="action-btn edit" title="Edit" onclick="editUser(${userId})">
                         <i class='bx bx-edit'></i>
                     </button>
-                    <button class="action-btn delete" title="Hapus" onclick="showDeleteModal(${user.id || user.id_user}, '${user.name}')">
+                    <button class="action-btn delete" title="Hapus" onclick="showDeleteModal(${userId}, '${escapeHtml(user.name)}')">
                         <i class='bx bx-trash'></i>
                     </button>
                 </div>
@@ -452,6 +541,17 @@ function renderTable(users) {
 }
 
 // Helper functions
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+
 function getRoleClass(roleId) {
     switch(parseInt(roleId)) {
         case 1: return 'role-admin';
@@ -473,6 +573,7 @@ function getRoleName(roleId) {
 }
 
 function getInitials(name) {
+    if (!name) return '??';
     return name
         .split(' ')
         .map(word => word.charAt(0).toUpperCase())
@@ -482,25 +583,35 @@ function getInitials(name) {
 
 function formatDate(dateString) {
     if (!dateString) return '-';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('id-ID', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric'
-    });
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('id-ID', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+        });
+    } catch (e) {
+        return '-';
+    }
 }
 
 function formatTime(dateString) {
     if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toLocaleTimeString('id-ID', {
-        hour: '2-digit',
-        minute: '2-digit'
-    });
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleTimeString('id-ID', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    } catch (e) {
+        return '';
+    }
 }
 
 function renderEmptyTable(message) {
     const tbody = document.getElementById('pesertaTableBody');
+    if (!tbody) return;
+    
     tbody.innerHTML = `
         <tr>
             <td colspan="6">
@@ -524,52 +635,6 @@ function showLoading(show) {
     }
 }
 
-// document.addEventListener('DOMContentLoaded', function () {
-//     const passwordInput = document.getElementById('password');
-//     const confirmInput = document.getElementById('password_confirmation');
-
-//     const passwordError = document.getElementById('passwordError');
-//     const confirmError = document.getElementById('passwordConfirmError');
-
-//     if (!passwordInput || !confirmInput) return;
-
-//     function validatePassword() {
-//         const password = passwordInput.value;
-//         const regex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
-
-//         if (password.length === 0) {
-//             passwordError.style.display = 'none';
-//             return false;
-//         }
-
-//         if (!regex.test(password)) {
-//             passwordError.style.display = 'block';
-//             return false;
-//         } else {
-//             passwordError.style.display = 'none';
-//             return true;
-//         }
-//     }
-
-//     function validateConfirmPassword() {
-//         if (confirmInput.value.length === 0) {
-//             confirmError.style.display = 'none';
-//             return false;
-//         }
-
-//         if (confirmInput.value !== passwordInput.value) {
-//             confirmError.style.display = 'block';
-//             return false;
-//         } else {
-//             confirmError.style.display = 'none';
-//             return true;
-//         }
-//     }
-
-//     passwordInput.addEventListener('input', validatePassword);
-//     confirmInput.addEventListener('input', validateConfirmPassword);
-// });
-
 // Modal functions
 function showAddModal() {
     document.getElementById('modalTitle').textContent = 'Tambah Akun Baru';
@@ -578,11 +643,14 @@ function showAddModal() {
     document.getElementById('status_aktif').value = '1';
     document.getElementById('password').required = true;
     document.getElementById('password_confirmation').required = true;
-    document.getElementById('bidangWrapper').style.display = 'none';
-    document.getElementById('bidang').value = '';
-    document.getElementById('nipWrapper').style.display = 'none';
-    document.getElementById('nip').value = '';
-
+    document.getElementById('passwordErrorContainer').style.display = 'none';
+    
+    // Reset bidang dan NIP
+    const bidangWrapper = document.getElementById('bidangWrapper');
+    const nipWrapper = document.getElementById('nipWrapper');
+    if (bidangWrapper) bidangWrapper.style.display = 'none';
+    if (nipWrapper) nipWrapper.style.display = 'none';
+    
     openModal('userModal');
 }
 
@@ -591,41 +659,53 @@ async function editUser(id) {
         showLoading(true);
         
         const response = await fetch(`${API_CONFIG.endpoints.users}/${id}`, {
-            headers: { 'Accept': 'application/json' }
+            headers: { 
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': window.csrfToken 
+            }
         });
         
-        if (!response.ok) throw new Error('Failed to fetch user data');
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to fetch user data');
+        }
         
         const user = await response.json();
         
         document.getElementById('modalTitle').textContent = 'Edit Akun';
-        document.getElementById('editUserId').value = user.id || user.id_user;
-        document.getElementById('name').value = user.name;
-        document.getElementById('email').value = user.email;
-        document.getElementById('nip').value = user.pegawai?.nip ?? '';
-        document.getElementById('bidang').value = user.pegawai?.id_bidang ?? '';
+        document.getElementById('editUserId').value = user.id_user || user.id;
+        document.getElementById('name').value = user.name || '';
+        document.getElementById('email').value = user.email || '';
+        document.getElementById('nip').value = user.pegawai?.nip || '';
+        document.getElementById('bidang').value = user.pegawai?.id_bidang || '';
         document.getElementById('status_aktif').value = user.status_aktif || '1';
-        document.getElementById('id_role').value = user.role_id || user.id_role;
+        document.getElementById('id_role').value = user.id_role || '';
+        document.getElementById('passwordErrorContainer').style.display = 'none';
+        
         // Tampilkan bidang jika role Admin Bidang / Mentor saat edit
         const bidangWrapper = document.getElementById('bidangWrapper');
-        const roleId = user.role_id || user.id_role;
+        const nipWrapper = document.getElementById('nipWrapper');
+        const roleId = user.id_role;
 
         if (roleId == 2 || roleId == 3) {
-            bidangWrapper.style.display = 'block';
+            if (bidangWrapper) bidangWrapper.style.display = 'block';
+            if (nipWrapper) nipWrapper.style.display = 'block';
         } else {
-            bidangWrapper.style.display = 'none';
+            if (bidangWrapper) bidangWrapper.style.display = 'none';
+            if (nipWrapper) nipWrapper.style.display = 'none';
         }
-        document.getElementById('status_aktif').value = user.status_aktif || '1';
         
         // Password tidak wajib untuk edit
         document.getElementById('password').required = false;
         document.getElementById('password_confirmation').required = false;
+        document.getElementById('password').placeholder = 'Masukkan password';
+        document.getElementById('password_confirmation').placeholder = 'Masukkan ulang password';
         
         openModal('userModal');
         
     } catch (error) {
         console.error('Error:', error);
-        showNotification('Gagal memuat data pengguna', 'error');
+        showNotification(error.message || 'Gagal memuat data pengguna', 'error');
     } finally {
         showLoading(false);
     }
@@ -633,55 +713,92 @@ async function editUser(id) {
 
 async function showDetail(id) {
     try {
+        showLoading(true);
+        
         const response = await fetch(`${API_CONFIG.endpoints.users}/${id}`, {
-            headers: { 'Accept': 'application/json' }
+            headers: { 
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': window.csrfToken 
+            }
         });
         
-        if (!response.ok) throw new Error('Failed to fetch user data');
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to fetch user data');
+        }
         
         const user = await response.json();
         currentDetailUser = user;
         
         // Update detail modal
         document.getElementById('detailAvatar').textContent = getInitials(user.name);
-        document.getElementById('detailName').textContent = user.name;
-        document.getElementById('detailEmail').textContent = user.email;
-        document.getElementById('detailRole').textContent = user.role?.name || user.role?.nama_role || getRoleName(user.role_id || user.id_role);
+        document.getElementById('detailName').textContent = user.name || '-';
+        document.getElementById('detailEmail').textContent = user.email || '-';
+        document.getElementById('detailRole').textContent = getRoleName(user.id_role);
         document.getElementById('detailStatus').innerHTML = user.status_aktif == 1 
             ? '<span class="status-active">Aktif</span>'
             : '<span class="status-inactive">Nonaktif</span>';
-        document.getElementById('detailNip').textContent = user.pegawai?.nip ?? '-';
-        document.getElementById('detailBidang').textContent = user.pegawai?.id_bidang ?? '-';
+        document.getElementById('detailNip').textContent = user.pegawai?.nip || '-';
+        document.getElementById('detailBidang').textContent = user.pegawai?.id_bidang || '-';
         document.getElementById('detailJoinDate').textContent = formatDate(user.created_at);
         document.getElementById('detailLastLogin').textContent = user.last_login_at 
             ? `${formatDate(user.last_login_at)} ${formatTime(user.last_login_at)}`
             : 'Belum pernah login';
         
         // Update edit button
-        document.getElementById('detailEditBtn').onclick = function() {
-            closeAllModals();
-            editUser(user.id_user);
-        };
+        const editBtn = document.getElementById('detailEditBtn');
+        if (editBtn) {
+            editBtn.onclick = function() {
+                closeDetailModal();
+                editUser(user.id_user || user.id);
+            };
+        }
         
         openModal('detailModal');
         
     } catch (error) {
         console.error('Error:', error);
-        showNotification('Gagal memuat detail pengguna', 'error');
+        showNotification(error.message || 'Gagal memuat detail pengguna', 'error');
+    } finally {
+        showLoading(false);
     }
 }
 
 function openModal(modalId) {
     closeAllModals();
-    document.getElementById(modalId).style.display = 'flex';
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'flex';
+        modal.style.animation = 'modalSlideIn 0.3s ease-out';
+    }
 }
 
 function closeModal() {
-    document.getElementById('userModal').style.display = 'none';
+    const modal = document.getElementById('userModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+    // Reset password fields
+    document.getElementById('password').value = '';
+    document.getElementById('password_confirmation').value = '';
+    document.getElementById('passwordErrorContainer').style.display = 'none';
 }
 
 function closeDetailModal() {
-    document.getElementById('detailModal').style.display = 'none';
+    const modal = document.getElementById('detailModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function closeDeleteModal() {
+    const modal = document.getElementById('deleteModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+    userToDelete = null;
+    document.getElementById('deleteConfirmBtn').disabled = false;
+    document.getElementById('deleteConfirmBtn').innerHTML = '<i class="bx bx-trash"></i> Hapus';
 }
 
 function closeAllModals() {
@@ -690,45 +807,44 @@ function closeAllModals() {
     });
 }
 
-// Tampilkan bidang jika role Admin Bidang atau Mentor
-// document.getElementById('id_role').addEventListener('change', function () {
-//     const bidangWrapper = document.getElementById('bidangWrapper');
-//     const roleId = this.value;
-
-//     if (roleId === '2' || roleId === '3') {
-//         bidangWrapper.style.display = 'block';
-//     } else {
-//         bidangWrapper.style.display = 'none';
-//         document.getElementById('bidang').value = '';
-//     }
-// });
-// document.addEventListener('DOMContentLoaded', function () {
-//     const roleSelect = document.getElementById('id_role');
-//     const bidangWrapper = document.getElementById('bidangWrapper');
-//     const bidangSelect = document.getElementById('bidang');
-
-//     if (!roleSelect) return;
-
-//     roleSelect.addEventListener('change', function () {
-//         const roleId = this.value;
-
-//         if (roleId === '2' || roleId === '3') {
-//             bidangWrapper.style.display = 'block';
-//         } else {
-//             bidangWrapper.style.display = 'none';
-//             bidangSelect.value = '';
-//         }
-//     });
-// });
-
-
 // Form submission
 async function handleSubmit(e) {
     e.preventDefault();
     
-    const formData = new FormData(e.target);
     const userId = document.getElementById('editUserId').value;
     const isEdit = !!userId;
+    
+    // Validasi password untuk tambah baru
+    if (!isEdit) {
+        const passwordValid = validatePassword();
+        const confirmValid = validateConfirmPassword();
+        
+        if (!passwordValid || !confirmValid) {
+            return;
+        }
+    }
+    
+    // Validasi password untuk edit jika diisi
+    if (isEdit) {
+        const password = document.getElementById('password').value;
+        const confirm = document.getElementById('password_confirmation').value;
+        
+        if (password || confirm) {
+            if (password !== confirm) {
+                document.getElementById('passwordErrorContainer').style.display = 'block';
+                document.getElementById('passwordError').textContent = 'Password dan konfirmasi password tidak cocok';
+                document.getElementById('passwordError').style.color = '#e74c3c';
+                return;
+            }
+            
+            if (password && !/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(password)) {
+                document.getElementById('passwordErrorContainer').style.display = 'block';
+                document.getElementById('passwordError').textContent = 'Password harus minimal 8 karakter dan mengandung huruf serta angka';
+                document.getElementById('passwordError').style.color = '#e74c3c';
+                return;
+            }
+        }
+    }
     
     try {
         showSubmitLoading(true);
@@ -739,19 +855,21 @@ async function handleSubmit(e) {
         
         const method = isEdit ? 'PUT' : 'POST';
         
-        const jsonData = {};
-        formData.forEach((value, key) => {
-            jsonData[key] = value;
-        });
-
-        if (jsonData.password && jsonData.password !== jsonData.password_confirmation) {
-            showNotification('Password dan konfirmasi tidak sama', 'error');
-            showSubmitLoading(false);
-            return;
+        const formData = {
+            name: document.getElementById('name').value,
+            email: document.getElementById('email').value,
+            id_role: document.getElementById('id_role').value,
+            status_aktif: document.getElementById('status_aktif').value,
+            nip: document.getElementById('nip').value,
+            id_bidang: document.getElementById('bidang').value
+        };
+        
+        // Tambahkan password hanya jika diisi (untuk edit) atau wajib (untuk tambah)
+        if (!isEdit || document.getElementById('password').value) {
+            formData.password = document.getElementById('password').value;
+            formData.password_confirmation = document.getElementById('password_confirmation').value;
         }
         
-        // Add CSRF token
-        // jsonData._token = window.csrfToken;
         const response = await fetch(url, {
             method: method,
             headers: {
@@ -759,12 +877,22 @@ async function handleSubmit(e) {
                 'Accept': 'application/json',
                 'X-CSRF-TOKEN': window.csrfToken
             },
-            body: JSON.stringify(jsonData)
+            body: JSON.stringify(formData)
         });
         
         const data = await response.json();
         
         if (!response.ok) {
+            // Handle validation errors
+            if (response.status === 422 && data.errors) {
+                let errorMessage = 'Validasi gagal: ';
+                Object.values(data.errors).forEach(errors => {
+                    if (Array.isArray(errors)) {
+                        errorMessage += errors.join(', ') + ' ';
+                    }
+                });
+                throw new Error(errorMessage);
+            }
             throw new Error(data.message || 'Request failed');
         }
         
@@ -778,7 +906,12 @@ async function handleSubmit(e) {
         
     } catch (error) {
         console.error('Error:', error);
-        showNotification(error.message || 'Gagal menyimpan data', 'error');
+        
+        // Show error in password error area
+        document.getElementById('passwordErrorContainer').style.display = 'block';
+        document.getElementById('passwordError').textContent = error.message;
+        document.getElementById('passwordError').style.color = '#e74c3c';
+        
     } finally {
         showSubmitLoading(false);
     }
@@ -801,18 +934,15 @@ function showDeleteModal(id, name) {
     openModal('deleteModal');
 }
 
-function closeDeleteModal() {
-    userToDelete = null;
-    document.getElementById('deleteModal').style.display = 'none';
-}
-
 async function confirmDelete() {
     if (!userToDelete) return;
     
     try {
-        const deleteBtn = document.querySelector('#deleteModal .btn-danger');
-        deleteBtn.disabled = true;
-        deleteBtn.innerHTML = '<i class="bx bx-loader-circle bx-spin"></i> Menghapus...';
+        const deleteBtn = document.getElementById('deleteConfirmBtn');
+        if (deleteBtn) {
+            deleteBtn.disabled = true;
+            deleteBtn.innerHTML = '<i class="bx bx-loader-circle bx-spin"></i> Menghapus...';
+        }
         
         const response = await fetch(`${API_CONFIG.endpoints.users}/${userToDelete}`, {
             method: 'DELETE',
@@ -823,7 +953,8 @@ async function confirmDelete() {
         });
         
         if (!response.ok) {
-            throw new Error('Failed to delete user');
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to delete user');
         }
         
         showNotification('Akun berhasil dihapus', 'success');
@@ -832,7 +963,14 @@ async function confirmDelete() {
         
     } catch (error) {
         console.error('Error:', error);
-        showNotification('Gagal menghapus akun', 'error');
+        showNotification(error.message || 'Gagal menghapus akun', 'error');
+        
+        // Reset delete button
+        const deleteBtn = document.getElementById('deleteConfirmBtn');
+        if (deleteBtn) {
+            deleteBtn.disabled = false;
+            deleteBtn.innerHTML = '<i class="bx bx-trash"></i> Hapus';
+        }
     }
 }
 
@@ -876,25 +1014,28 @@ function prevPage() {
     }
 } 
 
-function updatePagination(data) {
-    const meta = data.meta || {
-        current_page: currentPage,
-        per_page: perPage,
-        total: data.total || data.length || 0
-    };
+function updatePagination(meta) {
+    if (!meta) return;
     
-    totalPages = Math.ceil(meta.total / meta.per_page);
-    currentPage = meta.current_page;
+    totalPages = meta.last_page || Math.ceil(meta.total / meta.per_page);
+    currentPage = meta.current_page || currentPage;
     
     document.getElementById('currentPage').textContent = currentPage;
     document.getElementById('totalPages').textContent = totalPages;
-    document.getElementById('totalRows').textContent = meta.total;
-    document.getElementById('startRow').textContent = ((currentPage - 1) * perPage) + 1;
-    document.getElementById('endRow').textContent = Math.min(currentPage * perPage, meta.total);
+    document.getElementById('totalRows').textContent = meta.total || 0;
+    
+    const startRow = ((currentPage - 1) * perPage) + 1;
+    const endRow = Math.min(currentPage * perPage, meta.total || 0);
+    
+    document.getElementById('startRow').textContent = startRow;
+    document.getElementById('endRow').textContent = endRow;
     
     // Update button states
-    document.getElementById('prevBtn').disabled = currentPage <= 1;
-    document.getElementById('nextBtn').disabled = currentPage >= totalPages;
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    
+    if (prevBtn) prevBtn.disabled = currentPage <= 1;
+    if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
 }
 
 // Utility functions
@@ -910,101 +1051,150 @@ function refreshData() {
     showNotification('Data berhasil diperbarui', 'success');
 }
 
-
 function showNotification(message, type = 'info') {
-    // Existing notification code...
-    // You can keep your existing showNotification function
+    const container = document.getElementById('notificationContainer');
+    if (!container) return;
+    
+    // Hapus notifikasi lama setelah 3 detik
+    const notifications = container.querySelectorAll('.notification');
+    notifications.forEach(notification => {
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }
+        }, 3000);
+    });
+    
+    // Buat notifikasi baru
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <i class='bx ${type === 'success' ? 'bx-check-circle' : type === 'error' ? 'bx-error-circle' : 'bx-info-circle'}' 
+               style="font-size: 1.5rem; color: ${type === 'success' ? '#2ed573' : type === 'error' ? '#e74c3c' : '#3498db'}"></i>
+            <span style="flex-grow: 1;">${message}</span>
+            <button onclick="this.parentElement.parentElement.remove()" 
+                    style="background: none; border: none; cursor: pointer; color: #888;">
+                <i class='bx bx-x'></i>
+            </button>
+        </div>
+    `;
+    
+    container.appendChild(notification);
+    
+    // Auto remove setelah 5 detik
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.style.animation = 'slideOut 0.3s ease-out';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }
+    }, 5000);
 }
 
-// Add additional styles for user detail
-const detailStyle = document.createElement('style');
-detailStyle.textContent = `
-    .user-detail {
-        text-align: center;
-        padding: 20px 0;
+// Tambahkan style untuk notification dan modal animation
+const customStyle = document.createElement('style');
+customStyle.textContent = `
+    @keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
     
-    .user-avatar-large {
-        margin-bottom: 20px;
+    @keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
     }
     
-    .user-avatar-large .avatar {
-        width: 80px;
-        height: 80px;
-        font-size: 1.5rem;
-        margin: 0 auto;
-    }
-    
-    .user-info-detail h4 {
-        font-size: 1.4rem;
-        margin-bottom: 5px;
-        color: var(--primary);
-    }
-    
-    .user-info-detail p {
-        color: #666;
-        margin-bottom: 20px;
-    }
-    
-    .detail-info {
-        background: #f8f9fa;
+    .notification {
+        padding: 15px 20px;
         border-radius: 10px;
-        padding: 20px;
-        margin-top: 20px;
-    }
-    
-    .info-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px 0;
-        border-bottom: 1px solid #eee;
-    }
-    
-    .info-row:last-child {
-        border-bottom: none;
-    }
-    
-    .info-label {
-        font-weight: 600;
-        color: #555;
-    }
-    
-    .info-value {
-        color: #333;
-    }
-    
-    .warning-icon {
-        text-align: center;
         margin-bottom: 10px;
+        background: white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        border-left: 4px solid;
+        animation: slideIn 0.3s ease-out;
     }
     
-    .table-info {
-        font-size: 0.9rem;
-        color: #666;
-        padding: 8px 12px;
-        background: #f8f9fa;
+    .notification-success {
+        border-left-color: #2ed573;
+        background: #f0f9f0;
+    }
+    
+    .notification-error {
+        border-left-color: #e74c3c;
+        background: #fdf2f2;
+    }
+    
+    .notification-info {
+        border-left-color: #3498db;
+        background: #f0f8ff;
+    }
+    
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    .password-error-container {
+        margin-top: 10px;
+        padding: 10px;
         border-radius: 6px;
-        border: 1px solid #dee2e6;
+        background: #fdf2f2;
+        border: 1px solid #f8d7da;
     }
     
-    .page-numbers {
-        font-weight: 600;
-        color: var(--primary);
-        padding: 0 15px;
+    .password-error {
+        color: #e74c3c;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .password-error:before {
+        content: '⚠';
+        font-size: 1rem;
+    }
+    
+    .modal {
+        animation: fadeIn 0.3s ease-out;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
     }
 `;
-//event listeners
-document.addEventListener('DOMContentLoaded', function () {
-    setupCSRF();
-    fetchUsers();
-
-    const form = document.getElementById('userForm');
-    if (form) {
-        form.addEventListener('submit', handleSubmit);
-    }
-});
-
-document.head.appendChild(detailStyle);
+document.head.appendChild(customStyle);
 </script>
 @endsection

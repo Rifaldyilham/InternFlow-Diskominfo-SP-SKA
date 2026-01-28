@@ -185,8 +185,8 @@
                 <div class="space-y-10">
                     <!-- Step 1 -->
                     <div class="alur-item">
-                        <h3 class="text-xl font-bold text-primary mb-3">1. Pendaftaran Online</h3>
-                        <p class="text-gray-600 mb-4">Calon peserta mengisi formulir pendaftaran online dan mengunggah berkas administrasi melalui portal InternFlow.</p>
+                        <h3 class="text-xl font-bold text-primary mb-3">1. Pengajuan Online</h3>
+                        <p class="text-gray-600 mb-4">Calon peserta mendaftar akun lalu mengisi formulir pengajuan online dan mengunggah berkas administrasi melalui portal InternFlow.</p>
                         <div class="bg-background p-4 rounded-xl">
                             <p class="text-sm font-medium text-primary">Berkas yang diperlukan:</p>
                             <ul class="text-sm text-gray-600 mt-2 space-y-1">
@@ -199,7 +199,7 @@
                     <!-- Step 2 -->
                     <div class="alur-item">
                         <h3 class="text-xl font-bold text-primary mb-3">2. Verifikasi Administrasi</h3>
-                        <p class="text-gray-600 mb-4">Tim Admin Kepegawaian memverifikasi kelengkapan dan kesesuaian berkas pendaftaran dalam waktu 3-5 hari kerja.</p>
+                        <p class="text-gray-600 mb-4">Tim Admin Kepegawaian memverifikasi kelengkapan dan kesesuaian berkas pendaftaran.</p>
                         <div class="flex items-center gap-4 mt-4">
                             <div class="flex-1 bg-green-50 p-3 rounded-lg border border-green-200">
                                 <p class="text-sm font-medium text-green-700">Diterima</p>
@@ -222,16 +222,16 @@
                         <p class="text-gray-600 mb-4">Admin Bidang menempatkan peserta ke bidang sesuai kompetensi dan ketersediaan kuota, kemudian menetapkan mentor pembimbing.</p>
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
                             <div class="bg-secondary/10 p-3 rounded-lg text-center">
-                                <p class="text-sm font-medium text-secondary"> Statistik</p>
+                                <p class="text-sm font-medium text-secondary"> Teknologi & Informatika</p>
                             </div>
                             <div class="bg-secondary/10 p-3 rounded-lg text-center">
-                                <p class="text-sm font-medium text-secondary"> Informatika</p>
+                                <p class="text-sm font-medium text-secondary"> Statistika</p>
                             </div>
                             <div class="bg-secondary/10 p-3 rounded-lg text-center">
-                                <p class="text-sm font-medium text-secondary"> Kesekretariatan</p>
+                                <p class="text-sm font-medium text-secondary"> Komunikasi Publik dan Media</p>
                             </div>
                             <div class="bg-secondary/10 p-3 rounded-lg text-center">
-                                <p class="text-sm font-medium text-secondary"> E-Goverment</p>
+                                <p class="text-sm font-medium text-secondary"> Sekretariat</p>
                             </div>
                         </div>
                     </div>

@@ -199,6 +199,62 @@
     border-color: var(--primary);
 }
 
+.form-group input.error {
+    border-color: #e74c3c;
+    background: #fdf2f2;
+}
+
+.form-group input.valid {
+    border-color: #2ed573;
+    background: #f0f9f0;
+}
+
+/* Loading states */
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn:disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+
+/* Notification styles */
+.notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    max-width: 400px;
+}
+
+.notification {
+    padding: 15px 20px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    background: white;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border-left: 4px solid;
+    animation: slideIn 0.3s ease-out;
+}
+
+.notification-success {
+    border-left-color: #2ed573;
+    background: #f0f9f0;
+}
+
+.notification-error {
+    border-left-color: #e74c3c;
+    background: #fdf2f2;
+}
+
+.notification-info {
+    border-left-color: #3498db;
+    background: #f0f8ff;
+}
+
 .form-group small {
     display: block;
     margin-top: 5px;
@@ -346,6 +402,11 @@
     transition: all 0.2s ease;
 }
 
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
 .action-btn.edit {
     background: rgba(52, 152, 219, 0.1);
     color: #3498db;
@@ -374,6 +435,26 @@
 .action-btn.view:hover {
     background: #9b59b6;
     color: white;
+}
+
+/* Delete confirmation modal improvements */
+#deleteModal .modal-content {
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+#deleteModal .warning-icon {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#deleteModal .text-warning {
+    color: #f39c12;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 15px;
 }
 
 /* Avatar Styles */
@@ -937,6 +1018,27 @@
     }
 }
 
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
 /* RESPONSIVE DESIGN */
 @media (max-width: 1024px) {
     .filter-grid {
@@ -949,6 +1051,25 @@
 }
 
 @media (max-width: 768px) {
+    .action-buttons {
+    flex-direction: column;
+    gap: 5px;
+    }
+    
+    .action-btn {
+        width: 100%;
+    }
+    
+    .notification-container {
+        left: 10px;
+        right: 10px;
+        max-width: none;
+    }
+    
+    .notification {
+        font-size: 0.9rem;
+        padding: 12px 15px;
+    }
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -1394,12 +1515,11 @@
     font-size: 0.9rem;
 }
 .password-error {
-    display: none;
     color: #e74c3c;
     font-size: 0.85rem;
-    margin-top: 6px;
-    margin-bottom: 4px;
-    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 /* SECTION DESCRIPTION */
@@ -1421,6 +1541,8 @@
 }
 
 /* Action Button Colors for Sertifikat */
+
+
 .action-btn.view-cert {
     background: #e8f5e9;
     color: #2e7d32;

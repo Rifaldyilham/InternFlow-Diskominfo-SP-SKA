@@ -172,8 +172,8 @@ const API_CONFIG = {
     baseUrl: window.location.origin,
     endpoints: {
         bidang: '/api/admin/bidang',
-        adminByBidang: '/api/admin/bidang',
-        pesertaByBidang: '/api/admin/bidang',
+        adminByBidang: (id) => `/api/admin/bidang/${id}/admin`,
+        pesertaByBidang: (id) => `/api/admin/bidang/${id}/peserta`
     }
 };
 

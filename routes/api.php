@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Admin\UserApiController;
 use App\Http\Controllers\Api\Admin\RoleApiController;
+use App\Http\Controllers\Api\Admin\BidangApiController;
 use App\Models\Bidang;
 use App\Models\PesertaMagang;
 
@@ -15,15 +16,13 @@ Route::prefix('admin')->group(function () {
     Route::delete('/users/{id}', [UserApiController::class, 'destroy']);
     Route::get('/roles', [RoleApiController::class, 'index']);
 
+    // Routes untuk Bidang
     Route::get('/bidang', [BidangApiController::class, 'index']);
     Route::post('/bidang', [BidangApiController::class, 'store']);
+    Route::get('/bidang/{id}', [BidangApiController::class, 'show']);
     Route::put('/bidang/{id}', [BidangApiController::class, 'update']);
     Route::delete('/bidang/{id}', [BidangApiController::class, 'destroy']);
-    Route::get('/bidang/{id}', [BidangApiController::class, 'show']);
-    Route::get('/bidang/{id}/admin', function ($id) {
-        return Bidang::with('admin')->findOrFail($id)->admin;
-    });
-    Route::get('/bidang/{id}/peserta', function ($id) {
-        return PesertaMagang::where('id_bidang', $id)->get();
-    });
+    Route::get('/bidang/{id}/admin', [BidangApiController::class, 'getAdmin']);
+    Route::get('/bidang/{id}/peserta', [BidangApiController::class, 'getPeserta']);
+
 });
