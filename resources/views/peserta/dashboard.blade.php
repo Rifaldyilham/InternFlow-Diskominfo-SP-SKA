@@ -177,37 +177,6 @@
 
 @section('scripts')
 <script>
-// Konfigurasi API
-const API_CONFIG = {
-    endpoints: {
-        dashboard: '/api/peserta/dashboard',
-        statusMagang: '/api/peserta/status-magang',
-        pengajuanStatus: '/api/peserta/pengajuan/status'
-    }
-};
-
-// Status configuration
-const STATUS_CONFIG = {
-    magang: {
-        'belum': { text: 'BELUM DIMULAI', class: 'status-pending' },
-        'berjalan': { text: 'SEDANG BERJALAN', class: 'status-active' },
-        'selesai': { text: 'SELESAI', class: 'status-approved' },
-        'ditolak': { text: 'DITOLAK', class: 'status-rejected' }
-    },
-    pengajuan: {
-        'pending': { text: 'MENUNGGU', class: 'status-pending' },
-        'accepted': { text: 'DITERIMA', class: 'status-approved' },
-        'rejected': { text: 'DITOLAK', class: 'status-rejected' },
-        'review': { text: 'DALAM REVIEW', class: 'status-review' }
-    },
-    sertifikat: {
-        'belum': { text: 'BELUM TERSEDIA', class: 'status-pending' },
-        'proses': { text: 'DIPROSES', class: 'status-active' },
-        'tersedia': { text: 'TERSEDIA', class: 'status-approved' }
-    }
-};
-
-// Initialize page
 document.addEventListener('DOMContentLoaded', function() {
     loadDashboardData();
 });
@@ -215,28 +184,23 @@ document.addEventListener('DOMContentLoaded', function() {
 // Load dashboard data
 async function loadDashboardData() {
     try {
-        // Simulasi API call - di backend nanti akan menggunakan fetch API
-        // const response = await fetch(API_CONFIG.endpoints.dashboard);
-        // const data = await response.json();
-        
-        // Untuk sekarang, kita simulasikan data kosong (belum ada pengajuan)
-        simulateEmptyState();
-        
-        // Nanti di backend, ganti dengan kode berikut:
-        /*
-        if (response.ok) {
-            const data = await response.json();
-            if (data.hasPengajuan) {
-                renderDashboardData(data);
-            } else {
-                showEmptyState();
-            }
+        const response = await fetch('/api/peserta/dashboard', {
+            headers: { 'Accept': 'application/json' }
+        });
+
+        if (!response.ok) throw new Error('Gagal memuat data');
+
+        const data = await response.json();
+
+        if (data.hasPengajuan) {
+            renderDashboardData(data.pengajuan);
+        } else {
+            simulateEmptyState();
         }
-        */
         
     } catch (error) {
         console.error('Error loading dashboard:', error);
-        showErrorState();
+        simulateEmptyState();
     }
 }
 
@@ -249,21 +213,8 @@ function simulateEmptyState() {
     document.getElementById('emptyState').classList.remove('hidden');
 }
 
-// Show error state
-function showErrorState() {
-    document.getElementById('loadingState').innerHTML = `
-        <div style="text-align: center; padding: 40px 0;">
-            <i class='bx bx-error-circle' style="font-size: 3rem; color: #e74c3c;"></i>
-            <div style="margin-top: 15px; color: #e74c3c;">Gagal memuat data</div>
-            <button onclick="loadDashboardData()" class="btn btn-secondary" style="margin-top: 10px; padding: 8px 20px;">
-                <i class='bx bx-refresh'></i> Coba Lagi
-            </button>
-        </div>
-    `;
-}
-
-// Render dashboard data (akan digunakan di backend)
-function renderDashboardData(data) {
+// Render dashboard dengan status verifikasi
+function renderDashboardData(pengajuan) {
     // Hide loading state
     document.getElementById('loadingState').style.display = 'none';
     
@@ -271,98 +222,24 @@ function renderDashboardData(data) {
     const activeMagangState = document.getElementById('activeMagangState');
     activeMagangState.classList.remove('hidden');
     
-    // Update magang data
-    if (data.magang) {
-        updateMagangData(data.magang);
-    }
+    // Update pengajuan status badge
+    const pengajuanStatusBadge = document.getElementById('pengajuanStatusBadge');
+    const statusConfig = getStatusConfig(pengajuan.status);
+    pengajuanStatusBadge.textContent = statusConfig.text;
+    pengajuanStatusBadge.className = `status-badge ${statusConfig.class}`;
     
-    // Update pengajuan status
-    if (data.pengajuan) {
-        updatePengajuanStatus(data.pengajuan);
-    }
-    
-    // Update sertifikat status
-    if (data.sertifikat) {
-        updateSertifikatStatus(data.sertifikat);
-    }
-    
-    // Show/hide sections based on status
-    if (data.statusMagang === 'berjalan' || data.statusMagang === 'selesai') {
-        document.getElementById('sertifikatProgressSection').classList.remove('hidden');
-        document.getElementById('quickActionsSection').classList.remove('hidden');
-        
-        // Update sertifikat progress
-        if (data.sertifikatProgress) {
-            updateSertifikatProgress(data.sertifikatProgress);
-        }
-    }
+    // Show quick actions
+    document.getElementById('quickActionsSection').classList.remove('hidden');
 }
 
-// Update magang data
-function updateMagangData(magang) {
-    document.getElementById('bidangNama').textContent = magang.bidang || '-';
-    document.getElementById('mentorInfo').textContent = `Mentor: ${magang.mentor || '-'}`;
-    document.getElementById('periodeInfo').textContent = `Periode: ${magang.tanggal_mulai ? formatDate(magang.tanggal_mulai) : '-'} - ${magang.tanggal_selesai ? formatDate(magang.tanggal_selesai) : '-'}`;
-    
-    // Update status badge
-    const statusBadge = document.getElementById('statusMagangBadge');
-    const statusConfig = STATUS_CONFIG.magang[magang.status] || STATUS_CONFIG.magang.belum;
-    statusBadge.textContent = statusConfig.text;
-    statusBadge.className = `status-badge ${statusConfig.class}`;
-    
-    // Update progress if magang is active
-    if (magang.status === 'berjalan' && magang.progress) {
-        const progressBar = document.getElementById('progressBar');
-        const progressText = document.getElementById('progressText');
-        const hariTersisaText = document.getElementById('hariTersisaText');
-        
-        progressBar.style.width = `${magang.progress}%`;
-        progressText.textContent = `${magang.progress}% Selesai`;
-        hariTersisaText.textContent = `${magang.hari_tersisa || 0} hari tersisa`;
-    }
-}
-
-// Update pengajuan status
-function updatePengajuanStatus(pengajuan) {
-    const badge = document.getElementById('pengajuanStatusBadge');
-    const statusConfig = STATUS_CONFIG.pengajuan[pengajuan.status] || STATUS_CONFIG.pengajuan.pending;
-    badge.textContent = statusConfig.text;
-    badge.className = `status-badge ${statusConfig.class}`;
-}
-
-// Update sertifikat status
-function updateSertifikatStatus(sertifikat) {
-    const badge = document.getElementById('sertifikatStatusBadge');
-    const statusConfig = STATUS_CONFIG.sertifikat[sertifikat.status] || STATUS_CONFIG.sertifikat.belum;
-    badge.textContent = statusConfig.text;
-    badge.className = `status-badge ${statusConfig.class}`;
-}
-
-// Update sertifikat progress
-function updateSertifikatProgress(progress) {
-    document.getElementById('sertifikatProgressText').textContent = progress.description || '-';
-    
-    // Update step badges
-    const steps = ['step1', 'step2', 'step3'];
-    steps.forEach((stepId, index) => {
-        const stepElement = document.getElementById(stepId);
-        const stepCircle = stepElement.querySelector('.step-circle');
-        
-        if (index < progress.currentStep) {
-            stepCircle.className = 'step-circle step-completed';
-            stepCircle.innerHTML = '<i class="bx bx-check"></i>';
-        } else if (index === progress.currentStep) {
-            stepCircle.className = 'step-circle step-active';
-        } else {
-            stepCircle.className = 'step-circle';
-        }
-    });
-    
-    // Update progress badge
-    const badge = document.getElementById('sertifikatStepBadge');
-    const badgeConfig = STATUS_CONFIG.sertifikat[progress.status] || STATUS_CONFIG.sertifikat.belum;
-    badge.textContent = badgeConfig.text;
-    badge.className = `status-badge ${badgeConfig.class}`;
+// Get status configuration
+function getStatusConfig(status) {
+    const configs = {
+        'pending': { text: 'MENUNGGU VERIFIKASI', class: 'status-pending' },
+        'terverifikasi': { text: 'TERVERIFIKASI', class: 'status-approved' },
+        'ditolak': { text: 'DITOLAK', class: 'status-rejected' }
+    };
+    return configs[status] || { text: 'MENUNGGU VERIFIKASI', class: 'status-pending' };
 }
 
 // Helper function to format date

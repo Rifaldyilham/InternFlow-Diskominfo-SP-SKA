@@ -19,7 +19,11 @@ class PesertaMagang extends Model
         'asal_univ',
         'program_studi',
         'no_telp',
-        'status'
+        'surat_penempatan_path',
+        'cv_path',
+        'status',
+        'status_verifikasi',
+        'catatan_verifikasi'
     ];
 
     public function user()

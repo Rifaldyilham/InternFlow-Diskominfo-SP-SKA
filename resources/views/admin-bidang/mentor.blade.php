@@ -189,9 +189,6 @@
 
 @section('scripts')
 <script>
-// **PERHATIAN:**
-// File ini berisi JavaScript untuk halaman admin-bidang/mentor.
-// Data dummy telah dihapus dan struktur API disiapkan untuk Backend nantinya.
 
 // ============================
 // KONFIGURASI API (Backend-ready)
