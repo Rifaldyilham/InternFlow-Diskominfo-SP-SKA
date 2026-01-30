@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ManajemenAkunController;
 use App\Http\Controllers\Admin\VerifikasiBerikasController;
 use App\Http\Controllers\AdminBidang\DashboardController;
 use App\Http\Controllers\PesertaController;
+use App\Http\Controllers\Admin\PesertaMagangController;
 
 // Route untuk dashboard utama
 Route::get('/', function () {
@@ -61,7 +62,7 @@ Route::prefix('peserta')->group(function () {
     })->name('peserta.pendaftaran')->middleware('auth');
 
     Route::post('/pendaftaran', [PesertaController::class, 'store'])
-        ->name('peserta.pendaftaran.store')
+        ->name('peserta.store')
         ->middleware('auth');
 
     Route::get('/logbook', function () {
@@ -76,6 +77,23 @@ Route::prefix('peserta')->group(function () {
         return view('peserta.penilaian-sertifikat');
     })->name('peserta.penilaian-sertifikat');
 });
+
+//Routes Aksi Dashboard Admin Kepegawaian 
+Route::prefix('admin')->middleware(['auth'])->group(function () {
+
+    Route::get('/peserta-magang', [PesertaMagangController::class, 'index'])
+        ->name('admin.peserta.index');
+
+    Route::get('/peserta-magang/{id}', [PesertaMagangController::class, 'show'])
+        ->name('admin.peserta.show');
+
+    Route::post('/peserta-magang/{id}/approve', [PesertaMagangController::class, 'approve'])
+        ->name('admin.peserta.approve');
+
+    Route::post('/peserta-magang/{id}/reject', [PesertaMagangController::class, 'reject'])
+        ->name('admin.peserta.reject');
+});
+
 
 // Routes untuk Mentor Magang
 Route::prefix('mentor')->group(function () {
@@ -123,6 +141,7 @@ Route::prefix('api/admin')->middleware(['auth'])->group(function () {
 
 // API endpoints untuk peserta dashboard
 Route::prefix('api/peserta')->middleware(['auth'])->group(function () {
+
     Route::get('/dashboard', function () {
         $user = \Illuminate\Support\Facades\Auth::user();
         $peserta = \App\Models\PesertaMagang::where('id_user', $user->id_user)->first();
@@ -139,4 +158,6 @@ Route::prefix('api/peserta')->middleware(['auth'])->group(function () {
             ]
         ]);
     });
+
 });
+

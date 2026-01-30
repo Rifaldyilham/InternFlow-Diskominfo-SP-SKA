@@ -152,7 +152,7 @@ const API_ENDPOINTS = {
     verify: '/api/admin/verifikasi-berkas/verify'
 };
 
-let state = {
+window.state = {
     pesertaList: [],
     filteredPeserta: []
 };
@@ -162,6 +162,62 @@ document.addEventListener('DOMContentLoaded', function() {
     loadData();
     setupEventListeners();
 });
+
+function showVerifikasi(pesertaId) {
+    console.log('klik detail peserta:', pesertaId); // DEBUG
+
+    fetch(`/api/admin/verifikasi-berkas/detail/${pesertaId}`)
+        .then(res => res.json())
+        .then(res => {
+            const p = res.data;
+
+            document.getElementById('verifikasiContent').innerHTML = `
+                <div>
+                    <h3>${p.nama}</h3>
+                    <p>NIM: ${p.nim}</p>
+                    <p>Email: ${p.email}</p>
+                    <p>Universitas: ${p.universitas}</p>
+                    <p>Prodi: ${p.program_studi}</p>
+                    <p>No Telp: ${p.no_telp}</p>
+
+                    <hr>
+
+                    <p><b>Periode Magang:</b></p>
+                    <p>${p.tanggal_mulai} s/d ${p.tanggal_selesai}</p>
+
+                    <p><b>Alasan:</b></p>
+                    <p>${p.alasan}</p>
+
+                    <hr>
+
+                    <p><b>Berkas:</b></p>
+                    ${p.cv_url ? `<a href="${p.cv_url}" target="_blank">📄 CV</a><br>` : ''}
+                    ${p.surat_url ? `<a href="${p.surat_url}" target="_blank">📄 Surat BKPSDM</a>` : ''}
+                </div>
+            `;
+
+            document.getElementById('verifikasiModal').style.display = 'flex';
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Gagal memuat detail peserta');
+        });
+}
+
+//terima peserta 
+async function approvePeserta(id) {
+    if (!confirm('Terima peserta ini?')) return;
+
+    await submitVerifikasiAPI(id, 'terverifikasi');
+}
+
+//tolak peserta
+async function rejectPeserta(id) {
+    const catatan = prompt('Alasan penolakan (opsional):');
+    if (catatan === null) return;
+
+    await submitVerifikasiAPI(id, 'ditolak', catatan);
+}
 
 function setupCSRF() {
     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
@@ -228,21 +284,41 @@ function renderTable() {
 
     tbody.innerHTML = state.filteredPeserta.map(p => `
         <tr>
-            <td><strong>${p.nama}</strong></td>
-            <td>${p.nim}</td>
-            <td>${p.universitas || '-'}</td>
-            <td>
-                <span class="status-badge ${getStatusClass(p.status_verifikasi)}">
-                    ${getStatusText(p.status_verifikasi)}
-                </span>
-            </td>
-            <td>${formatDate(p.created_at)}</td>
-            <td>
-                <button onclick="showVerifikasi('${p.id}')" class="action-btn edit">
-                    <i class='bx bx-check'></i>
-                </button>
-            </td>
-        </tr>
+    <td>${p.nama}</td>
+    <td>${p.nim}</td>
+    <td>${p.universitas}</td>
+    <td> <span class="status-badge ${getStatusClass(p.status_verifikasi)}">
+        ${getStatusText(p.status_verifikasi)}
+    </span></td>
+    <td>${formatDate(p.created_at)}</td>  
+    <td>                  
+    <!-- LIHAT DETAIL -->
+    <button
+        onclick="showVerifikasi('${p.id}')"
+        class="action-btn view"
+        title="Lihat Detail">
+        <i class='bx bx-show'></i>
+    </button>
+
+    ${p.status_verifikasi === 'pending' ? `
+        <!-- TERIMA -->
+        <button
+            onclick="approvePeserta(${p.id})"
+            class="action-btn approve"
+            title="Terima">
+            <i class='bx bx-check'></i>
+        </button>
+
+        <!-- TOLAK -->
+        <button
+            onclick="rejectPeserta(${p.id})"
+            class="action-btn reject"
+            title="Tolak">
+            <i class='bx bx-x'></i>
+        </button>
+    ` : ''}
+
+</td>
     `).join('');
 }
 
@@ -250,53 +326,44 @@ async function showVerifikasi(pesertaId) {
     try {
         const response = await fetch(`${API_ENDPOINTS.detail}/${pesertaId}`);
         if (!response.ok) throw new Error('Gagal memuat detail');
-        
+
         const result = await response.json();
         const p = result.data;
 
         document.getElementById('verifikasiContent').innerHTML = `
-            <div class="space-y-4">
-                <div class="p-4 bg-blue-50 rounded-lg">
-                    <h4 class="font-bold">${p.nama}</h4>
-                    <p class="text-sm text-gray-600">${p.nim} | ${p.universitas}</p>
-                </div>
+            <div class="space-y-3">
+                <h4 class="font-bold text-lg">${p.nama}</h4>
 
-                <div>
-                    <label class="block font-medium mb-2">Berkas:</label>
-                    ${p.surat_penempatan_url ? `<a href="${p.surat_penempatan_url}" target="_blank" class="text-blue-600 text-sm">📄 Surat Penempatan</a><br>` : ''}
-                    ${p.cv_url ? `<a href="${p.cv_url}" target="_blank" class="text-blue-600 text-sm">📄 CV</a>` : ''}
-                </div>
+                <p><b>NIM:</b> ${p.nim}</p>
+                <p><b>Email:</b> ${p.email}</p>
+                <p><b>Universitas:</b> ${p.universitas}</p>
+                <p><b>Program Studi:</b> ${p.program_studi}</p>
+                <p><b>No Telp:</b> ${p.no_telp}</p>
 
-                <div>
-                    <label class="block font-medium mb-2">Keputusan:</label>
-                    <select id="verifikasiStatus" class="form-select">
-                        <option value="">-- Pilih --</option>
-                        <option value="terverifikasi">Terima (Terverifikasi)</option>
-                        <option value="ditolak">Tolak (Ditolak)</option>
-                    </select>
-                </div>
+                <hr>
 
-                <div>
-                    <label class="block font-medium mb-2">Catatan (Opsional):</label>
-                    <textarea id="verifikasiCatatan" class="form-input" rows="3" placeholder="Tulis catatan..."></textarea>
-                </div>
+                <p><b>Bidang:</b> ${p.bidang_pilihan}</p>
+                <p><b>Tanggal Magang:</b> ${p.tanggal_mulai} s/d ${p.tanggal_selesai}</p>
+
+                <p><b>Alasan:</b></p>
+                <p class="text-sm">${p.alasan}</p>
+
+                <hr>
+
+                <p><b>Berkas:</b></p>
+                ${p.cv_url ? `<a href="${p.cv_url}" target="_blank">📄 CV</a><br>` : ''}
+                ${p.surat_url ? `<a href="${p.surat_url}" target="_blank">📄 Surat BKPSDM</a>` : ''}
             </div>
         `;
-
-        document.getElementById('verifikasiModal').querySelector('.modal-footer')?.remove();
-        const footer = document.createElement('div');
-        footer.className = 'modal-footer';
-        footer.innerHTML = `
-            <button class="btn btn-secondary" onclick="closeModal('verifikasiModal')">Batal</button>
-            <button class="btn btn-primary" onclick="submitVerifikasi('${pesertaId}')">Simpan</button>
-        `;
-        document.getElementById('verifikasiModal').appendChild(footer);
-
-        openModal('verifikasiModal');
-    } catch (error) {
-        showNotification('Gagal memuat detail', 'error');
+        } catch (error) {
+        console.error(error);
+        showNotification('Gagal memuat detail peserta', 'error');
     }
 }
+
+
+
+
 
 async function submitVerifikasi(pesertaId) {
     const status = document.getElementById('verifikasiStatus').value;

@@ -9,106 +9,71 @@ use Illuminate\Http\JsonResponse;
 
 class VerifikasiBerikasController extends Controller
 {
-    // GET: Daftar peserta yang perlu verifikasi
+    // VIEW halaman admin
     public function index()
     {
-        $peserta = PesertaMagang::with(['user', 'bidang'])
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        return view('admin.verifikasi-berkas', compact('peserta'));
+        return view('admin.verifikasi-berkas');
     }
 
-    // GET: API daftar peserta yang perlu verifikasi
+    // ✅ API LIST (INI YANG DIPANGGIL JS)
     public function apiList(): JsonResponse
     {
-        $peserta = PesertaMagang::with(['user', 'bidang'])
-            ->select([
-                'id_pesertamagang',
-                'nama',
-                'nim',
-                'email',
-                'asal_univ',
-                'program_studi',
-                'status_verifikasi',
-                'surat_penempatan_path',
-                'cv_path',
-                'created_at'
-            ])
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'id' => $item->id_pesertamagang,
-                    'nama' => $item->nama,
-                    'nim' => $item->nim,
-                    'email' => $item->email,
-                    'universitas' => $item->asal_univ,
-                    'prodi' => $item->program_studi,
-                    'status_verifikasi' => $item->status_verifikasi,
-                    'surat_penempatan_path' => $item->surat_penempatan_path,
-                    'cv_path' => $item->cv_path,
-                    'created_at' => $item->created_at,
-                ];
-            });
+        $peserta = PesertaMagang::orderBy('created_at', 'desc')->get();
 
-        return response()->json(['data' => $peserta]);
+        return response()->json([
+            'data' => $peserta->map(function ($p) {
+                return [
+                    'id' => $p->id_pesertamagang,
+                    'nama' => $p->nama,
+                    'nim' => $p->nim,
+                    'email' => $p->email,
+                    'universitas' => $p->asal_univ,
+                    'status_verifikasi' => $p->status_verifikasi,
+                    'created_at' => $p->created_at,
+                ];
+            })
+        ]);
     }
 
-    // POST: Verifikasi atau tolak berkas peserta
+    // DETAIL peserta
+    public function detail($id): JsonResponse
+    {
+        $p = PesertaMagang::findOrFail($id);
+
+        return response()->json([
+            'data' => [
+                'id' => $p->id_pesertamagang,
+                'nama' => $p->nama,
+                'nim' => $p->nim,
+                'email' => $p->email,
+                'universitas' => $p->asal_univ,
+                'program_studi' => $p->program_studi,
+                'no_telp' => $p->no_telp,
+                'tanggal_mulai' => $p->tanggal_mulai,
+                'tanggal_selesai' => $p->tanggal_selesai,
+                'alasan' => $p->alasan,
+                'status' => $p->status_verifikasi,
+                'catatan' => $p->catatan_verifikasi,
+                'cv_url' => $p->cv_path ? asset('storage/' . $p->cv_path) : null,
+                'surat_url' => $p->surat_penempatan_path ? asset('storage/' . $p->surat_penempatan_path) : null,
+            ]
+        ]);
+    }
+
+    // TERIMA / TOLAK
     public function verify(Request $request): JsonResponse
     {
         $request->validate([
-            'peserta_id' => 'required|integer',
+            'peserta_id' => 'required',
             'status' => 'required|in:terverifikasi,ditolak',
-            'catatan' => 'nullable|string|max:500',
+            'catatan' => 'nullable|string'
         ]);
 
-        $peserta = PesertaMagang::where('id_pesertamagang', $request->peserta_id)->first();
-        if (!$peserta) {
-            return response()->json(['message' => 'Peserta tidak ditemukan'], 404);
-        }
+        $p = PesertaMagang::findOrFail($request->peserta_id);
+        $p->status_verifikasi = $request->status;
+        $p->catatan_verifikasi = $request->catatan;
+        $p->save();
 
-        $peserta->status_verifikasi = $request->status;
-        $peserta->catatan_verifikasi = $request->input('catatan');
-        $peserta->save();
-
-        return response()->json([
-            'message' => 'Verifikasi berkas berhasil',
-            'data' => [
-                'id' => $peserta->id_pesertamagang,
-                'status_verifikasi' => $peserta->status_verifikasi,
-            ]
-        ]);
-    }
-
-    // GET: Detail peserta dengan file paths
-    public function detail($id): JsonResponse
-    {
-        $peserta = PesertaMagang::where('id_pesertamagang', $id)
-            ->with(['user', 'bidang'])
-            ->first();
-
-        if (!$peserta) {
-            return response()->json(['message' => 'Peserta tidak ditemukan'], 404);
-        }
-
-        return response()->json([
-            'data' => [
-                'id' => $peserta->id_pesertamagang,
-                'nama' => $peserta->nama,
-                'nim' => $peserta->nim,
-                'email' => $peserta->email,
-                'universitas' => $peserta->asal_univ,
-                'prodi' => $peserta->program_studi,
-                'status_verifikasi' => $peserta->status_verifikasi,
-                'catatan_verifikasi' => $peserta->catatan_verifikasi,
-                'surat_penempatan_path' => $peserta->surat_penempatan_path,
-                'cv_path' => $peserta->cv_path,
-                'surat_penempatan_url' => $peserta->surat_penempatan_path ? asset('storage/' . $peserta->surat_penempatan_path) : null,
-                'cv_url' => $peserta->cv_path ? asset('storage/' . $peserta->cv_path) : null,
-                'created_at' => $peserta->created_at,
-            ]
-        ]);
+        return response()->json(['message' => 'OK']);
     }
 }

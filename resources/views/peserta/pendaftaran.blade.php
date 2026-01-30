@@ -58,7 +58,7 @@
     </div>
     
     <!-- Form Pengajuan -->
-    <form id="formPengajuan" class="hidden" enctype="multipart/form-data">
+    <form id="formPengajuan" action="{{  route('peserta.store') }}" method="POST" enctype="multipart/form-data"> @csrf
         <!-- Data Pribadi -->
         <div class="form-section">
             <h3 class="section-title">
@@ -413,7 +413,7 @@ function setupEventListeners() {
     
     // Form submission
     const form = document.getElementById('formPengajuan');
-    form.addEventListener('submit', handleFormSubmit);
+    // form.addEventListener('submit', handleFormSubmit);
     
     // Modal close on backdrop click
     const modal = document.getElementById('successModal');
