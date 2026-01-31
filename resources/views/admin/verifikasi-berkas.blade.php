@@ -163,47 +163,6 @@ document.addEventListener('DOMContentLoaded', function() {
     setupEventListeners();
 });
 
-function showVerifikasi(pesertaId) {
-    console.log('klik detail peserta:', pesertaId); // DEBUG
-
-    fetch(`/api/admin/verifikasi-berkas/detail/${pesertaId}`)
-        .then(res => res.json())
-        .then(res => {
-            const p = res.data;
-
-            document.getElementById('verifikasiContent').innerHTML = `
-                <div>
-                    <h3>${p.nama}</h3>
-                    <p>NIM: ${p.nim}</p>
-                    <p>Email: ${p.email}</p>
-                    <p>Universitas: ${p.universitas}</p>
-                    <p>Prodi: ${p.program_studi}</p>
-                    <p>No Telp: ${p.no_telp}</p>
-
-                    <hr>
-
-                    <p><b>Periode Magang:</b></p>
-                    <p>${p.tanggal_mulai} s/d ${p.tanggal_selesai}</p>
-
-                    <p><b>Alasan:</b></p>
-                    <p>${p.alasan}</p>
-
-                    <hr>
-
-                    <p><b>Berkas:</b></p>
-                    ${p.cv_url ? `<a href="${p.cv_url}" target="_blank">📄 CV</a><br>` : ''}
-                    ${p.surat_url ? `<a href="${p.surat_url}" target="_blank">📄 Surat BKPSDM</a>` : ''}
-                </div>
-            `;
-
-            document.getElementById('verifikasiModal').style.display = 'flex';
-        })
-        .catch(err => {
-            console.error(err);
-            alert('Gagal memuat detail peserta');
-        });
-}
-
 //terima peserta 
 async function approvePeserta(id) {
     if (!confirm('Terima peserta ini?')) return;
@@ -324,56 +283,44 @@ function renderTable() {
 
 async function showVerifikasi(pesertaId) {
     try {
-        const response = await fetch(`${API_ENDPOINTS.detail}/${pesertaId}`);
-        if (!response.ok) throw new Error('Gagal memuat detail');
+        const res = await fetch(`/api/admin/verifikasi-berkas/detail/${pesertaId}`);
+        const { data: p } = await res.json();
 
-        const result = await response.json();
-        const p = result.data;
+        let berkasHtml = '';
+        for (const [nama, url] of Object.entries(p.berkas)) {
+            berkasHtml += url
+                ? `<li><a href="${url}" target="_blank">📄 ${nama}</a></li>`
+                : `<li>❌ ${nama} (tidak ada)</li>`;
+        }
 
         document.getElementById('verifikasiContent').innerHTML = `
-            <div class="space-y-3">
-                <h4 class="font-bold text-lg">${p.nama}</h4>
+            <h3>${p.nama}</h3>
+            <p><b>NIM:</b> ${p.nim}</p>
+            <p><b>Universitas:</b> ${p.universitas}</p>
+            <p><b>Prodi:</b> ${p.program_studi}</p>
 
-                <p><b>NIM:</b> ${p.nim}</p>
-                <p><b>Email:</b> ${p.email}</p>
-                <p><b>Universitas:</b> ${p.universitas}</p>
-                <p><b>Program Studi:</b> ${p.program_studi}</p>
-                <p><b>No Telp:</b> ${p.no_telp}</p>
+            <hr>
 
-                <hr>
+            <p><b>Periode:</b> ${p.tanggal_mulai} s/d ${p.tanggal_selesai}</p>
+            <p><b>Alasan:</b></p>
+            <p>${p.alasan}</p>
 
-                <p><b>Bidang:</b> ${p.bidang_pilihan}</p>
-                <p><b>Tanggal Magang:</b> ${p.tanggal_mulai} s/d ${p.tanggal_selesai}</p>
+            <hr>
 
-                <p><b>Alasan:</b></p>
-                <p class="text-sm">${p.alasan}</p>
-
-                <hr>
-
-                <p><b>Berkas:</b></p>
-                ${p.cv_url ? `<a href="${p.cv_url}" target="_blank">📄 CV</a><br>` : ''}
-                ${p.surat_url ? `<a href="${p.surat_url}" target="_blank">📄 Surat BKPSDM</a>` : ''}
-            </div>
+            <p><b>Berkas Pengajuan:</b></p>
+            <ul>${berkasHtml}</ul>
         `;
-        } catch (error) {
-        console.error(error);
-        showNotification('Gagal memuat detail peserta', 'error');
+
+        document.getElementById('verifikasiModal').style.display = 'flex';
+
+    } catch (err) {
+        alert('Gagal memuat detail peserta');
+        console.error(err);
     }
 }
 
 
-
-
-
-async function submitVerifikasi(pesertaId) {
-    const status = document.getElementById('verifikasiStatus').value;
-    const catatan = document.getElementById('verifikasiCatatan').value;
-
-    if (!status) {
-        showNotification('Pilih status terlebih dahulu', 'error');
-        return;
-    }
-
+async function submitVerifikasiAPI(pesertaId, status, catatan = null) {
     try {
         const response = await fetch(API_ENDPOINTS.verify, {
             method: 'POST',
@@ -382,18 +329,32 @@ async function submitVerifikasi(pesertaId) {
                 'Accept': 'application/json',
                 'X-CSRF-TOKEN': window.csrfToken
             },
-            body: JSON.stringify({ peserta_id: pesertaId, status, catatan })
+            body: JSON.stringify({
+                peserta_id: pesertaId,
+                status: status,
+                catatan: catatan
+            })
         });
 
-        if (!response.ok) throw new Error('Gagal menyimpan verifikasi');
+        if (!response.ok) {
+            throw new Error('Gagal menyimpan verifikasi');
+        }
 
-        showNotification('Verifikasi berhasil disimpan', 'success');
+        showNotification(
+            status === 'terverifikasi'
+                ? 'Peserta berhasil diterima'
+                : 'Peserta berhasil ditolak',
+            'success'
+        );
+
         closeModal('verifikasiModal');
-        loadData();
+        loadData(); // refresh tabel
     } catch (error) {
-        showNotification('Gagal menyimpan verifikasi', 'error');
+        console.error(error);
+        showNotification('Gagal memproses verifikasi', 'error');
     }
 }
+
 
 function getStatusClass(status) {
     return status === 'pending' ? 'status-pending' : status === 'terverifikasi' ? 'status-approved' : 'status-rejected';

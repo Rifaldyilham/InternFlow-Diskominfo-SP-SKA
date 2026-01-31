@@ -27,7 +27,11 @@ class PesertaController extends Controller
 
         $data['id_user'] = $user->id_user;
         $data['asal_univ'] = $request->universitas;
-        $data['program_studi'] = $request->jurusan; 
+        $data['program_studi'] = $request->jurusan;
+        $data['tanggal_mulai'] = $request->tanggal_mulai;
+        $data['tanggal_selesai'] = $request->tanggal_selesai;
+        $data['alasan'] = $request->alasan;
+        $data['bidang_pilihan'] = $request->bidang_pilihan;
         // If user has associated pegawai or bidang, you may want to set id_bidang accordingly
         if ($user->pegawai && $user->pegawai->id_bidang) {
             $data['id_bidang'] = $user->pegawai->id_bidang;

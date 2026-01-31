@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\VerifikasiBerikasController;
 use App\Http\Controllers\AdminBidang\DashboardController;
 use App\Http\Controllers\PesertaController;
 use App\Http\Controllers\Admin\PesertaMagangController;
+use App\Http\Controllers\Admin\ManajemenBidangController;
 
 // Route untuk dashboard utama
 Route::get('/', function () {
@@ -92,6 +93,20 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
 
     Route::post('/peserta-magang/{id}/reject', [PesertaMagangController::class, 'reject'])
         ->name('admin.peserta.reject');
+});
+
+//Routes Aksi Dashboard Manajemen Bidang 
+Route::prefix('admin')->middleware(['auth'])->group(function () {
+
+    Route::get('/manajemen-bidang', 
+        [ManajemenBidangController::class, 'index'])
+        ->name('admin.manajemen-bidang');
+
+    Route::get('/manajemen-bidang/{id}/peserta', 
+        [ManajemenBidangController::class, 'pesertaMenunggu']);
+
+    Route::post('/manajemen-bidang/tempatkan', 
+        [ManajemenBidangController::class, 'tempatkan']);
 });
 
 

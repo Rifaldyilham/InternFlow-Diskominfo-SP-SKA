@@ -339,7 +339,6 @@ function getBidangColor(bidangName) {
     const colors = {
         'Teknologi dan Informatika': '#2ecc71',
         'Statistik': '#3498db',
-        'Komunikasi dan ': '#f39c12',
         'Sekretariat': '#9b59b6',
         'Komunikasi Publik dan Media': '#f39c12'
     };

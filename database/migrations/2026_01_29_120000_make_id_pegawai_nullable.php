@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('pesertamagang', function (Blueprint $table) {
             // Drop foreign key, make column nullable, then re-add foreign key
             if (Schema::hasColumn('pesertamagang', 'id_pegawai')) {
-                $table->dropForeign(['id_pegawai']);
+                $table->dropForeign('pesertamagang_id_pegawai_foreign');
                 $table->unsignedBigInteger('id_pegawai')->nullable()->change();
                 $table->foreign('id_pegawai')
                     ->references('id_pegawai')
@@ -31,7 +31,7 @@ return new class extends Migration
     {
         Schema::table('pesertamagang', function (Blueprint $table) {
             if (Schema::hasColumn('pesertamagang', 'id_pegawai')) {
-                $table->dropForeign(['id_pegawai']);
+                $table->dropForeign('pesertamagang_id_pegawai_foreign');
                 $table->unsignedBigInteger('id_pegawai')->nullable(false)->change();
                 $table->foreign('id_pegawai')
                     ->references('id_pegawai')

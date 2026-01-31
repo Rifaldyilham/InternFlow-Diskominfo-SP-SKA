@@ -26,4 +26,9 @@ class Bidang extends Model
     {
         return $this->hasMany(PesertaMagang::class, 'id_bidang', 'id_bidang');
     }
+        // app/Models/Bidang.php
+    public function pesertaMagang()
+    {
+        return $this->hasMany(PesertaMagang::class, 'id_bidang', 'id_bidang');
+    }
 }

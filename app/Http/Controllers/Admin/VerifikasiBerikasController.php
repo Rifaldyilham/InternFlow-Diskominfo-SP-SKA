@@ -53,9 +53,18 @@ class VerifikasiBerikasController extends Controller
                 'tanggal_selesai' => $p->tanggal_selesai,
                 'alasan' => $p->alasan,
                 'status' => $p->status_verifikasi,
-                'catatan' => $p->catatan_verifikasi,
-                'cv_url' => $p->cv_path ? asset('storage/' . $p->cv_path) : null,
-                'surat_url' => $p->surat_penempatan_path ? asset('storage/' . $p->surat_penempatan_path) : null,
+
+                // 🔥 SEMUA BERKAS
+            'berkas' => [
+                'CV / Resume' => $p->cv_path
+                    ? asset('storage/'.$p->cv_path)
+                    : null,
+
+                'Surat Pengantar' => $p->surat_penempatan_path
+                    ? asset('storage/'.$p->surat_penempatan_path)
+                    : null,
+            ]
+
             ]
         ]);
     }
