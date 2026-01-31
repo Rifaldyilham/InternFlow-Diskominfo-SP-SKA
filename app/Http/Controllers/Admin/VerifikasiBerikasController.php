@@ -6,13 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\PesertaMagang;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use App\Models\Bidang;
 
 class VerifikasiBerikasController extends Controller
 {
     // VIEW halaman admin
     public function index()
     {
-        return view('admin.verifikasi-berkas');
+        $bidang = Bidang::where('status', 'aktif')->get();
+        return view('admin.verifikasi-berkas', compact('bidang'));
     }
 
     // ✅ API LIST (INI YANG DIPANGGIL JS)
@@ -51,6 +53,10 @@ class VerifikasiBerikasController extends Controller
                 'no_telp' => $p->no_telp,
                 'tanggal_mulai' => $p->tanggal_mulai,
                 'tanggal_selesai' => $p->tanggal_selesai,
+                'bidang_pilihan' => $p->bidangPilihan
+                ? $p->bidangPilihan->nama_bidang: '-',
+
+                'bidang_pilihan_id' => $p->bidang_pilihan,
                 'alasan' => $p->alasan,
                 'status' => $p->status_verifikasi,
 
@@ -79,10 +85,26 @@ class VerifikasiBerikasController extends Controller
         ]);
 
         $p = PesertaMagang::findOrFail($request->peserta_id);
-        $p->status_verifikasi = $request->status;
-        $p->catatan_verifikasi = $request->catatan;
-        $p->save();
 
+        if ($request->status === 'terverifikasi') {
+            if (!$request->id_bidang) {
+                return response()->json(['message' => 'Bidang penempatan wajib dipilih'], 422);
+            }
+
+            $p->update([
+                'status_verifikasi' => 'terverifikasi',
+                'status' => 'aktif',
+                'id_bidang' => $request->id_bidang,
+            ]);
+
+        } else {
+            $p->update([
+            'status_verifikasi' => 'ditolak',
+            'status' => 'aktif',
+            'id_bidang' => null
+            ]);
+        
+        }
         return response()->json(['message' => 'OK']);
     }
 }

@@ -142,6 +142,36 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Penempatan -->
+<div id="penempatanModal" class="modal">
+    <div class="modal-content max-w-md">
+        <div class="modal-header">
+            <h3 class="modal-title">Tempatkan Peserta</h3>
+            <button class="modal-close"
+                onclick="closeModal('penempatanModal')">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            <label><b>Tempatkan ke Bidang:</b></label>
+            <select id="bidangPenempatan" class="filter-select">
+                <option value="">-- Pilih Bidang --</option>
+                @foreach ($bidang as $b)
+                    <option value="{{ $b->id_bidang }}">
+                        {{ $b->nama_bidang }}
+                    </option>
+                @endforeach
+            </select>
+
+            <div style="margin-top:20px; text-align:right;">
+                <button class="btn btn-success"
+                    onclick="submitPenempatan()">
+                    Terima
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @section('scripts')
@@ -164,10 +194,29 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 //terima peserta 
-async function approvePeserta(id) {
-    if (!confirm('Terima peserta ini?')) return;
+let selectedPesertaId = null;
+function approvePeserta(pesertaId) {
+    selectedPesertaId = pesertaId
+    document.getElementById('penempatanModal').style.display = 'flex';
+}
 
-    await submitVerifikasiAPI(id, 'terverifikasi');
+async function submitPenempatan() {
+    const idBidang = document.getElementById('bidangPenempatan').value;
+
+    if (!idBidang) {
+        alert('Pilih bidang penempatan dulu');
+        return;
+    }
+
+    await submitVerifikasiAPI(
+        selectedPesertaId,
+        'terverifikasi',
+        null,
+        idBidang
+    );
+
+    closeModal('penempatanModal');
+    loadData();
 }
 
 //tolak peserta
@@ -302,6 +351,7 @@ async function showVerifikasi(pesertaId) {
             <hr>
 
             <p><b>Periode:</b> ${p.tanggal_mulai} s/d ${p.tanggal_selesai}</p>
+            <p><b>Bidang Pilihan:</b> ${p.bidang_pilihan}</p>
             <p><b>Alasan:</b></p>
             <p>${p.alasan}</p>
 
@@ -320,7 +370,7 @@ async function showVerifikasi(pesertaId) {
 }
 
 
-async function submitVerifikasiAPI(pesertaId, status, catatan = null) {
+async function submitVerifikasiAPI(pesertaId, status, catatan = null, idBidang = null) {
     try {
         const response = await fetch(API_ENDPOINTS.verify, {
             method: 'POST',
@@ -332,7 +382,8 @@ async function submitVerifikasiAPI(pesertaId, status, catatan = null) {
             body: JSON.stringify({
                 peserta_id: pesertaId,
                 status: status,
-                catatan: catatan
+                catatan: catatan,
+                id_bidang: idBidang
             })
         });
 

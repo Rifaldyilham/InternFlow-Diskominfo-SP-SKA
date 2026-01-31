@@ -50,4 +50,9 @@ class PesertaMagang extends Model
         return $this->belongsTo(Bidang::class, 'bidang_pilihan', 'id_bidang');
     }
 
+    public function bidangPenempatan()
+    {
+        return $this->belongsTo(Bidang::class, 'id_bidang', 'id_bidang');
+    }
+
 }

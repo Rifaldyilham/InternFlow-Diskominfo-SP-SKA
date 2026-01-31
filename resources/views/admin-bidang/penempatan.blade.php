@@ -181,9 +181,7 @@
 
 @section('scripts')
 <script>
-// ============================
-// KONFIGURASI API (Backend-ready)
-// ============================
+
 const API_CONFIG = {
     baseUrl: window.location.origin,
     endpoints: {
@@ -200,9 +198,6 @@ const API_CONFIG = {
     }
 };
 
-// ============================
-// STATE MANAGEMENT
-// ============================
 let state = {
     pesertaList: [],           // Semua peserta di bidang ini
     mentorList: [],            // Semua mentor di bidang ini
@@ -218,9 +213,6 @@ let state = {
     currentPlacement: null     // Untuk menyimpan data penempatan sementara
 };
 
-// ============================
-// INISIALISASI
-// ============================
 document.addEventListener('DOMContentLoaded', function() {
     setupCSRF();
     fetchAllData();
@@ -245,10 +237,6 @@ function setupEventListeners() {
     document.getElementById('prevPage').addEventListener('click', prevPage);
     document.getElementById('nextPage').addEventListener('click', nextPage);
 }
-
-// ============================
-// FUNGSI API (Backend-ready)
-// ============================
 
 // Fetch semua data yang diperlukan
 async function fetchAllData() {
@@ -323,10 +311,6 @@ function filterPeserta() {
     updateFilterResultCount();
     updatePagination();
 }
-
-// ============================
-// RENDER FUNCTIONS
-// ============================
 
 // Render tabel peserta
 function renderPesertaTable() {
@@ -445,10 +429,6 @@ function renderMentorOptions(mentorList) {
     
     mentorOptions.innerHTML = html;
 }
-
-// ============================
-// MODAL FUNCTIONS
-// ============================
 
 // Tampilkan detail peserta
 async function showDetailPeserta(pesertaId) {
