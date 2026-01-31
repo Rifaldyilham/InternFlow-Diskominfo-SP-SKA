@@ -136,15 +136,13 @@
             
             <div class="form-group">
                 <label for="bidang_pilihan">Bidang yang diminati *</label>
-                <select name="bidang_pilihan">
+                <select name="bidang_pilihan" id="bidang_pilihan" required>
+                    <option value="">Pilih Bidang Magang</option>
                     @foreach ($bidang as $b)
                         <option value="{{ $b->id_bidang }}">
                             {{ $b->nama_bidang }}
-                    <option value="">Pilih Bidang Magang</option>
-                    <option value="statistik">Statistika</option>
-                    <option value="informatika">Teknologi dan Informatika</option>
-                    <option value="sekretariat">Kesekretariatan</option>
-                    <option value="komunikasi">Komunikasi Publik dan Media</option>
+                        </option>
+                    @endforeach
                 </select>
                 <small class="form-hint">Penempatan final akan ditentukan oleh Admin Bidang berdasarkan ketersediaan dan kesesuaian</small>
             </div>

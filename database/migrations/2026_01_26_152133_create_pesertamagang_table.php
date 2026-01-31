@@ -22,10 +22,6 @@ return new class extends Migration
             $table->string('asal_univ', 100);
             $table->string('program_studi', 100);
             $table->string('no_telp', 15);
-            // $table->date('tanggal_mulai')->nullable();
-            // $table->date('tanggal_selesai')->nullable();
-            // $table->text('alasan')->nullable();
-            // $table->string('bidang_pilihan')->nullable();
             $table->enum('status', ['aktif', 'nonaktif'])
                   ->default('aktif');
             $table->timestamps();

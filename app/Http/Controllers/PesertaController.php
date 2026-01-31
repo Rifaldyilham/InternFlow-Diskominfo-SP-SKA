@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\PesertaMagang;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Bidang;
 
 class PesertaController extends Controller
 {
@@ -32,14 +33,7 @@ class PesertaController extends Controller
         $data['tanggal_selesai'] = $request->tanggal_selesai;
         $data['alasan'] = $request->alasan;
         $data['bidang_pilihan'] = $request->bidang_pilihan;
-        // If user has associated pegawai or bidang, you may want to set id_bidang accordingly
-        if ($user->pegawai && $user->pegawai->id_bidang) {
-            $data['id_bidang'] = $user->pegawai->id_bidang;
-        } else {
-            // Fallback: leave null or set default; PesertaMagang migration requires id_bidang, so set 0 if missing
-            // $data['id_bidang'] = $request->input('id_bidang', 0);
-            $data['id_bidang'] = null;
-        }
+        $data['id_bidang'] = null;
 
         // Handle file uploads
         if ($request->hasFile('surat_file')) {
@@ -66,6 +60,14 @@ class PesertaController extends Controller
 
         return redirect()->back()->with('success', 'Pendaftaran peserta berhasil.');
     }
+
+    public function create()
+    {
+        $bidang = Bidang::where('status', 'aktif')->get();
+
+        return view('peserta.pendaftaran', compact('bidang'));
+    }
+
 }
 
 class PesertaMagangController extends Controller
@@ -104,4 +106,5 @@ class PesertaMagangController extends Controller
 
         return redirect()->back()->with('success', 'Peserta berhasil ditolak');
     }
+
 }

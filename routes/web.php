@@ -58,9 +58,9 @@ Route::prefix('peserta')->group(function () {
         return view('peserta.dashboard');
     })->name('peserta.dashboard')->middleware('auth');
 
-    Route::get('/pendaftaran', function () {
-        return view('peserta.pendaftaran');
-    })->name('peserta.pendaftaran')->middleware('auth');
+    Route::get('/pendaftaran', [PesertaController::class, 'create'])
+        ->name('peserta.pendafataran')
+        ->middleware('auth');
 
     Route::post('/pendaftaran', [PesertaController::class, 'store'])
         ->name('peserta.store')

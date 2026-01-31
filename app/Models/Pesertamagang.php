@@ -19,6 +19,10 @@ class PesertaMagang extends Model
         'asal_univ',
         'program_studi',
         'no_telp',
+        'tanggal_mulai',
+        'tanggal_selesai',
+        'alasan',
+        'bidang_pilihan',
         'surat_penempatan_path',
         'cv_path',
         'status',
@@ -40,4 +44,10 @@ class PesertaMagang extends Model
     {
         return $this->belongsTo(Pegawai::class, 'id_pegawai', 'id_pegawai');
     }
+
+    public function bidangPilihan()
+    {
+        return $this->belongsTo(Bidang::class, 'bidang_pilihan', 'id_bidang');
+    }
+
 }
