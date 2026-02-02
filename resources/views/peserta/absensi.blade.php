@@ -11,19 +11,19 @@
     <!-- Statistik Absensi -->
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
         <div style="background: linear-gradient(135deg, rgba(33, 52, 72, 0.1) 0%, rgba(84, 119, 146, 0.1) 100%); padding: 20px; border-radius: 12px;">
-            <div style="font-size: 2.5rem; font-weight: 700; color: var(--primary);">15</div>
+            <div style="font-size: 2.5rem; font-weight: 700; color: var(--primary);">{{ $total }}</div>
             <div style="color: #666;">Total Hari</div>
         </div>
         <div style="background: linear-gradient(135deg, rgba(46, 213, 115, 0.1) 0%, rgba(39, 174, 96, 0.1) 100%); padding: 20px; border-radius: 12px;">
-            <div style="font-size: 2.5rem; font-weight: 700; color: #2ecc71;">14</div>
+            <div style="font-size: 2.5rem; font-weight: 700; color: #2ecc71;">{{ $hadir }}</div>
             <div style="color: #666;">Hadir</div>
         </div>
         <div style="background: linear-gradient(135deg, rgba(241, 196, 15, 0.1) 0%, rgba(243, 156, 18, 0.1) 100%); padding: 20px; border-radius: 12px;">
-            <div style="font-size: 2.5rem; font-weight: 700; color: #f1c40f;">1</div>
+            <div style="font-size: 2.5rem; font-weight: 700; color: #f1c40f;">{{ $izin }}</div>
             <div style="color: #666;">Izin</div>
         </div>
         <div style="background: linear-gradient(135deg, rgba(231, 76, 60, 0.1) 0%, rgba(192, 57, 43, 0.1) 100%); padding: 20px; border-radius: 12px;">
-            <div style="font-size: 2.5rem; font-weight: 700; color: #e74c3c;">0</div>
+            <div style="font-size: 2.5rem; font-weight: 700; color: #e74c3c;">{{ $alpha }}</div>
             <div style="color: #666;">Alfa</div>
         </div>
     </div>
@@ -126,45 +126,22 @@
             <!-- Upload Bukti -->
             <div id="uploadSection" style="display: none;">
                 <div class="form-group">
-                    <label>Upload Bukti *</label>
+                    <label id="uploadLabel">Upload Bukti *</label>
                     <div class="upload-area" onclick="document.getElementById('buktiFile').click()" id="uploadZone">
                         <div class="upload-icon">
                             <i class='bx bx-cloud-upload'></i>
                         </div>
                         <div style="font-weight: 600; margin-bottom: 5px;">Klik atau drag file ke sini</div>
-                        <small>Format JPG/PNG, max 2MB. Foto wajib menunjukkan lokasi kantor</small>
-                        <input type="file" id="buktiFile" accept=".jpg,.jpeg,.png" style="display:none;" onchange="previewBukti(this)">
+                        <small>Format PDF/JPG/PNG, max 2MB. </small>
+                        <input type="file" id="buktiFile" accept=".jpg,.jpeg,.png,.pdf" style="display:none;" onchange="previewBukti(this)">
                     </div>
                     <div id="buktiPreview" style="margin-top: 10px;"></div>
-                    
-                    <div style="background: #fff9e6; padding: 15px; border-radius: 8px; margin-top: 15px; border-left: 4px solid #f1c40f;">
-                        <div style="font-weight: 600; color: #f1c40f; margin-bottom: 5px;">
-                            <i class='bx bx-info-circle'></i> Petunjuk Foto Bukti:
-                        </div>
-                        <ul style="margin: 10px 0 0 20px; padding: 0; font-size: 0.9rem; color: #666;">
-                            <li>Pastikan wajah dan timestamp jelas</li>
-                            <li>Waktu foto maksimal 1 jam sebelum/sesudah absen</li>
-                        </ul>
-                    </div>
-                </div>
                 
-                <!-- Additional Notes for Izin/Sakit -->
+                <!--izin notes -->
                 <div id="izinNotes" style="display: none;">
                     <div class="form-group">
                         <label>Alasan Izin/Sakit *</label>
                         <textarea id="alasanText" rows="3" placeholder="Jelaskan alasan izin/sakit secara detail..."></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Upload Surat Izin/Dokter (Opsional)</label>
-                        <div class="upload-area" onclick="document.getElementById('suratFile').click()">
-                            <div class="upload-icon">
-                                <i class='bx bx-file'></i>
-                            </div>
-                            <div>Unggah Surat Izin/Dokter</div>
-                            <small>Format PDF/JPG, max 2MB</small>
-                            <input type="file" id="suratFile" style="display:none;">
-                        </div>
                     </div>
                 </div>
             </div>
@@ -251,6 +228,7 @@
             document.getElementById('btnHadir').style.color = 'white';
             document.getElementById('statusText').innerHTML = 'Status: <span style="color:#2ecc71">HADIR</span>';
             document.getElementById('gpsSection').style.display = 'block';
+            isLocationValid = false;
             document.getElementById('izinNotes').style.display = 'none';
         } else if (status === 'izin') {
             document.getElementById('btnIzin').style.background = '#f1c40f';
@@ -487,64 +465,79 @@
     
     // Submit absensi
     function submitAbsensi() {
-        const now = new Date();
-        const waktu = now.toLocaleTimeString('id-ID');
-        const tanggal = now.toLocaleDateString('id-ID');
-        
-        // Get reason if izin/sakit
-        let alasan = '';
-        if (currentAbsensiStatus !== 'hadir') {
-            alasan = document.getElementById('alasanText').value;
-            if (alasan.trim().length < 10) {
-                alert('Harap isi alasan minimal 10 karakter!');
-                return;
-            }
-        }
-        
-        // Show loading
-        const submitBtn = document.getElementById('submitBtn');
-        const originalText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<i class="bx bx-loader-circle bx-spin"></i> Mengirim...';
-        submitBtn.disabled = true;
-        
-        // Simulate API call
-        setTimeout(() => {
-            // Success message
-            let statusColor = currentAbsensiStatus === 'hadir' ? '#2ecc71' : 
-                             currentAbsensiStatus === 'izin' ? '#f1c40f' : '#e74c3c';
-            
-            const modal = `
-                <div style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; z-index:9999;">
-                    <div style="background:white; padding:40px; border-radius:20px; text-align:center; max-width:500px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
-                        <div style="font-size:4rem; color:${statusColor}; margin-bottom:20px;">
-                            ${currentAbsensiStatus === 'hadir' ? '✅' : 
-                              currentAbsensiStatus === 'izin' ? '⚠️' : '🏥'}
-                        </div>
-                        <h2 style="color:var(--primary); margin-bottom:15px;">
-                            Absensi Berhasil!
-                        </h2>
-                        <p>Absensi Anda telah tercatat dengan status:</p>
-                        <div style="background:#f8fafc; padding:20px; border-radius:12px; margin:20px 0; border-left:4px solid ${statusColor};">
-                            <div style="font-weight:600; color:var(--primary);">${currentAbsensiStatus.toUpperCase()}</div>
-                            <div style="color:#666; margin-top:5px;">${tanggal} ${waktu}</div>
-                            ${alasan ? `<div style="color:#666; margin-top:10px;">Alasan: ${alasan}</div>` : ''}
-                        </div>
-                        <p style="color:#666;">Status: <span style="font-weight:600; color:#f1c40f;">MENUNGGU VERIFIKASI</span></p>
-                        <div style="display:flex; gap:15px; margin-top:25px;">
-                            <button onclick="window.location.reload()" style="flex:1; background:var(--primary); color:white; border:none; padding:12px; border-radius:10px; font-weight:bold; cursor:pointer;">
-                                OK
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            document.body.insertAdjacentHTML('beforeend', modal);
-            
-            // Reset button
-            submitBtn.innerHTML = originalText;
-        }, 2000);
+    if (!currentAbsensiStatus) {
+        alert('Pilih status absensi dulu');
+        return;
     }
+
+    const submitBtn = document.getElementById('submitBtn');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="bx bx-loader-circle bx-spin"></i> Mengirim...';
+    submitBtn.disabled = true;
+
+    const formData = new FormData();
+    formData.append('status', currentAbsensiStatus);
+
+    // HADIR → wajib lokasi + bukti
+    if (currentAbsensiStatus === 'hadir') {
+        if (!uploadedFile) {
+            alert('Upload bukti wajib');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            return;
+        }
+
+        formData.append('bukti_kegiatan', uploadedFile);
+        formData.append('lokasi', JSON.stringify(userLocation));
+    }
+
+    // IZIN / SAKIT → wajib alasan + bukti surat
+    if (currentAbsensiStatus === 'izin' || currentAbsensiStatus === 'sakit') {
+        const alasan = document.getElementById('alasanText').value;
+        if (alasan.trim().length < 10) {
+            alert('Alasan minimal 10 karakter');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            return;
+        }
+
+        if (!uploadedFile) {
+            alert('Upload surat izin / sakit wajib');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            return;
+        }
+
+        formData.append('alasan', alasan);
+        formData.append('bukti_kegiatan', uploadedFile);
+    }
+
+    fetch('/api/peserta/absensi', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: formData
+    })
+    .then(res => {
+        if (!res.ok) {
+            return res.json().then(err => {
+                throw err;
+            });
+        }
+        return res.json();
+    })
+    .then(data => {
+        alert(data.message);
+        window.location.reload();
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Gagal menyimpan absensi');
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    });
+}
     
     // Reset absensi form
     function resetAbsensi() {
@@ -564,173 +557,6 @@
         
         // Reset buttons
         setAbsensiStatus(null);
-    }
-    
-    // Generate calendar
-    function generateCalendar() {
-        const calendarEl = document.getElementById('calendar');
-        // Remove existing day cells (keep headers)
-        while (calendarEl.children.length > 7) {
-            calendarEl.removeChild(calendarEl.lastChild);
-        }
-        
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = today.getMonth(); // 0-indexed
-        
-        // Get first day of month
-        const firstDay = new Date(year, month, 1);
-        // Get last day of month
-        const lastDay = new Date(year, month + 1, 0);
-        // Get starting day (0 = Monday)
-        const startDay = (firstDay.getDay() + 6) % 7;
-        
-        // Add empty cells for days before month starts
-        for (let i = 0; i < startDay; i++) {
-            const emptyCell = document.createElement('div');
-            emptyCell.style.padding = '15px';
-            emptyCell.style.textAlign = 'center';
-            emptyCell.style.color = '#ccc';
-            emptyCell.textContent = '';
-            calendarEl.appendChild(emptyCell);
-        }
-        
-        // Add days of month
-        for (let day = 1; day <= lastDay.getDate(); day++) {
-            const dayCell = document.createElement('div');
-            dayCell.style.padding = '15px';
-            dayCell.style.textAlign = 'center';
-            dayCell.style.borderRadius = '8px';
-            dayCell.style.fontWeight = '600';
-            dayCell.style.cursor = 'pointer';
-            dayCell.textContent = day;
-            
-            // Check if today
-            if (day === today.getDate() && month === today.getMonth()) {
-                dayCell.style.background = '#3498db';
-                dayCell.style.color = 'white';
-                dayCell.style.border = '2px solid #2980b9';
-            } else {
-                // Assign random status for demo
-                const rand = Math.random();
-                if (rand < 0.6) {
-                    dayCell.style.background = '#2ecc71';
-                    dayCell.style.color = 'white';
-                } else if (rand < 0.8) {
-                    dayCell.style.background = '#f1c40f';
-                    dayCell.style.color = 'white';
-                } else if (rand < 0.9) {
-                    dayCell.style.background = '#e74c3c';
-                    dayCell.style.color = 'white';
-                } else {
-                    dayCell.style.background = '#95a5a6';
-                    dayCell.style.color = 'white';
-                }
-            }
-            
-            // Add click event
-            dayCell.onclick = function() {
-                showDayDetails(day);
-            };
-            
-            calendarEl.appendChild(dayCell);
-        }
-    }
-    
-    // Show day details
-    function showDayDetails(day) {
-        const now = new Date();
-        const dateStr = `${day} Maret ${now.getFullYear()}`;
-        
-        alert(`Detail Absensi ${dateStr}:\n\nStatus: Hadir\nWaktu: 08:15 - 16:30\nLokasi: Dalam kantor\nVerifikasi: ✓ Disetujui Mentor`);
-    }
-    
-    // Load riwayat data
-    function loadRiwayat() {
-        const riwayatData = [
-            {
-                tanggal: '15 Mar 2024',
-                status: 'Hadir',
-                waktu: '08:15 - 16:30',
-                lokasi: 'Dalam kantor',
-                bukti: '✅',
-                verifikasi: 'Disetujui'
-            },
-            {
-                tanggal: '14 Mar 2024',
-                status: 'Hadir',
-                waktu: '08:30 - 17:00',
-                lokasi: 'Dalam kantor',
-                bukti: '✅',
-                verifikasi: 'Disetujui'
-            },
-            {
-                tanggal: '13 Mar 2024',
-                status: 'Sakit',
-                waktu: '-',
-                lokasi: '-',
-                bukti: '📄',
-                verifikasi: 'Disetujui'
-            },
-            {
-                tanggal: '12 Mar 2024',
-                status: 'Hadir',
-                waktu: '09:00 - 16:30',
-                lokasi: 'Dalam kantor',
-                bukti: '✅',
-                verifikasi: 'Disetujui'
-            },
-            {
-                tanggal: '11 Mar 2024',
-                status: 'Hadir',
-                waktu: '08:00 - 15:00',
-                lokasi: 'Dalam kantor',
-                bukti: '✅',
-                verifikasi: 'Disetujui'
-            },
-            {
-                tanggal: '10 Mar 2024',
-                status: 'Hadir',
-                waktu: '08:20 - 16:45',
-                lokasi: 'Dalam kantor',
-                bukti: '✅',
-                verifikasi: 'Disetujui'
-            },
-            {
-                tanggal: '09 Mar 2024',
-                status: 'Izin',
-                waktu: '-',
-                lokasi: '-',
-                bukti: '📄',
-                verifikasi: 'Disetujui'
-            }
-        ];
-        
-        const tableBody = document.getElementById('riwayatTable');
-        tableBody.innerHTML = '';
-        
-        riwayatData.forEach(item => {
-            let statusColor = item.status === 'Hadir' ? '#2ecc71' : 
-                             item.status === 'Izin' ? '#f1c40f' : '#e74c3c';
-            
-            const row = document.createElement('tr');
-            row.style.borderBottom = '1px solid #eee';
-            row.innerHTML = `
-                <td style="padding: 15px;">${item.tanggal}</td>
-                <td style="padding: 15px;">
-                    <span style="background:${statusColor}; color:white; padding:5px 12px; border-radius:20px; font-size:0.85rem;">
-                        ${item.status}
-                    </span>
-                </td>
-                <td style="padding: 15px;">${item.waktu}</td>
-                <td style="padding: 15px; color:#666;">${item.lokasi}</td>
-                <td style="padding: 15px; font-size:1.2rem;">${item.bukti}</td>
-                <td style="padding: 15px;">
-                    <span style="color:#2ecc71; font-weight:600;">${item.verifikasi}</span>
-                </td>
-            `;
-            tableBody.appendChild(row);
-        });
     }
     
     // Export absensi
@@ -756,13 +582,7 @@
         // Start clock
         updateClock();
         setInterval(updateClock, 1000);
-        
-        // Generate calendar
-        generateCalendar();
-        
-        // Load riwayat
-        loadRiwayat();
-        
+
         // Setup drag and drop for file upload
         const uploadZone = document.getElementById('uploadZone');
         uploadZone.addEventListener('dragover', function(e) {

@@ -61,4 +61,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(Pegawai::class, 'id_user', 'id_user');
     }
+
+    public function peserta()
+    {
+        return $this->hasOne(\App\Models\PesertaMagang::class, 'id_user', 'id_user');
+    }
 }

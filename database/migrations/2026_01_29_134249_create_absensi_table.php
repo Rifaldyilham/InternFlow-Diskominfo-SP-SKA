@@ -14,16 +14,25 @@ return new class extends Migration
         Schema::create('absensi', function (Blueprint $table) {
             $table->id('id_absensi');
             $table->unsignedBigInteger('id_pesertamagang');
-            $table->datetime('tanggal')->useCurrent();
-            $table->enum('status hadir', ['hadir', 'izin', 'sakit', 'alpha']);
-            $table->string('bukti_kegiatan');
+            $table->unsignedBigInteger('id_pegawai')->nullable();
+            $table->datetime('waktu_absen')->useCurrent;
+            $table->enum('status', ['hadir', 'izin', 'sakit', 'alpha']);
+            $table->string('lokasi')->nullable();
+            $table->string('bukti_kegiatan')->nullable();
+            $table->text('alasan')->nullable();
             $table->timestamps();
 
             $table->foreign('id_pesertamagang')
                 ->references('id_pesertamagang')
                 ->on('pesertamagang')
                 ->onDelete('cascade');
+
+            $table->foreign('id_pegawai')
+                ->references('id_pegawai')
+                ->on('pegawai')
+                ->onDelete('set null');
         });
+
     }
 
     /**

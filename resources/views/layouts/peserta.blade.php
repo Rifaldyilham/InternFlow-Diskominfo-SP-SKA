@@ -38,7 +38,7 @@
     @yield('styles')
 </head>
 
-<body x-data="{ sidebarOpen: false, overlayOpen: false }">
+<body x-data="app">
     <!-- OVERLAY UNTUK MOBILE -->
     <div class="sidebar-overlay" :class="overlayOpen ? 'active' : ''" 
          @click="sidebarOpen = false; overlayOpen = false;"></div>
@@ -124,26 +124,26 @@
         // Inisialisasi Alpine.js
         document.addEventListener('alpine:init', () => {
             Alpine.data('app', () => ({
+                sidebarOpen: false,
+                overlayOpen: false,
+
+                isActive(path) {
+                    const currentPath = window.location.pathname;
+                    return currentPath === path || currentPath.startsWith(path + '/');
+                },
+                
                 init() {
                     this.updateUserName();
                     this.setupEventListeners();
                 },
                 
-                isActive(path) {
-                    const currentPath = window.location.pathname;
-                    if (path === '/peserta/dashboard' && (currentPath === '/' || currentPath === '')) {
-                        return true;
-                    }
-                    return currentPath.startsWith(path);
-                },
-                
                 updateUserName() {
                     // Nama user dari Laravel Auth
-                    const userName = document.getElementById('userName').textContent;
-                    const userInitials = this.getInitials(userName);
-                    
-                    document.getElementById('userAvatar').textContent = userInitials;
+                    const userName = document.getElementById('userName')?.textContent || '';
+                    const avatar = document.getElementById('userAvatar');
+                    if (avatar) avatar.textContent = this.getInitials(userName);
                 },
+
                 
                 getInitials(name) {
                     return name
@@ -154,14 +154,7 @@
                 },
                 
                 setupEventListeners() {
-                    // Handle overlay click untuk menutup sidebar
-                    const overlay = document.querySelector('.sidebar-overlay');
-                    if (overlay) {
-                        overlay.addEventListener('click', () => {
-                            this.sidebarOpen = false;
-                            this.overlayOpen = false;
-                        });
-                    }
+
                     
                     // Handle resize window untuk desktop
                     window.addEventListener('resize', () => {

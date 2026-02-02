@@ -7,7 +7,7 @@ use App\Http\Controllers\Admin\ManajemenAkunController;
 use App\Http\Controllers\Admin\VerifikasiBerikasController;
 use App\Http\Controllers\AdminBidang\DashboardController;
 use App\Http\Controllers\PesertaController;
-use App\Http\Controllers\Admin\PesertaMagangController;
+use App\Http\Controllers\PesertaMagang\AbsensiPesertaController;
 use App\Http\Controllers\Admin\ManajemenBidangController;
 
 // Route untuk dashboard utama
@@ -36,7 +36,7 @@ Route::post('/register', [RegisteredUserController::class, 'store'])
     ->name('register.store');
 
 // Dashboard routes dengan middleware auth 
-Route::prefix('admin')->group(function () {
+Route::prefix('admin')->middleware(['auth', 'role:Admin Kepegawaian'])->group(function () {
     Route::get('/verifikasi-berkas', [VerifikasiBerikasController::class, 'index'])
         ->name('admin.verifikasiberkas');
 
@@ -53,7 +53,7 @@ Route::prefix('admin')->group(function () {
 });
 
 // Routes untuk Peserta Magang
-Route::prefix('peserta')->group(function () {
+Route::prefix('peserta')->middleware(['auth', 'role:Peserta Magang'])->group(function () {
     Route::get('/dashboard', function () {
         return view('peserta.dashboard');
     })->name('peserta.dashboard')->middleware('auth');
@@ -70,48 +70,16 @@ Route::prefix('peserta')->group(function () {
         return view('peserta.logbook');
     })->name('peserta.logbook');
 
-    Route::get('/absensi', function () {
-        return view('peserta.absensi');
-    })->name('peserta.absensi');
-
     Route::get('/penilaian-sertifikat', function () {
         return view('peserta.penilaian-sertifikat');
     })->name('peserta.penilaian-sertifikat');
+
+    Route::get('/absensi', [AbsensiPesertaController::class, 'index'])
+        ->name('peserta.absensi');
 });
-
-//Routes Aksi Dashboard Admin Kepegawaian 
-Route::prefix('admin')->middleware(['auth'])->group(function () {
-
-    Route::get('/peserta-magang', [PesertaMagangController::class, 'index'])
-        ->name('admin.peserta.index');
-
-    Route::get('/peserta-magang/{id}', [PesertaMagangController::class, 'show'])
-        ->name('admin.peserta.show');
-
-    Route::post('/peserta-magang/{id}/approve', [PesertaMagangController::class, 'approve'])
-        ->name('admin.peserta.approve');
-
-    Route::post('/peserta-magang/{id}/reject', [PesertaMagangController::class, 'reject'])
-        ->name('admin.peserta.reject');
-});
-
-//Routes Aksi Dashboard Manajemen Bidang 
-Route::prefix('admin')->middleware(['auth'])->group(function () {
-
-    Route::get('/manajemen-bidang', 
-        [ManajemenBidangController::class, 'index'])
-        ->name('admin.manajemen-bidang');
-
-    Route::get('/manajemen-bidang/{id}/peserta', 
-        [ManajemenBidangController::class, 'pesertaMenunggu']);
-
-    Route::post('/manajemen-bidang/tempatkan', 
-        [ManajemenBidangController::class, 'tempatkan']);
-});
-
 
 // Routes untuk Mentor Magang
-Route::prefix('mentor')->group(function () {
+Route::prefix('mentor')->middleware(['auth', 'role:Mentor'])->group(function () {
     Route::get('/bimbingan', function () {
         return view('mentor.bimbingan');
     })->name('mentor.bimbingan');
@@ -126,7 +94,7 @@ Route::prefix('mentor')->group(function () {
 });
 
 // Routes untuk Admin Bidang
-Route::prefix('admin-bidang')->middleware(['auth'])->group(function () {
+Route::prefix('admin-bidang')->middleware(['auth', 'role:Admin Bidang'])->group(function () {
     Route::get('/mentor', [DashboardController::class, 'index'])
         ->name('admin-bidang.mentor');
 

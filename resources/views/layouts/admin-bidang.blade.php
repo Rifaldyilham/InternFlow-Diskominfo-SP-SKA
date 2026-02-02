@@ -38,7 +38,7 @@
     @yield('styles')
 </head>
 
-<body x-data="{ sidebarOpen: false, overlayOpen: false }">
+<body x-data="app()">
     <!-- OVERLAY UNTUK MOBILE -->
     <div class="sidebar-overlay" :class="overlayOpen ? 'active' : ''" 
          @click="sidebarOpen = false; overlayOpen = false;"></div>
@@ -112,27 +112,26 @@
         // Inisialisasi Alpine.js
         document.addEventListener('alpine:init', () => {
             Alpine.data('app', () => ({
+                sidebarOpen: false,
+                overlayOpen: false,
+
                 init() {
                     this.updateUserName();
                     this.setupEventListeners();
                 },
-                
+
                 isActive(path) {
                     const currentPath = window.location.pathname;
-                    if (path === '/admin-bidang/dashboard' && (currentPath === '/' || currentPath === '')) {
-                        return true;
-                    }
                     return currentPath.startsWith(path);
                 },
-                
+
                 updateUserName() {
-                    // Nama user dari Laravel Auth
-                    const userName = document.getElementById('userName').textContent;
+                    const userName = document.getElementById('userName')?.textContent || '';
                     const userInitials = this.getInitials(userName);
-                    
-                    document.getElementById('userAvatar').textContent = userInitials;
+                    const avatar = document.getElementById('userAvatar');
+                    if (avatar) avatar.textContent = userInitials;
                 },
-                
+
                 getInitials(name) {
                     return name
                         .split(' ')
@@ -140,18 +139,8 @@
                         .join('')
                         .substring(0, 2);
                 },
-                
+
                 setupEventListeners() {
-                    // Handle overlay click untuk menutup sidebar
-                    const overlay = document.querySelector('.sidebar-overlay');
-                    if (overlay) {
-                        overlay.addEventListener('click', () => {
-                            this.sidebarOpen = false;
-                            this.overlayOpen = false;
-                        });
-                    }
-                    
-                    // Handle resize window untuk desktop
                     window.addEventListener('resize', () => {
                         if (window.innerWidth > 992) {
                             this.sidebarOpen = false;
@@ -161,6 +150,7 @@
                 }
             }));
         });
+
 
         // Fungsi logout
         function confirmLogout() {
@@ -195,40 +185,6 @@
                     }
                 }
             });
-        });
-
-        // Inisialisasi saat DOM ready
-        document.addEventListener('DOMContentLoaded', function() {
-            // Set active menu berdasarkan URL
-            const currentPath = window.location.pathname;
-            document.querySelectorAll('.menu-item').forEach(item => {
-                const href = item.getAttribute('href');
-                if (currentPath === href || (href !== '/' && currentPath.startsWith(href))) {
-                    item.classList.add('active');
-                }
-            });
-            
-            // Fallback untuk home
-            if (currentPath === '/' || currentPath === '') {
-                const homeItem = document.querySelector('.menu-item[href="/admin-bidang/dashboard"]');
-                if (homeItem) homeItem.classList.add('active');
-            }
-            
-            // Update avatar dengan inisial dari nama user yang login
-            const userName = document.getElementById('userName').textContent;
-            const avatar = document.getElementById('userAvatar');
-            
-            function getInitials(name) {
-                return name
-                    .split(' ')
-                    .map(word => word.charAt(0).toUpperCase())
-                    .join('')
-                    .substring(0, 2);
-            }
-            
-            if (avatar) {
-                avatar.textContent = getInitials(userName);
-            }
         });
     </script>
 

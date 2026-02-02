@@ -21,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::table('pesertamagang', function (Blueprint $table) {
+            $table->unsignedBigInteger('id_bidang') ->nullable(false) ->change();
+        });
     }
 };
