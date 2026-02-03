@@ -52,6 +52,8 @@ Route::prefix('admin')->middleware(['auth', 'role:Admin Kepegawaian'])->group(fu
     })->name('admin.sertifikat');
 });
 
+
+
 // Routes untuk Peserta Magang
 Route::prefix('peserta')->middleware(['auth', 'role:Peserta Magang'])->group(function () {
     Route::get('/dashboard', function () {

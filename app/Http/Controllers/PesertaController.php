@@ -35,17 +35,72 @@ class PesertaController extends Controller
         $data['bidang_pilihan'] = $request->bidang_pilihan;
         $data['id_bidang'] = null;
 
-        // Handle file uploads
-        if ($request->hasFile('surat_file')) {
-            $path = $request->file('surat_file')
-                ->store('peserta/surat_penempatan', 'public');
-            $data['surat_penempatan_path'] = $path;
-        }
+        // ✅ PERBAIKAN: Validasi dan simpan file dengan benar
+        try {
+            // Validasi dan upload surat
+            if ($request->hasFile('surat_file')) {
+                $file = $request->file('surat_file');
+                
+                // Validasi bahwa file benar-benar PDF
+                if ($file->getClientMimeType() !== 'application/pdf') {
+                    return redirect()->back()->withErrors([
+                        'surat_file' => 'File harus berupa PDF'
+                    ])->withInput();
+                }
+                
+                // Validasi size (max 5MB)
+                if ($file->getSize() > 5 * 1024 * 1024) {
+                    return redirect()->back()->withErrors([
+                        'surat_file' => 'Ukuran file maksimal 5MB'
+                    ])->withInput();
+                }
+                
+                // Generate nama file yang unik
+                $fileName = 'surat_' . time() . '_' . str_replace(' ', '_', $request->nama) . '.pdf';
+                $path = $file->storeAs('peserta/surat_penempatan', $fileName, 'public');
+                
+                // Verifikasi file tersimpan
+                if (!Storage::disk('public')->exists($path)) {
+                    throw new \Exception('Gagal menyimpan file surat');
+                }
+                
+                $data['surat_penempatan_path'] = $path;
+            }
 
-        if ($request->hasFile('cv_file')) {
-            $path = $request->file('cv_file')
-                ->store('peserta/cv', 'public');
-            $data['cv_path'] = $path;
+            // Validasi dan upload CV
+            if ($request->hasFile('cv_file')) {
+                $file = $request->file('cv_file');
+                
+                // Validasi bahwa file benar-benar PDF
+                if ($file->getClientMimeType() !== 'application/pdf') {
+                    return redirect()->back()->withErrors([
+                        'cv_file' => 'File harus berupa PDF'
+                    ])->withInput();
+                }
+                
+                // Validasi size (max 5MB)
+                if ($file->getSize() > 5 * 1024 * 1024) {
+                    return redirect()->back()->withErrors([
+                        'cv_file' => 'Ukuran file maksimal 5MB'
+                    ])->withInput();
+                }
+                
+                // Generate nama file yang unik
+                $fileName = 'cv_' . time() . '_' . str_replace(' ', '_', $request->nama) . '.pdf';
+                $path = $file->storeAs('peserta/cv', $fileName, 'public');
+                
+                // Verifikasi file tersimpan
+                if (!Storage::disk('public')->exists($path)) {
+                    throw new \Exception('Gagal menyimpan file CV');
+                }
+                
+                $data['cv_path'] = $path;
+            }
+
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors([
+                'file_error' => 'Gagal mengupload file: ' . $e->getMessage()
+            ])->withInput();
         }
 
         // Set default id_pegawai to null (not yet assigned)
@@ -53,8 +108,6 @@ class PesertaController extends Controller
 
         $data['status'] = 'aktif';
         $data['status_verifikasi'] = 'pending';
-
-        // dd($data);
 
         $peserta = PesertaMagang::create($data);
 

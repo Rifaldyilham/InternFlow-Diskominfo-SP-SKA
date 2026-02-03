@@ -333,39 +333,77 @@ function renderTable() {
 async function showVerifikasi(pesertaId) {
     try {
         const res = await fetch(`/api/admin/verifikasi-berkas/detail/${pesertaId}`);
+        if (!res.ok) throw new Error('Gagal memuat detail');
+        
         const { data: p } = await res.json();
 
+        // Format berkas dengan link yang benar
         let berkasHtml = '';
-        for (const [nama, url] of Object.entries(p.berkas)) {
-            berkasHtml += url
-                ? `<li><a href="${url}" target="_blank">📄 ${nama}</a></li>`
-                : `<li>❌ ${nama} (tidak ada)</li>`;
+        
+        // CV
+        if (p.berkas['CV / Resume']) {
+            berkasHtml += `<li>
+                <a href="${p.berkas['CV / Resume']}" target="_blank" class="text-primary hover:underline">
+                    <i class='bx bx-file'></i> CV / Resume
+                </a>
+            </li>`;
+        } else {
+            berkasHtml += `<li><i class='bx bx-x'></i> CV / Resume (tidak ada)</li>`;
+        }
+        
+        // Surat Pengantar
+        if (p.berkas['Surat Pengantar']) {
+            berkasHtml += `<li>
+                <a href="${p.berkas['Surat Pengantar']}" target="_blank" class="text-primary hover:underline">
+                    <i class='bx bx-file'></i> Surat Pengantar
+                </a>
+            </li>`;
+        } else {
+            berkasHtml += `<li><i class='bx bx-x'></i> Surat Pengantar (tidak ada)</li>`;
         }
 
         document.getElementById('verifikasiContent').innerHTML = `
-            <h3>${p.nama}</h3>
-            <p><b>NIM:</b> ${p.nim}</p>
-            <p><b>Universitas:</b> ${p.universitas}</p>
-            <p><b>Prodi:</b> ${p.program_studi}</p>
+            <div class="detail-section">
+                <h4 class="font-bold text-lg mb-4">Informasi Peserta</h4>
+                <div class="space-y-3">
+                    <p><b>Nama:</b> ${p.nama}</p>
+                    <p><b>NIM:</b> ${p.nim}</p>
+                    <p><b>Email:</b> ${p.email}</p>
+                    <p><b>Universitas:</b> ${p.universitas}</p>
+                    <p><b>Program Studi:</b> ${p.program_studi}</p>
+                    <p><b>No. Telepon:</b> ${p.no_telp}</p>
+                </div>
+            </div>
 
-            <hr>
+            <hr class="my-6">
 
-            <p><b>Periode:</b> ${p.tanggal_mulai} s/d ${p.tanggal_selesai}</p>
-            <p><b>Bidang Pilihan:</b> ${p.bidang_pilihan}</p>
-            <p><b>Alasan:</b></p>
-            <p>${p.alasan}</p>
+            <div class="detail-section">
+                <h4 class="font-bold text-lg mb-4">Informasi Magang</h4>
+                <div class="space-y-3">
+                    <p><b>Periode:</b> ${p.tanggal_mulai} s/d ${p.tanggal_selesai}</p>
+                    <p><b>Bidang Pilihan:</b> ${p.bidang_pilihan}</p>
+                    <p><b>Alasan Magang:</b></p>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="whitespace-pre-line">${p.alasan || '-'}</p>
+                    </div>
+                </div>
+            </div>
 
-            <hr>
+            <hr class="my-6">
 
-            <p><b>Berkas Pengajuan:</b></p>
-            <ul>${berkasHtml}</ul>
+            <div class="detail-section">
+                <h4 class="font-bold text-lg mb-4">Berkas Pengajuan</h4>
+                <ul class="space-y-2">
+                    ${berkasHtml}
+                </ul>
+            </div>
         `;
 
         document.getElementById('verifikasiModal').style.display = 'flex';
 
     } catch (err) {
-        alert('Gagal memuat detail peserta');
         console.error(err);
+        alert('Gagal memuat detail peserta');
     }
 }
 

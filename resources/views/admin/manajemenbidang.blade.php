@@ -32,7 +32,6 @@
             <tr>
                 <th>Nama Bidang</th>
                 <th>Kuota</th>
-                <th>Admin Bidang</th>
                 <th>Aksi</th>
             </tr>
         </thead>
@@ -150,7 +149,6 @@
                     <ul style="margin-top: 10px; padding-left: 20px;">
                         <li>Peserta di bidang ini perlu dipindahkan ke bidang lain</li>
                         <li>Semua data terkait bidang akan dihapus</li>
-                        <li>Admin bidang tetap ada di sistem dengan role yang sama</li>
                     </ul>
                 </div>
             </div>
@@ -285,9 +283,6 @@ function renderBidangTable() {
                             <i class='bx bx-user-plus'></i> ${kuotaTersedia} tersedia
                         </div>
                     </div>
-                </td>
-                <td>
-                    ${bidang.admin ? renderAdminInfo(bidang.admin) : '<span class="no-admin">Belum ada admin</span>'}
                 </td>
                 <td>
                     <div class="action-buttons">
@@ -569,26 +564,10 @@ function renderDetailModal(bidang, admin, peserta) {
                     </div>
                 </div>
             </div>
-            
-            <div style="margin-top: 20px;">
-                <label>Penggunaan Kuota:</label>
-                <div class="kuota-display">
-                    <div class="kuota-progress">
-                        <div class="progress-bar" style="width: ${kuotaPercent}%; 
-                            background-color: ${getProgressBarColor(kuotaPercent)};"></div>
-                    </div>
-                    <div style="text-align: right; font-size: 0.9rem; color: #666;">
-                        ${kuotaPercent}% terisi
-                    </div>
-                </div>
-            </div>
         </div>
         
         ${admin ? `
             <div class="detail-section">
-                <h4 style="color: var(--primary); margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
-                    <i class='bx bx-user-circle'></i> Admin Bidang
-                </h4>
                 
                 <div class="admin-card">
                     <div class="admin-avatar">${getInitials(admin.name || admin.nama)}</div>
@@ -600,33 +579,11 @@ function renderDetailModal(bidang, admin, peserta) {
                                 <i class='bx bx-envelope'></i>
                                 ${admin.email}
                             </span>
-                            <span class="meta-item">
-                                <i class='bx bx-briefcase'></i>
-                                Admin Bidang ${bidang.nama_bidang}
-                            </span>
                         </div>
                     </div>
                 </div>
             </div>
         ` : `
-            <div class="detail-section">
-                <h4 style="color: var(--primary); margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
-                    <i class='bx bx-user-circle'></i> Admin Bidang
-                </h4>
-                
-                <div class="no-admin-card">
-                    <i class='bx bx-user-x'></i>
-                    <div>
-                        <h5>Belum ada Admin Bidang</h5>
-                        <p>Bidang ini belum memiliki admin yang ditugaskan.</p>
-                        <p style="font-size: 0.9rem; margin-top: 10px;">
-                            <a href="/admin/manajemen-akun" style="color: var(--primary); text-decoration: none;">
-                                <i class='bx bx-link-external'></i> Tambah admin di Manajemen Akun
-                            </a>
-                        </p>
-                    </div>
-                </div>
-            </div>
         `}
         
         <div class="detail-section">

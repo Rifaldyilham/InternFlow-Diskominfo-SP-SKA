@@ -39,41 +39,39 @@ class VerifikasiBerikasController extends Controller
 
     // DETAIL peserta
     public function detail($id): JsonResponse
-    {
-        $p = PesertaMagang::findOrFail($id);
+{
+    $p = PesertaMagang::findOrFail($id);
 
-        return response()->json([
-            'data' => [
-                'id' => $p->id_pesertamagang,
-                'nama' => $p->nama,
-                'nim' => $p->nim,
-                'email' => $p->email,
-                'universitas' => $p->asal_univ,
-                'program_studi' => $p->program_studi,
-                'no_telp' => $p->no_telp,
-                'tanggal_mulai' => $p->tanggal_mulai,
-                'tanggal_selesai' => $p->tanggal_selesai,
-                'bidang_pilihan' => $p->bidangPilihan
-                ? $p->bidangPilihan->nama_bidang: '-',
-
-                'bidang_pilihan_id' => $p->bidang_pilihan,
-                'alasan' => $p->alasan,
-                'status' => $p->status_verifikasi,
-
-                // 🔥 SEMUA BERKAS
+    return response()->json([
+        'data' => [
+            'id' => $p->id_pesertamagang,
+            'nama' => $p->nama,
+            'nim' => $p->nim,
+            'email' => $p->email,
+            'universitas' => $p->asal_univ,
+            'program_studi' => $p->program_studi,
+            'no_telp' => $p->no_telp,
+            'tanggal_mulai' => $p->tanggal_mulai,
+            'tanggal_selesai' => $p->tanggal_selesai,
+            'bidang_pilihan' => $p->bidangPilihan 
+                ? $p->bidangPilihan->nama_bidang 
+                : '-',
+            'bidang_pilihan_id' => $p->bidang_pilihan,
+            'alasan' => $p->alasan,
+            'status' => $p->status_verifikasi,
+            
             'berkas' => [
-                'CV / Resume' => $p->cv_path
-                    ? asset('storage/'.$p->cv_path)
+                'CV / Resume' => $p->cv_path 
+                    ? \Illuminate\Support\Facades\Storage::url($p->cv_path)
                     : null,
-
-                'Surat Pengantar' => $p->surat_penempatan_path
-                    ? asset('storage/'.$p->surat_penempatan_path)
+                
+                'Surat Pengantar' => $p->surat_penempatan_path 
+                    ? \Illuminate\Support\Facades\Storage::url($p->surat_penempatan_path)
                     : null,
             ]
-
-            ]
-        ]);
-    }
+        ]
+    ]);
+}
 
     // TERIMA / TOLAK
     public function verify(Request $request): JsonResponse
