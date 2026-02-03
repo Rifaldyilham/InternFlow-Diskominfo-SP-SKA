@@ -78,19 +78,26 @@ Route::prefix('peserta')->middleware(['auth', 'role:Peserta Magang'])->group(fun
         ->name('peserta.absensi');
 });
 
-// Routes untuk Mentor Magang
+// Routes untuk Mentor
 Route::prefix('mentor')->middleware(['auth', 'role:Mentor'])->group(function () {
     Route::get('/bimbingan', function () {
         return view('mentor.bimbingan');
     })->name('mentor.bimbingan');
-
+    
     Route::get('/verifikasi', function () {
         return view('mentor.verifikasi');
     })->name('mentor.verifikasi');
-
+    
     Route::get('/penilaian', function () {
         return view('mentor.penilaian');
     })->name('mentor.penilaian');
+});
+
+// API endpoints untuk Mentor - PAKAI CONTROLLER BARU
+Route::prefix('api/mentor')->middleware(['auth'])->group(function () {
+    Route::get('/stats', [\App\Http\Controllers\MentorBimbinganController::class, 'stats']);
+    Route::get('/peserta', [\App\Http\Controllers\MentorBimbinganController::class, 'peserta']);
+    Route::get('/peserta/{id}', [\App\Http\Controllers\MentorBimbinganController::class, 'detailPeserta']);
 });
 
 // Routes untuk Admin Bidang
