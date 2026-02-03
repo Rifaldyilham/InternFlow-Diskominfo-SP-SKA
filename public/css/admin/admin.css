@@ -564,7 +564,7 @@
 
 /* Loading Animation */
 .loading-skeleton {
-    animation: skeleton-loading 1.5s infinite ease-in-out;
+    animation: skeleton-loading 0.5s infinite ease-in-out;
 }
 
 @keyframes skeleton-loading {
@@ -1171,9 +1171,6 @@
         gap: 10px;
     }
     
-    .peserta-cell {
-        justify-content: flex-start;
-    }
 }
 
 @media (max-width: 480px) {
@@ -1400,7 +1397,6 @@
 }
 
 .peserta-cell {
-    display: flex;
     align-items: center;
 }
 

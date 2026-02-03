@@ -147,7 +147,6 @@
                     <strong>Informasi Penting</strong>
                     <p>Data yang akan terpengaruh:</p>
                     <ul style="margin-top: 10px; padding-left: 20px;">
-                        <li>Peserta di bidang ini perlu dipindahkan ke bidang lain</li>
                         <li>Semua data terkait bidang akan dihapus</li>
                     </ul>
                 </div>
@@ -243,11 +242,11 @@ function renderBidangTable() {
     
     tbody.innerHTML = state.bidangList.map(bidang => {
         const kuota = bidang.kuota || 0;
-        const aktif = bidang.peserta_aktif || 0;
-
-        const kuotaPercent = kuota > 0 ? Math.round((aktif / kuota) * 100) : 0;
-
-        const kuotaTersedia = kuota - aktif;
+        // Pastikan kita mendapatkan jumlah peserta aktif yang benar
+        const pesertaAktif = bidang.peserta_count || bidang.peserta_aktif || 0;
+        
+        const kuotaPercent = kuota > 0 ? Math.round((pesertaAktif / kuota) * 100) : 0;
+        const kuotaTersedia = kuota - pesertaAktif;
 
         return `
             <tr>
@@ -269,7 +268,7 @@ function renderBidangTable() {
                 <td>
                     <div class="kuota-container">
                         <div class="kuota-info">
-                            <span class="kuota-current">${bidang.peserta_aktif || 0}</span>
+                            <span class="kuota-current">${pesertaAktif}</span>
                             <span class="kuota-separator">/</span>
                             <span class="kuota-max">${bidang.kuota}</span>
                             <span class="kuota-label">peserta</span>
@@ -333,7 +332,7 @@ function renderEmptyTable(message) {
 function getBidangColor(bidangName) {
     const colors = {
         'Teknologi dan Informatika': '#2ecc71',
-        'Statistik': '#3498db',
+        'Statistika': '#3498db', // Diperbaiki dari 'Statistik' menjadi 'Statistika'
         'Sekretariat': '#9b59b6',
         'Komunikasi Publik dan Media': '#f39c12'
     };
@@ -457,7 +456,7 @@ async function handleBidangSubmit(e) {
     }
 }
 
-// Detail Modal
+// Detail Modal - FIXED VERSION
 async function showDetailModal(id) {
     try {
         showLoading('detail', true);
@@ -474,24 +473,32 @@ async function showDetailModal(id) {
         
         // Fetch admin data
         let admin = null;
-        if (bidang.id_admin) {
-            const adminResponse = await fetch(`${API_CONFIG.endpoints.adminByBidang}/${id}/admin`, {
-                headers: { 'Accept': 'application/json' }
-            });
-            if (adminResponse.ok) {
-                const adminData = await adminResponse.json();
-                admin = adminData.data || adminData;
-            }
-        }
-        
-        // Fetch peserta data
-        let peserta = [];
-        const pesertaResponse = await fetch(`${API_CONFIG.endpoints.pesertaByBidang}/${id}/peserta`, {
+        const adminResponse = await fetch(`${API_CONFIG.endpoints.adminByBidang(id)}`, {
             headers: { 'Accept': 'application/json' }
         });
-        if (pesertaResponse.ok) {
-            const pesertaData = await pesertaResponse.json();
-            peserta = pesertaData.data || pesertaData || [];
+        if (adminResponse.ok) {
+            const adminData = await adminResponse.json();
+            admin = adminData.data || adminData || null;
+        }
+        
+        // Fetch peserta data - Hanya peserta yang sudah diverifikasi
+        let peserta = [];
+        try {
+            const pesertaResponse = await fetch(`${API_CONFIG.endpoints.pesertaByBidang(id)}`, {
+                headers: { 'Accept': 'application/json' }
+            });
+            
+            if (pesertaResponse.ok) {
+                const pesertaData = await pesertaResponse.json();
+                // Filter hanya peserta yang sudah diverifikasi
+                peserta = Array.isArray(pesertaData.data) ? 
+                    pesertaData.data.filter(p => p.status_verifikasi === 'terverifikasi') : 
+                    (Array.isArray(pesertaData) ? 
+                        pesertaData.filter(p => p.status_verifikasi === 'terverifikasi') : []);
+            }
+        } catch (error) {
+            console.error('Error fetching peserta:', error);
+            peserta = [];
         }
         
         renderDetailModal(bidang, admin, peserta);
@@ -508,12 +515,9 @@ function renderDetailModal(bidang, admin, peserta) {
     state.currentBidangDetail = bidang;
     
     const kuota = bidang.kuota || 0;
-    const aktif = bidang.peserta_aktif || 0;
-
-    const kuotaPercent = kuota > 0? Math.round((aktif / kuota) * 100): 0;
-
-    const kuotaTersedia = kuota - aktif;
-
+    const pesertaAktif = peserta.length || 0;
+    const kuotaPercent = kuota > 0 ? Math.round((pesertaAktif / kuota) * 100) : 0;
+    const kuotaTersedia = kuota - pesertaAktif;
     
     document.getElementById('detailBidangTitle').textContent = `Detail Bidang - ${bidang.nama_bidang}`;
     
@@ -529,7 +533,7 @@ function renderDetailModal(bidang, admin, peserta) {
                     <div>
                         <h3 style="margin: 0; color: var(--primary);">${bidang.nama_bidang}</h3>
                         <p style="margin: 5px 0 0 0; color: #666; font-size: 0.9rem;">
-                            Status: <span class="status-badge ${bidang.status === 'aktif' ? 'status-approved' : 'status-rejected'}">${bidang.status}</span>
+                            Status: <span class="status-badge ${bidang.status === 'aktif' ? 'status-active' : 'status-inactive'}">${bidang.status}</span>
                         </p>
                     </div>
                 </div>
@@ -552,7 +556,7 @@ function renderDetailModal(bidang, admin, peserta) {
                 <div class="detail-item">
                     <label>Kuota Saat Ini:</label>
                     <div style="font-weight: 600; font-size: 1.1rem;">
-                        <span style="color: var(--primary);">${bidang.peserta_aktif || 0}</span>
+                        <span style="color: var(--primary);">${pesertaAktif}</span>
                         <span style="color: #666;"> / ${bidang.kuota} peserta</span>
                     </div>
                 </div>
@@ -566,30 +570,12 @@ function renderDetailModal(bidang, admin, peserta) {
             </div>
         </div>
         
-        ${admin ? `
-            <div class="detail-section">
-                
-                <div class="admin-card">
-                    <div class="admin-avatar">${getInitials(admin.name || admin.nama)}</div>
-                    <div class="admin-details">
-                        <div class="admin-name">${admin.name || admin.nama}</div>
-                        <div class="admin-email">${admin.email}</div>
-                        <div class="admin-meta">
-                            <span class="meta-item">
-                                <i class='bx bx-envelope'></i>
-                                ${admin.email}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        ` : `
-        `}
+        
         
         <div class="detail-section">
             <div class="section-header">
                 <h4 style="color: var(--primary); margin: 0; display: flex; align-items: center; gap: 10px;">
-                    <i class='bx bx-user'></i> Daftar Peserta
+                    <i class='bx bx-user'></i> Daftar Peserta (Terverifikasi)
                     <span style="background: #e3f2fd; color: #1976d2; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem;">
                         ${peserta.length} peserta
                     </span>
@@ -608,7 +594,7 @@ function renderPesertaList(peserta) {
         return `
             <div class="no-data">
                 <i class='bx bx-user-x'></i>
-                <p>Belum ada peserta di bidang ini</p>
+                <p>Belum ada peserta yang sudah diverifikasi di bidang ini</p>
             </div>
         `;
     }
@@ -616,29 +602,25 @@ function renderPesertaList(peserta) {
     let html = '<div class="peserta-table">';
     html += `
         <div class="table-header-small">
-            <div>Nama</div>
-            <div>NIM</div>
-            <div>Universitas</div>
-            <div>Status</div>
+            <div style="grid-column: 1;">Nama</div>
+            <div style="grid-column: 2;">NIM</div>
+            <div style="grid-column: 3;">Universitas</div>
+            <div style="grid-column: 4;">Program Studi</div>
         </div>
     `;
     
-    peserta.forEach(peserta => {
+    peserta.forEach(p => {
         html += `
-            <div class="peserta-row">
-                <div class="peserta-cell">
-                    <div class="peserta-avatar-small">${getInitials(peserta.name || peserta.nama)}</div>
+            <div class="peserta-row" style="display: grid; grid-template-columns: 2fr 1fr 2fr 2fr; padding: 12px 15px; border-bottom: 1px solid #eee; align-items: center;">
+                <div class="peserta-cell" style="grid-column: 1; display: flex; align-items: center;">
+                    <div class="peserta-avatar-small">${getInitials(p.nama)}</div>
                     <div class="peserta-info-small">
-                        <div class="peserta-name">${peserta.name || peserta.nama}</div>
+                        <div class="peserta-name">${p.nama || '-'}</div>
                     </div>
                 </div>
-                <div class="peserta-cell">${peserta.nim || '-'}</div>
-                <div class="peserta-cell">${peserta.universitas || '-'}</div>
-                <div class="peserta-cell">
-                    <span class="status-badge ${peserta.status === 'aktif' ? 'status-active' : 'status-inactive'}">
-                        ${peserta.status === 'aktif' ? 'Aktif' : 'Nonaktif'}
-                    </span>
-                </div>
+                <div class="peserta-cell" style="grid-column: 2;">${p.nim || '-'}</div>
+                <div class="peserta-cell" style="grid-column: 3;">${p.asal_univ || p.universitas || '-'}</div>
+                <div class="peserta-cell" style="grid-column: 4;">${p.program_studi || p.prodi || '-'}</div>
             </div>
         `;
     });
@@ -766,51 +748,7 @@ function refreshData() {
     localNotification('Data bidang diperbarui', 'success');
 }
 
-// Input with info styling
-const style = document.createElement('style');
-style.textContent = `
-    .input-with-info {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-    }
-    
-    .input-info {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        font-size: 0.85rem;
-        color: #666;
-    }
-    
-    .input-info i {
-        font-size: 1rem;
-    }
-    
-    .bidang-icon-large {
-        width: 60px;
-        height: 60px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.8rem;
-        color: white;
-    }
-    
-    .warning-icon {
-        text-align: center;
-        margin-bottom: 20px;
-    }
-    
-    .btn-sm {
-        padding: 6px 12px;
-        font-size: 0.85rem;
-    }
-`;
-document.head.appendChild(style);
-
-// Notification function (reuse from other files)
+// Notification function
 function localNotification(message, type = 'info') {
     // Reuse existing notification function or create simple one
     if (typeof window.showNotification === 'function') {
@@ -849,5 +787,246 @@ function localNotification(message, type = 'info') {
         }
     }, 5000);
 }
+
+// Tambahkan style untuk tampilan yang lebih baik
+const style = document.createElement('style');
+style.textContent = `
+    .bidang-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: white;
+        flex-shrink: 0;
+    }
+    
+    .kuota-container {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .kuota-info {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-weight: 600;
+    }
+    
+    .kuota-current {
+        color: var(--primary);
+        font-size: 1.1rem;
+    }
+    
+    .kuota-max {
+        color: #666;
+    }
+    
+    .kuota-label {
+        color: #888;
+        font-size: 0.9rem;
+        margin-left: 4px;
+    }
+    
+    .kuota-progress-small {
+        height: 6px;
+        background: #f0f0f0;
+        border-radius: 3px;
+        overflow: hidden;
+    }
+    
+    .progress-bar-small {
+        height: 100%;
+        border-radius: 3px;
+        transition: width 0.3s;
+    }
+    
+    .kuota-tersedia {
+        font-size: 0.85rem;
+        color: #2ed573;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .action-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        transition: all 0.2s;
+    }
+    
+    .action-btn.view {
+        background: rgba(155, 89, 182, 0.1);
+        color: #9b59b6;
+    }
+    
+    .action-btn.view:hover {
+        background: #9b59b6;
+        color: white;
+    }
+    
+    .action-btn.edit {
+        background: rgba(52, 152, 219, 0.1);
+        color: #3498db;
+    }
+    
+    .action-btn.edit:hover {
+        background: #3498db;
+        color: white;
+    }
+    
+    .action-btn.delete {
+        background: rgba(231, 76, 60, 0.1);
+        color: #e74c3c;
+    }
+    
+    .action-btn.delete:hover {
+        background: #e74c3c;
+        color: white;
+    }
+    
+    .no-data {
+        text-align: center;
+        padding: 40px 20px;
+        color: #888;
+    }
+    
+    .no-data i {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        display: block;
+    }
+    
+    .no-data p {
+        margin: 0;
+        font-size: 0.95rem;
+    }
+    
+    .peserta-avatar-small {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, var(--primary), var(--secondary));
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 0.9rem;
+        margin-right: 10px;
+        flex-shrink: 0;
+    }
+    
+    .peserta-name {
+        font-weight: 600;
+        color: var(--primary);
+        font-size: 0.9rem;
+    }
+    
+    .input-with-info {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .input-info {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.85rem;
+        color: #666;
+    }
+    
+    .status-badge {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+    
+    .status-active {
+        background: rgba(46, 204, 113, 0.1);
+        color: #27ae60;
+    }
+    
+    .status-inactive {
+        background: rgba(231, 76, 60, 0.1);
+        color: #c0392b;
+    }
+    
+    .admin-card {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .admin-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, var(--primary), var(--secondary));
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+    
+    .admin-name {
+        font-weight: 600;
+        color: var(--primary);
+    }
+    
+    .admin-email {
+        color: #666;
+        font-size: 0.9rem;
+    }
+    
+    .no-admin-card {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 30px;
+        text-align: center;
+        color: #666;
+    }
+    
+    .no-admin-card i {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        color: #ccc;
+        display: block;
+    }
+    
+    .no-admin-card h5 {
+        color: var(--primary);
+        margin: 0 0 10px 0;
+    }
+    
+    .no-admin-card p {
+        margin: 0;
+        font-size: 0.9rem;
+    }
+`;
+document.head.appendChild(style);
 </script>
 @endsection
