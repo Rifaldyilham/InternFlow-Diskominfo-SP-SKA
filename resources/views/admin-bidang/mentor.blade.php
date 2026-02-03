@@ -8,13 +8,6 @@
 @endsection
 
 @section('content')
-<div class="content-header">
-    <div class="header-actions">
-        <button class="btn btn-primary" onclick="showAddMentorModal()">
-            <i class='bx bx-plus-circle'></i> Tambah Mentor
-        </button>
-    </div>
-</div>
 
 <!-- Filter Section (Hanya pencarian nama) -->
 <div class="filter-container">
@@ -40,9 +33,10 @@
         <thead>
             <tr>
                 <th>Nama Mentor</th>
+                <th>NIP</th>
                 <th>Status</th>
                 <th>Jumlah Bimbingan</th>
-                <th>Aksi</th>
+                <th class="w-24">Aksi</th>
             </tr>
         </thead>
         <tbody id="mentorTableBody">
@@ -74,135 +68,21 @@
         </div>
     </div>
 </div>
-
-<!-- Modal Tambah/Edit Mentor -->
-<div id="mentorModal" class="modal">
-    <div class="modal-content" style="max-width: 500px;">
-        <div class="modal-header">
-            <h3 id="modalMentorTitle">Tambah Mentor Baru</h3>
-            <button class="modal-close" onclick="closeMentorModal()">&times;</button>
-        </div>
-        <form id="mentorForm">
-            @csrf
-            <div class="modal-body">
-                <input type="hidden" id="editMentorId">
-                
-                <div class="form-group">
-                    <label for="nama_mentor">Nama Mentor *</label>
-                    <input type="text" id="nama_mentor" name="nama_mentor" required 
-                           placeholder="Masukkan nama mentor" maxlength="100">
-                </div>
-
-                <div class="form-group">
-                    <label for="jumlah_bimbingan_maks">Jumlah Bimbingan Maksimal *</label>
-                    <input type="number" id="jumlah_bimbingan_maks" name="jumlah_bimbingan_maks" 
-                            required min="1" max="10" value="5">
-                            <small>Maksimal jumlah peserta yang dapat dibimbing</small>
-                </div>
-                
-                <div class="form-group">
-                    <label for="no_hp">No. Telepon</label>
-                    <input type="text" id="no_hp" name="no_hp" 
-                           placeholder="08xxxxxxxxxx">
-                </div>
-
-                <div class="form-group">
-                    <label for="catatan_mentor">Catatan/Keterangan</label>
-                    <textarea id="catatan_mentor" name="catatan" rows="3" 
-                            placeholder="Catatan tambahan tentang mentor..."></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label for="status_mentor">Status *</label>
-                    <select id="status_mentor" name="status" required>
-                        <option value="aktif" selected>Aktif</option>
-                        <option value="nonaktif">Nonaktif</option>
-                    </select>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeMentorModal()">Batal</button>
-                <button type="submit" class="btn btn-primary" id="modalMentorSubmitBtn">
-                    <span id="submitBtnText">Simpan Mentor</span>
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Modal Detail Mentor -->
-<div id="detailModal" class="modal">
-    <div class="modal-content" style="max-width: 700px;">
-        <div class="modal-header">
-            <h3 id="detailMentorTitle">Detail Mentor</h3>
-            <button class="modal-close" onclick="closeDetailModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-            <div id="detailModalContent">
-                <!-- Konten akan dimuat via JavaScript -->
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" onclick="closeDetailModal()">Tutup</button>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Hapus Mentor -->
-<div id="deleteMentorModal" class="modal">
-    <div class="modal-content" style="max-width: 500px;">
-        <div class="modal-header">
-            <h3>Konfirmasi Hapus Mentor</h3>
-            <button class="modal-close" onclick="closeDeleteMentorModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-            <div class="warning-icon" style="text-align: center; margin-bottom: 20px;">
-                <i class='bx bx-error-circle' style="font-size: 4rem; color: #e74c3c;"></i>
-            </div>
-            
-            <p style="text-align: center; margin-bottom: 20px;">
-                Apakah Anda yakin ingin menghapus mentor <strong id="deleteMentorName"></strong>?
-            </p>
-            
-            <div class="alert alert-info">
-                <i class='bx bx-info-circle'></i>
-                <div>
-                    <strong>Informasi Penting</strong>
-                    <p>Data yang akan terpengaruh:</p>
-                    <ul style="margin-top: 10px; padding-left: 20px;">
-                        <li>Peserta yang dibimbing akan kehilangan mentor</li>
-                        <li>Semua data bimbingan akan dihapus</li>
-                        <li>Akun mentor tetap ada di sistem dengan role yang sama</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="closeDeleteMentorModal()">Batal</button>
-            <button class="btn btn-danger" id="confirmDeleteBtn" onclick="confirmDeleteMentor()">
-                <i class='bx bx-trash'></i> Hapus Mentor
-            </button>
-        </div>
-    </div>
-</div>
 @endsection
 
 @section('scripts')
 <script>
 
+// C:\MAGANG\monitoring-magang\monitoring-magang\resources\views\admin-bidang\mentor.blade.php
+
 // ============================
-// KONFIGURASI API (Backend-ready)
+// KONFIGURASI API
 // ============================
 const API_CONFIG = {
     baseUrl: window.location.origin,
     endpoints: {
-        // Endpoint untuk mentor (akan dibuat di backend)
         mentor: '/api/admin-bidang/mentor',
-        mentorWithBimbingan: '/api/admin-bidang/mentor/with-bimbingan',
-        // Endpoint untuk peserta yang bisa menjadi mentor (dari bidang ini)
-        usersByBidang: '/api/admin-bidang/users/by-bidang',
-        // Endpoint untuk bimbingan mentor
-        bimbinganByMentor: '/api/admin-bidang/bimbingan/by-mentor'
+        mentorDetail: '/api/admin-bidang/mentor'
     }
 };
 
@@ -212,8 +92,6 @@ const API_CONFIG = {
 let state = {
     mentorList: [],
     filteredMentorList: [],
-    currentMentorDetail: null,
-    mentorToDelete: null,
     currentPage: 1,
     itemsPerPage: 10,
     totalPages: 1,
@@ -227,23 +105,12 @@ let state = {
 // INISIALISASI
 // ============================
 document.addEventListener('DOMContentLoaded', function() {
-    setupCSRF();
     fetchMentorData();
     setupEventListeners();
 });
 
-// Setup CSRF token untuk Laravel
-function setupCSRF() {
-    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    if (token) {
-        window.csrfToken = token;
-    }
-}
-
 // Setup event listeners
 function setupEventListeners() {
-    document.getElementById('mentorForm').addEventListener('submit', handleMentorSubmit);
-    
     // Pencarian real-time dengan debounce
     document.getElementById('searchInput').addEventListener('input', function(e) {
         state.currentFilters.search = e.target.value;
@@ -252,7 +119,7 @@ function setupEventListeners() {
 }
 
 // ============================
-// FUNGSI API (Backend-ready)
+// FUNGSI API
 // ============================
 
 // Fetch data mentor dari backend
@@ -260,10 +127,8 @@ async function fetchMentorData() {
     try {
         showLoading(true);
         
-        // **STRUKTUR API UNTUK BACKEND:**
-        // GET /api/admin-bidang/mentor?page=1&per_page=10
         const response = await fetch(
-            `${API_CONFIG.endpoints.mentor}?page=${state.currentPage}&per_page=${state.itemsPerPage}`,
+            API_CONFIG.endpoints.mentor,
             {
                 headers: {
                     'Accept': 'application/json',
@@ -276,19 +141,9 @@ async function fetchMentorData() {
         
         const data = await response.json();
         
-        // **STRUKTUR RESPONSE BACKEND YANG DIHARAPKAN:**
-        // {
-        //     "data": [array of mentors],
-        //     "meta": {
-        //         "total": 100,
-        //         "per_page": 10,
-        //         "current_page": 1,
-        //         "last_page": 10
-        //     }
-        // }
         state.mentorList = data.data || [];
-        state.totalItems = data.meta?.total || data.total || state.mentorList.length;
-        state.totalPages = data.meta?.last_page || Math.ceil(state.totalItems / state.itemsPerPage);
+        state.totalItems = state.mentorList.length;
+        state.totalPages = Math.ceil(state.totalItems / state.itemsPerPage);
         
         filterMentorData();
         
@@ -309,8 +164,13 @@ function filterMentorData() {
         state.filteredMentorList = [...state.mentorList];
     } else {
         state.filteredMentorList = state.mentorList.filter(mentor => {
-            const mentorName = mentor.nama?.toLowerCase() || mentor.name?.toLowerCase() || '';
-            return mentorName.includes(searchTerm);
+            const mentorName = mentor.nama?.toLowerCase() || '';
+            const mentorNip = mentor.nip?.toLowerCase() || '';
+            const mentorEmail = mentor.email?.toLowerCase() || '';
+            
+            return mentorName.includes(searchTerm) || 
+                   mentorNip.includes(searchTerm) || 
+                   mentorEmail.includes(searchTerm);
         });
     }
     
@@ -327,7 +187,7 @@ function renderMentorTable() {
     if (!state.filteredMentorList || state.filteredMentorList.length === 0) {
         renderEmptyTable(
             state.currentFilters.search 
-                ? 'Tidak ditemukan mentor dengan nama tersebut' 
+                ? 'Tidak ditemukan mentor dengan kata kunci tersebut' 
                 : 'Belum ada data mentor'
         );
         return;
@@ -340,15 +200,15 @@ function renderMentorTable() {
     tbody.innerHTML = pageData.map(mentor => {
         const statusClass = mentor.status === 'aktif' ? 'status-active' : 'status-inactive';
         const statusText = mentor.status === 'aktif' ? 'Aktif' : 'Nonaktif';
-        const jumlahBimbingan = mentor.jumlah_bimbingan || mentor.total_bimbingan || 0;
+        const jumlahBimbingan = mentor.jumlah_bimbingan || 0;
         
         return `
             <tr>
                 <td>
                     <div style="display: flex; align-items: center; gap: 12px;">
-                        <div class="avatar">${getInitials(mentor.nama || mentor.name)}</div>
+                        <div class="avatar">${getInitials(mentor.nama || '')}</div>
                         <div>
-                            <div style="font-weight: 600; color: var(--primary);">${mentor.nama || mentor.name}</div>
+                            <div style="font-weight: 600; color: var(--primary);">${mentor.nama || '-'}</div>
                             <div style="font-size: 0.85rem; color: #666;">
                                 ${mentor.email || ''}
                             </div>
@@ -356,23 +216,28 @@ function renderMentorTable() {
                     </div>
                 </td>
                 <td>
+                    <div style="font-family: monospace; font-size: 0.9rem;">${mentor.nip || '-'}</div>
+                </td>
+                <td>
                     <span class="status-badge ${statusClass}">${statusText}</span>
                 </td>
                 <td>
-                    <div style="font-weight: 600; color: var(--primary);">${jumlahBimbingan}</div>
-                    <div style="font-size: 0.85rem; color: #666;">peserta</div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div style="font-weight: 600; color: var(--primary);">${jumlahBimbingan}</div>
+                        <div style="font-size: 0.85rem; color: #666;">peserta</div>
+                    </div>
                 </td>
                 <td>
                     <div class="action-buttons">
-                        <button class="action-btn view" title="Lihat Detail" onclick="showDetailModal('${mentor.id}')">
-                            <i class='bx bx-show'></i>
-                        </button>
-                        <button class="action-btn edit" title="Edit" onclick="editMentor('${mentor.id}')">
-                            <i class='bx bx-edit'></i>
-                        </button>
-                        <button class="action-btn delete" title="Hapus" onclick="showDeleteMentorModal('${mentor.id}', '${mentor.nama || mentor.name}')">
-                            <i class='bx bx-trash'></i>
-                        </button>
+                        ${jumlahBimbingan > 0 ? `
+                            <button class="action-btn view" title="Lihat Peserta yang Dibimbing" onclick="showMentorPeserta('${mentor.id}', '${mentor.nama}')">
+                                <i class='bx bx-group'></i>
+                            </button>
+                        ` : `
+                            <button class="action-btn view" title="Tidak ada peserta yang dibimbing" disabled style="opacity: 0.5; cursor: not-allowed;">
+                                <i class='bx bx-group'></i>
+                            </button>
+                        `}
                     </div>
                 </td>
             </tr>
@@ -388,15 +253,10 @@ function renderEmptyTable(message) {
     const tbody = document.getElementById('mentorTableBody');
     tbody.innerHTML = `
         <tr>
-            <td colspan="4" style="text-align: center; padding: 50px 20px;">
+            <td colspan="5" style="text-align: center; padding: 50px 20px;">
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 15px;">
                     <i class='bx bx-user-x' style="font-size: 3rem; color: #ccc;"></i>
                     <div style="color: #888; font-weight: 500;">${message}</div>
-                    ${!state.currentFilters.search ? `
-                        <button class="btn btn-primary btn-sm" onclick="showAddMentorModal()">
-                            <i class='bx bx-plus'></i> Tambah Mentor Pertama
-                        </button>
-                    ` : ''}
                 </div>
             </td>
         </tr>
@@ -404,278 +264,175 @@ function renderEmptyTable(message) {
 }
 
 // ============================
-// MODAL FUNCTIONS
+// DETAIL MODAL (Hanya lihat)
 // ============================
-function showAddMentorModal() {
-    document.getElementById('modalMentorTitle').textContent = 'Tambah Mentor Baru';
-    document.getElementById('mentorForm').reset();
-    document.getElementById('editMentorId').value = '';
-    document.getElementById('status_mentor').value = 'aktif';
-    document.getElementById('submitBtnText').textContent = 'Simpan Mentor';
-    openModal('mentorModal');
-}
 
-async function editMentor(id) {
+
+// Fungsi untuk melihat peserta yang dibimbing (modal mini)
+async function showMentorPeserta(mentorId, mentorName) {
     try {
-        showLoading('modal', true);
+        // Tampilkan loading
+        const loadingHTML = `
+            <div style="text-align: center; padding: 40px;">
+                <i class='bx bx-loader-circle bx-spin' style="font-size: 2rem; color: var(--primary);"></i>
+                <div style="margin-top: 15px; color: #666;">Memuat data peserta...</div>
+            </div>
+        `;
         
-        // **API BACKEND:** GET /api/admin-bidang/mentor/{id}
-        const response = await fetch(`${API_CONFIG.endpoints.mentor}/${id}`, {
-            headers: {
+        // Buat modal
+        const modalHTML = `
+            <div class="modal" id="pesertaModal" style="display: flex;">
+                <div class="modal-content" style="max-width: 700px; max-height: 80vh;">
+                    <div class="modal-header">
+                        <h3 style="display: flex; align-items: center; gap: 10px;">
+                            <i class='bx bx-group'></i> Peserta yang Dibimbing
+                        </h3>
+                        <button class="modal-close" onclick="closeModal('pesertaModal')">&times;</button>
+                    </div>
+                    <div class="modal-body" id="pesertaModalContent">
+                        ${loadingHTML}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('pesertaModal')">Tutup</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Tambahkan modal ke body
+        const modalContainer = document.createElement('div');
+        modalContainer.innerHTML = modalHTML;
+        document.body.appendChild(modalContainer);
+        
+        // Fetch data peserta
+        const response = await fetch(`${API_CONFIG.endpoints.mentorDetail}/${mentorId}`, {
+            headers: { 
                 'Accept': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest'
             }
         });
         
-        if (!response.ok) throw new Error('Gagal mengambil data mentor');
+        if (!response.ok) throw new Error('Gagal mengambil data peserta');
         
         const data = await response.json();
         const mentor = data.data || data;
         
-        document.getElementById('modalMentorTitle').textContent = 'Edit Mentor';
-        document.getElementById('editMentorId').value = mentor.id;
-        document.getElementById('nama_mentor').value = mentor.nama || mentor.name;
-        document.getElementById('email_mentor').value = mentor.email;
-        document.getElementById('no_hp').value = mentor.no_hp || mentor.telepon || '';
-        document.getElementById('status_mentor').value = mentor.status || 'aktif';
-        document.getElementById('submitBtnText').textContent = 'Update Mentor';
-        
-        openModal('mentorModal');
+        // Render data peserta
+        renderPesertaModalContent(mentor, mentorName);
         
     } catch (error) {
         console.error('Error:', error);
-        showNotification('Gagal memuat data mentor', 'error');
-    } finally {
-        showLoading('modal', false);
-    }
-}
-
-// ============================
-// FORM HANDLING
-// ============================
-async function handleMentorSubmit(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(e.target);
-    const mentorId = document.getElementById('editMentorId').value;
-    const isEdit = !!mentorId;
-    
-    try {
-        showSubmitLoading(true);
         
-        // **STRUKTUR API BACKEND:**
-        // POST /api/admin-bidang/mentor (untuk tambah)
-        // PUT /api/admin-bidang/mentor/{id} (untuk edit)
-        const url = isEdit 
-            ? `${API_CONFIG.endpoints.mentor}/${mentorId}`
-            : API_CONFIG.endpoints.mentor;
-        
-        const method = isEdit ? 'PUT' : 'POST';
-        
-        const jsonData = {};
-        formData.forEach((value, key) => {
-            jsonData[key] = value;
-        });
-        
-        // Tambahkan CSRF token untuk Laravel
-        jsonData._token = window.csrfToken;
-        
-        const response = await fetch(url, {
-            method: method,
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': window.csrfToken
-            },
-            body: JSON.stringify(jsonData)
-        });
-        
-        const data = await response.json();
-        
-        if (!response.ok) {
-            throw new Error(data.message || 'Request failed');
+        // Update modal dengan error message
+        const errorContent = document.getElementById('pesertaModalContent');
+        if (errorContent) {
+            errorContent.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #e74c3c;">
+                    <i class='bx bx-error-circle' style="font-size: 3rem; margin-bottom: 15px;"></i>
+                    <h4 style="margin-bottom: 10px;">Gagal Memuat Data</h4>
+                    <p>${error.message || 'Terjadi kesalahan saat mengambil data'}</p>
+                </div>
+            `;
         }
         
-        showNotification(
-            isEdit ? 'Data mentor berhasil diupdate' : 'Mentor berhasil ditambahkan',
-            'success'
-        );
-        
-        closeMentorModal();
-        fetchMentorData();
-        
-    } catch (error) {
-        console.error('Error:', error);
-        showNotification(error.message || 'Gagal menyimpan data', 'error');
-    } finally {
-        showSubmitLoading(false);
+        showNotification('Gagal memuat data peserta', 'error');
     }
 }
 
-// ============================
-// DETAIL MODAL
-// ============================
-async function showDetailModal(id) {
-    try {
-        showLoading('detail', true);
-        
-        // **API BACKEND:** GET /api/admin-bidang/mentor/{id}/detail
-        const response = await fetch(`${API_CONFIG.endpoints.mentor}/${id}/detail`, {
-            headers: { 'Accept': 'application/json' }
-        });
-        
-        if (!response.ok) throw new Error('Gagal mengambil detail mentor');
-        
-        const data = await response.json();
-        const mentor = data.data || data;
-        
-        renderDetailModal(mentor);
-        
-    } catch (error) {
-        console.error('Error:', error);
-        showNotification('Gagal memuat detail mentor', 'error');
-    } finally {
-        showLoading('detail', false);
+function renderPesertaModalContent(mentor, mentorName) {
+    const content = document.getElementById('pesertaModalContent');
+    
+    let pesertaListHTML = '';
+    if (mentor.peserta && mentor.peserta.length > 0) {
+        pesertaListHTML = `
+            <div class="table-container" style="margin-top: 15px; max-height: 400px; overflow-y: auto;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead style="background: #f8f9fa; position: sticky; top: 0;">
+                        <tr>
+                            <th style="padding: 12px 15px; text-align: left; border-bottom: 2px solid #dee2e6;">Nama Peserta</th>
+                            <th style="padding: 12px 15px; text-align: left; border-bottom: 2px solid #dee2e6;">NIM</th>
+                            <th style="padding: 12px 15px; text-align: left; border-bottom: 2px solid #dee2e6;">Universitas</th>
+                            <th style="padding: 12px 15px; text-align: left; border-bottom: 2px solid #dee2e6;">Periode</th>
+                            <th style="padding: 12px 15px; text-align: left; border-bottom: 2px solid #dee2e6;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${mentor.peserta.map((p, index) => `
+                            <tr style="${index % 2 === 0 ? 'background: #f8f9fa;' : ''}">
+                                <td style="padding: 12px 15px; border-bottom: 1px solid #eee;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <div style="width: 35px; height: 35px; border-radius: 50%; 
+                                                    background: linear-gradient(45deg, var(--primary), var(--secondary));
+                                                    color: white; display: flex; align-items: center; justify-content: center; 
+                                                    font-weight: 600; font-size: 0.9rem;">
+                                            ${getInitials(p.nama)}
+                                        </div>
+                                        <div>
+                                            <div style="font-weight: 600; color: var(--primary);">${p.nama}</div>
+                                            <div style="font-size: 0.8rem; color: #666;">${p.prodi || '-'}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="padding: 12px 15px; border-bottom: 1px solid #eee;">
+                                    <div style="font-family: monospace; font-weight: 500;">${p.nim || '-'}</div>
+                                </td>
+                                <td style="padding: 12px 15px; border-bottom: 1px solid #eee;">
+                                    <div>${p.universitas || '-'}</div>
+                                </td>
+                                <td style="padding: 12px 15px; border-bottom: 1px solid #eee;">
+                                    <div style="font-size: 0.85rem;">
+                                        <div>${formatDate(p.tanggal_mulai)}</div>
+                                        <div style="color: #666; font-size: 0.8rem;">s/d ${formatDate(p.tanggal_selesai)}</div>
+                                    </div>
+                                </td>
+                                <td style="padding: 12px 15px; border-bottom: 1px solid #eee;">
+                                    <span class="status-badge status-active">Aktif</span>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    } else {
+        pesertaListHTML = `
+            <div style="text-align: center; padding: 40px; color: #888;">
+                <i class='bx bx-user-x' style="font-size: 3rem; margin-bottom: 15px;"></i>
+                <h4 style="margin-bottom: 10px; color: #666;">Belum Ada Peserta</h4>
+                <p>Mentor ini belum memiliki peserta yang dibimbing.</p>
+            </div>
+        `;
     }
-}
-
-function renderDetailModal(mentor) {
-    state.currentMentorDetail = mentor;
     
-    const statusClass = mentor.status === 'aktif' ? 'status-active' : 'status-inactive';
-    const statusText = mentor.status === 'aktif' ? 'Aktif' : 'Nonaktif';
-    
-    document.getElementById('detailMentorTitle').textContent = `Detail Mentor - ${mentor.nama || mentor.name}`;
-    
-    document.getElementById('detailModalContent').innerHTML = `
-        <div class="detail-section">
-            <div class="detail-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <div class="avatar" style="width: 60px; height: 60px; font-size: 1.2rem;">
-                        ${getInitials(mentor.nama || mentor.name)}
+    content.innerHTML = `
+        <div style="margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(45deg, var(--primary), var(--secondary));
+                            color: white; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 600;">
+                    ${getInitials(mentorName)}
+                </div>
+                <div style="flex: 1;">
+                    <h4 style="margin: 0; color: var(--primary);">${mentorName}</h4>
+                    <div style="display: flex; gap: 15px; margin-top: 5px;">
+                        <div>
+                            <div style="font-size: 0.85rem; color: #666;">NIP</div>
+                            <div style="font-weight: 500; font-family: monospace;">${mentor.nip || '-'}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.85rem; color: #666;">Email</div>
+                            <div style="font-weight: 500;">${mentor.email || '-'}</div>
+                        </div>
                     </div>
-                    <div>
-                        <h3 style="margin: 0; color: var(--primary);">${mentor.nama || mentor.name}</h3>
-                        <p style="margin: 5px 0 0 0; color: #666; font-size: 0.9rem;">
-                            Status: <span class="status-badge ${statusClass}">${statusText}</span>
-                        </p>
-                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 0.85rem; color: #666;">Total Peserta</div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">${mentor.jumlah_bimbingan || 0}</div>
                 </div>
             </div>
         </div>
         
-        <div class="detail-section">
-            <h4 style="color: var(--primary); margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
-                <i class='bx bx-info-circle'></i> Informasi Kontak
-            </h4>
-            
-            <div class="detail-grid">
-                <div class="detail-item">
-                    <label>Email:</label>
-                    <span>${mentor.email || '-'}</span>
-                </div>
-                <div class="detail-item">
-                    <label>No. Telepon:</label>
-                    <span>${mentor.no_hp || mentor.telepon || '-'}</span>
-                </div>
-                <div class="detail-item">
-                    <label>Tanggal Bergabung:</label>
-                    <span>${formatDate(mentor.created_at)}</span>
-                </div>
-            </div>
-        </div>
-        
-        <div class="detail-section">
-            <div class="section-header">
-                <h4 style="color: var(--primary); margin: 0; display: flex; align-items: center; gap: 10px;">
-                    <i class='bx bx-user'></i> Peserta yang Dibimbing
-                    <span style="background: #e3f2fd; color: #1976d2; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem;">
-                        ${mentor.jumlah_bimbingan || 0} peserta
-                    </span>
-                </h4>
-            </div>
-            
-            ${renderPesertaList(mentor.peserta || [])}
-        </div>
+        ${pesertaListHTML}
     `;
-    
-    openModal('detailModal');
-}
-
-function renderPesertaList(peserta) {
-    if (!peserta || peserta.length === 0) {
-        return `
-            <div class="no-data">
-                <i class='bx bx-user-x'></i>
-                <p>Belum ada peserta yang dibimbing</p>
-            </div>
-        `;
-    }
-    
-    let html = '<div style="margin-top: 15px;">';
-    peserta.forEach((p, index) => {
-        html += `
-            <div style="display: flex; align-items: center; justify-content: space-between; 
-                        padding: 12px; border-bottom: 1px solid #eee; ${index % 2 === 0 ? 'background: #f8f9fa;' : ''}">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <div style="width: 35px; height: 35px; border-radius: 50%; 
-                                background: linear-gradient(45deg, var(--primary), var(--secondary));
-                                color: white; display: flex; align-items: center; justify-content: center; 
-                                font-weight: 600; font-size: 0.9rem;">
-                        ${getInitials(p.nama || p.name)}
-                    </div>
-                    <div>
-                        <div style="font-weight: 600; color: var(--primary);">${p.nama || p.name}</div>
-                        <div style="font-size: 0.85rem; color: #666;">${p.nim || '-'}</div>
-                    </div>
-                </div>
-                <span class="status-badge status-active">Aktif</span>
-            </div>
-        `;
-    });
-    html += '</div>';
-    
-    return html;
-}
-
-// ============================
-// DELETE FUNCTIONS
-// ============================
-function showDeleteMentorModal(id, name) {
-    state.mentorToDelete = id;
-    document.getElementById('deleteMentorName').textContent = name;
-    openModal('deleteMentorModal');
-}
-
-async function confirmDeleteMentor() {
-    if (!state.mentorToDelete) return;
-    
-    try {
-        showLoading('delete', true);
-        
-        // **API BACKEND:** DELETE /api/admin-bidang/mentor/{id}
-        const response = await fetch(`${API_CONFIG.endpoints.mentor}/${state.mentorToDelete}`, {
-            method: 'DELETE',
-            headers: {
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': window.csrfToken
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error('Failed to delete mentor');
-        }
-        
-        showNotification('Mentor berhasil dihapus', 'success');
-        closeDeleteMentorModal();
-        fetchMentorData();
-        
-    } catch (error) {
-        console.error('Error:', error);
-        showNotification(error.message || 'Gagal menghapus mentor', 'error');
-    } finally {
-        showLoading('delete', false);
-    }
 }
 
 // ============================
@@ -695,8 +452,8 @@ function formatDate(dateString) {
     try {
         const date = new Date(dateString);
         return date.toLocaleDateString('id-ID', {
-            day: 'numeric',
-            month: 'long',
+            day: '2-digit',
+            month: 'short',
             year: 'numeric'
         });
     } catch (e) {
@@ -720,46 +477,43 @@ function debounce(func, wait) {
 function nextPage() {
     if (state.currentPage < state.totalPages) {
         state.currentPage++;
-        fetchMentorData();
+        renderMentorTable();
+        updatePaginationButtons();
     }
 }
 
 function prevPage() {
     if (state.currentPage > 1) {
         state.currentPage--;
-        fetchMentorData();
+        renderMentorTable();
+        updatePaginationButtons();
     }
 }
 
 function updatePageInfo() {
-    const start = (state.currentPage - 1) * state.itemsPerPage + 1;
-    const end = Math.min(state.currentPage * state.itemsPerPage, state.totalItems);
+    const start = ((state.currentPage - 1) * state.itemsPerPage) + 1;
+    const end = Math.min(state.currentPage * state.itemsPerPage, state.filteredMentorList.length);
     document.getElementById('pageInfo').textContent = 
-        `Menampilkan ${start} - ${end} dari ${state.totalItems} mentor`;
+        `Menampilkan ${start} - ${end} dari ${state.filteredMentorList.length} mentor`;
 }
 
 function updatePaginationButtons() {
     document.getElementById('prevPageBtn').disabled = state.currentPage <= 1;
-    document.getElementById('nextPageBtn').disabled = state.currentPage >= state.totalPages;
+    document.getElementById('nextPageBtn').disabled = state.currentPage >= state.totalPages || state.totalPages === 0;
 }
 
 // Modal functions
 function openModal(modalId) {
     document.getElementById(modalId).style.display = 'flex';
+    document.body.style.overflow = 'hidden';
 }
 
-function closeMentorModal() {
-    document.getElementById('mentorModal').style.display = 'none';
-}
-
-function closeDetailModal() {
-    document.getElementById('detailModal').style.display = 'none';
-    state.currentMentorDetail = null;
-}
-
-function closeDeleteMentorModal() {
-    document.getElementById('deleteMentorModal').style.display = 'none';
-    state.mentorToDelete = null;
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.remove(); // Hapus modal dari DOM
+    }
+    document.body.style.overflow = 'auto';
 }
 
 // Loading states
@@ -769,17 +523,6 @@ function showLoading(context, isLoading) {
             const loadingRow = document.getElementById('loadingRow');
             if (loadingRow) {
                 loadingRow.style.display = isLoading ? 'table-row' : 'none';
-            }
-        },
-        'modal': () => {
-            const modalContent = document.getElementById('detailModalContent');
-            if (modalContent && isLoading) {
-                modalContent.innerHTML = `
-                    <div style="text-align: center; padding: 40px;">
-                        <i class='bx bx-loader-circle bx-spin' style="font-size: 3rem; color: var(--primary);"></i>
-                        <div style="margin-top: 15px; color: #666;">Memuat detail mentor...</div>
-                    </div>
-                `;
             }
         },
         'detail': () => {
@@ -792,15 +535,6 @@ function showLoading(context, isLoading) {
                     </div>
                 `;
             }
-        },
-        'delete': () => {
-            const btn = document.getElementById('confirmDeleteBtn');
-            if (btn) {
-                btn.disabled = isLoading;
-                btn.innerHTML = isLoading 
-                    ? '<i class="bx bx-loader-circle bx-spin"></i> Menghapus...'
-                    : '<i class="bx bx-trash"></i> Hapus Mentor';
-            }
         }
     };
     
@@ -809,17 +543,7 @@ function showLoading(context, isLoading) {
     }
 }
 
-function showSubmitLoading(show) {
-    const btn = document.getElementById('modalMentorSubmitBtn');
-    if (btn) {
-        btn.disabled = show;
-        btn.innerHTML = show 
-            ? '<i class="bx bx-loader-circle bx-spin"></i> Memproses...'
-            : '<i class="bx bx-save"></i> Simpan Mentor';
-    }
-}
-
-// Notification function (reusable)
+// Notification function
 function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
@@ -866,6 +590,11 @@ if (!document.querySelector('#notification-animation')) {
                 transform: translateX(0);
                 opacity: 1;
             }
+        }
+        
+        /* Modal untuk peserta */
+        #pesertaModal .modal-content {
+            max-width: 500px;
         }
     `;
     document.head.appendChild(style);

@@ -841,6 +841,16 @@
 /* Z-index Utilities */
 .z-50 { z-index: 50; }
 
+.disabled-btn {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+    background: #e5e7eb !important;
+    color: #9ca3af !important;
+    border-color: #d1d5db !important;
+}
+
+
+
 /* Animation Keyframes */
 @keyframes modalSlideIn {
     from {

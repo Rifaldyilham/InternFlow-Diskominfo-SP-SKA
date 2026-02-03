@@ -105,11 +105,14 @@ Route::prefix('admin-bidang')->middleware(['auth', 'role:Admin Bidang'])->group(
         ->name('admin-bidang.penempatan.store');
 });
 
-// API endpoints untuk admin-bidang (digunakan oleh frontend penempatan)
+// API endpoints untuk admin-bidang
 Route::prefix('api/admin-bidang')->middleware(['auth'])->group(function () {
+    // Mentor
     Route::get('/mentor', [DashboardController::class, 'apiMentor']);
     Route::get('/mentor/{id}', [DashboardController::class, 'apiMentorDetail']);
-
+    Route::get('/mentor/{id}/detail', [DashboardController::class, 'apiMentorDetail']);
+    
+    // Peserta untuk penempatan
     Route::get('/penempatan/peserta', [DashboardController::class, 'apiPeserta']);
     Route::get('/penempatan/peserta/{id}', [DashboardController::class, 'apiPesertaDetail']);
     Route::post('/penempatan/assign', [DashboardController::class, 'apiAssign']);

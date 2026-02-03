@@ -333,9 +333,24 @@ function renderPesertaTable() {
     let html = '';
     
     pageData.forEach(peserta => {
-        const isAssigned = peserta.mentor_id && peserta.status_penempatan === 'assigned';
+        // DEBUG: Console log untuk cek data
+        console.log('Peserta data:', {
+            id: peserta.id,
+            nama: peserta.nama,
+            mentor_id: peserta.mentor_id,
+            mentor_nama: peserta.mentor_nama,
+            status_penempatan: peserta.status_penempatan
+        });
+        
+        // PERBAIKAN: Cek apakah mentor_id ada DAN bukan null/undefined
+        const hasMentor = peserta.mentor_id && peserta.mentor_id !== 'null' && peserta.mentor_id !== 'undefined';
+        const isAssigned = hasMentor || peserta.status_penempatan === 'assigned';
+        
         const tanggalMulai = formatDate(peserta.tanggal_mulai);
         const tanggalSelesai = formatDate(peserta.tanggal_selesai);
+        
+        // DEBUG: Tampilkan status di console
+        console.log(`Peserta ${peserta.nama}: hasMentor = ${hasMentor}, mentor_id = ${peserta.mentor_id}`);
         
         html += `
             <tr>
@@ -360,6 +375,7 @@ function renderPesertaTable() {
                     ${isAssigned ? 
                         `<span class="status-badge status-active">
                             <i class='bx bx-user-check'></i> Sudah Ditempatkan
+                            ${peserta.mentor_nama ? `<div class="text-xs mt-1">(${peserta.mentor_nama})</div>` : ''}
                         </span>` : 
                         `<span class="status-badge status-pending">
                             <i class='bx bx-time'></i> Belum Ditempatkan
@@ -367,14 +383,15 @@ function renderPesertaTable() {
                     }
                 </td>
                 <td>
-                    <div class="action-buttons">
+                    <div class="action-buttons flex gap-2">
                         <button onclick="showDetailPeserta('${peserta.id}')" 
                                 class="action-btn view" title="Lihat Detail">
                             <i class='bx bx-show'></i>
                         </button>
                         <button onclick="showPlacementModal('${peserta.id}')" 
-                                class="action-btn edit" title="Tempatkan"
-                                ${isAssigned ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
+                                class="action-btn edit ${isAssigned ? 'disabled-btn' : ''}" 
+                                title="Tempatkan ke Mentor"
+                                ${isAssigned ? 'disabled' : ''}>
                             <i class='bx bx-transfer-alt'></i>
                         </button>
                     </div>
@@ -392,40 +409,69 @@ function renderMentorOptions(mentorList) {
     const mentorOptions = document.getElementById('mentorOptions');
     let html = '';
     
-    mentorList.forEach(mentor => {
-        const kuotaTersedia = mentor.kapasitas - (mentor.jumlah_bimbingan || 0);
-        const isAvailable = kuotaTersedia > 0 && mentor.status === 'aktif';
-        
-        html += `
-            <div class="p-4 border rounded-lg cursor-pointer transition-all hover:border-primary hover:shadow-sm 
-                 ${isAvailable ? 'border-gray-200' : 'border-gray-100 bg-gray-50 opacity-60'}"
-                 onclick="${isAvailable ? `selectMentor('${mentor.id}')` : ''}">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <div class="font-medium ${isAvailable ? 'text-gray-800' : 'text-gray-500'}">
-                            ${mentor.nama || mentor.name}
-                        </div>
-                        <div class="text-sm ${isAvailable ? 'text-gray-600' : 'text-gray-400'}">
-                            ${mentor.jabatan || 'Mentor'}
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <div class="text-sm ${isAvailable ? 'text-gray-600' : 'text-gray-400'}">
-                            Kuota: ${mentor.jumlah_bimbingan || 0}/${mentor.kapasitas || 5}
-                        </div>
-                        ${isAvailable ? 
-                            `<span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">
-                                Tersedia: ${kuotaTersedia}
-                            </span>` :
-                            `<span class="text-xs px-2 py-1 bg-gray-100 text-gray-500 rounded-full">
-                                Kuota Penuh
-                            </span>`
-                        }
-                    </div>
-                </div>
+    if (!mentorList || mentorList.length === 0) {
+        html = `
+            <div class="text-center py-8 text-gray-500">
+                <i class='bx bx-user-x text-3xl mb-2'></i>
+                <p>Tidak ada mentor tersedia di bidang ini</p>
+                <p class="text-sm">Hubungi admin untuk menambahkan mentor</p>
             </div>
         `;
-    });
+    } else {
+        mentorList.forEach(mentor => {
+            const kapasitas = mentor.kapasitas || 5;
+            const jumlahBimbingan = mentor.jumlah_bimbingan || 0;
+            const kuotaTersedia = kapasitas - jumlahBimbingan;
+            const isAvailable = kuotaTersedia > 0 && mentor.status === 'aktif';
+            
+            // DEBUG: Log data mentor
+            console.log('Mentor data:', {
+                id: mentor.id,
+                nama: mentor.nama,
+                kapasitas: kapasitas,
+                jumlah_bimbingan: jumlahBimbingan,
+                kuotaTersedia: kuotaTersedia,
+                isAvailable: isAvailable
+            });
+            
+            html += `
+                <div class="mentor-option p-4 border rounded-lg transition-all hover:border-primary hover:shadow-sm 
+                     ${isAvailable ? 'cursor-pointer border-gray-200' : 'cursor-not-allowed border-gray-100 bg-gray-50 opacity-60'}"
+                     data-mentor-id="${mentor.id}"
+                     data-available="${isAvailable}"
+                     onclick="${isAvailable ? `selectMentor('${mentor.id}')` : ''}">
+                    <div class="flex justify-between items-center">
+                        <div class="flex-1">
+                            <div class="font-medium ${isAvailable ? 'text-gray-800' : 'text-gray-500'}">
+                                ${mentor.nama || mentor.name}
+                            </div>
+                            <div class="text-sm ${isAvailable ? 'text-gray-600' : 'text-gray-400'} mt-1">
+                                ${mentor.jabatan || 'Mentor'} • ${mentor.email || ''}
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm ${isAvailable ? 'text-gray-600' : 'text-gray-400'} mb-1">
+                                ${jumlahBimbingan}/${kapasitas} peserta
+                            </div>
+                            ${isAvailable ? 
+                                `<span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">
+                                    Tersedia: ${kuotaTersedia} slot
+                                </span>` :
+                                `<span class="text-xs px-2 py-1 bg-gray-100 text-gray-500 rounded-full">
+                                    Kuota Penuh
+                                </span>`
+                            }
+                        </div>
+                    </div>
+                    ${kuotaTersedia <= 2 && kuotaTersedia > 0 ? 
+                        `<div class="mt-2 text-xs text-orange-600">
+                            <i class='bx bx-info-circle'></i> Kuota hampir penuh
+                        </div>` : ''
+                    }
+                </div>
+            `;
+        });
+    }
     
     mentorOptions.innerHTML = html;
 }
@@ -459,6 +505,24 @@ function renderDetailPeserta(peserta) {
     const modalContent = document.getElementById('detailPesertaContent');
     const isAssigned = peserta.mentor_id && peserta.status_penempatan === 'assigned';
     
+    // Format berkas jika ada
+    const berkasHTML = `
+        ${peserta.surat_penempatan_path ? 
+            `<div class="mt-3">
+                <a href="${peserta.surat_penempatan_path}" target="_blank" class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800">
+                    <i class='bx bx-file'></i> Surat Penempatan
+                </a>
+            </div>` : ''
+        }
+        ${peserta.cv_path ? 
+            `<div class="mt-2">
+                <a href="${peserta.cv_path}" target="_blank" class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800">
+                    <i class='bx bx-file'></i> Curriculum Vitae
+                </a>
+            </div>` : ''
+        }
+    `;
+    
     modalContent.innerHTML = `
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -481,10 +545,12 @@ function renderDetailPeserta(peserta) {
                         <div class="font-medium">${peserta.telepon || peserta.no_telp || '-'}</div>
                     </div>
                 </div>
+                
+                ${berkasHTML}
             </div>
             
             <div>
-                <h4 class="font-medium text-gray-700 mb-3">Informasi Akademik</h4>
+                <h4 class="font-medium text-gray-700 mb-3">Informasi Akademik & Magang</h4>
                 <div class="space-y-3">
                     <div>
                         <label class="text-sm text-gray-500">Universitas</label>
@@ -499,6 +565,30 @@ function renderDetailPeserta(peserta) {
                         <div class="font-medium">
                             ${formatDate(peserta.tanggal_mulai)} s/d ${formatDate(peserta.tanggal_selesai)}
                         </div>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-500">Bidang Pilihan</label>
+                        <div class="font-medium">${peserta.bidang_pilihan || '-'}</div>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-500">Bidang Penempatan</label>
+                        <div class="font-medium">${peserta.bidang_penempatan || '-'}</div>
+                    </div>
+                </div>
+                
+                <div class="mt-6">
+                    <h4 class="font-medium text-gray-700 mb-2">Alasan & Catatan</h4>
+                    <div class="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                        <div class="mb-3">
+                            <label class="text-sm text-gray-500 block mb-1">Alasan Magang:</label>
+                            <div class="text-gray-800">${peserta.alasan || '-'}</div>
+                        </div>
+                        ${peserta.catatan_verifikasi ? `
+                            <div>
+                                <label class="text-sm text-gray-500 block mb-1">Catatan Verifikasi:</label>
+                                <div class="text-gray-800">${peserta.catatan_verifikasi}</div>
+                            </div>
+                        ` : ''}
                     </div>
                 </div>
                 
@@ -525,73 +615,119 @@ function renderDetailPeserta(peserta) {
 
 // Tampilkan modal penempatan
 async function showPlacementModal(pesertaId) {
-    const peserta = state.pesertaList.find(p => p.id === pesertaId);
-    if (!peserta) return;
-    
-    // Update info peserta di modal
-    const placementInfo = document.getElementById('placementInfo');
-    placementInfo.innerHTML = `
-        <div class="flex items-center gap-4 p-4 bg-blue-50 rounded-lg">
-            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-                <i class='bx bx-user text-blue-600 text-2xl'></i>
-            </div>
-            <div>
-                <h4 class="font-bold text-lg">${peserta.nama || peserta.name}</h4>
-                <div class="text-gray-600">
-                    ${peserta.nim || '-'} • ${peserta.universitas || '-'} • ${peserta.jurusan || peserta.prodi || '-'}
+    try {
+        console.log('Opening placement modal for peserta:', pesertaId);
+        
+        // Cari data peserta dari state
+        const peserta = state.pesertaList.find(p => p.id.toString() === pesertaId.toString());
+        
+        if (!peserta) {
+            showNotification('Data peserta tidak ditemukan', 'error');
+            return;
+        }
+        
+        // Cek apakah sudah punya mentor
+        if (peserta.mentor_id && peserta.mentor_id !== 'null' && peserta.mentor_id !== null) {
+            showNotification(`Peserta ${peserta.nama} sudah memiliki mentor`, 'warning');
+            return;
+        }
+        
+        // Update info peserta di modal
+        const placementInfo = document.getElementById('placementInfo');
+        placementInfo.innerHTML = `
+            <div class="flex items-center gap-4 p-4 bg-blue-50 rounded-lg">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                    <i class='bx bx-user text-blue-600 text-2xl'></i>
+                </div>
+                <div class="flex-1">
+                    <h4 class="font-bold text-lg">${peserta.nama || peserta.name}</h4>
+                    <div class="text-gray-600 text-sm">
+                        ${peserta.nim || '-'} • ${peserta.universitas || '-'}
+                    </div>
+                    <div class="text-gray-600 text-sm">
+                        ${peserta.jurusan || peserta.prodi || '-'}
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1 flex items-center gap-2">
+                        <span class="inline-flex items-center gap-1">
+                            <i class='bx bx-calendar'></i> 
+                            ${formatDate(peserta.tanggal_mulai)} - ${formatDate(peserta.tanggal_selesai)}
+                        </span>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span class="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                        Belum Ditempatkan
+                    </span>
                 </div>
             </div>
-        </div>
-    `;
-    
-    // Render opsi mentor
-    renderMentorOptions(state.mentorList);
-    
-    // Simpan data penempatan sementara
-    state.currentPlacement = {
-        pesertaId: pesertaId,
-        mentorId: null,
-        pesertaNama: peserta.nama || peserta.name
-    };
-    
-    // Reset confirm button
-    document.getElementById('confirmPlacementBtn').disabled = true;
-    document.getElementById('confirmPlacementBtn').innerHTML = 'Simpan Penempatan';
-    
-    openModal('placementModal');
+        `;
+        
+        // Render opsi mentor
+        renderMentorOptions(state.mentorList);
+        
+        // Simpan data penempatan sementara
+        state.currentPlacement = {
+            pesertaId: pesertaId,
+            mentorId: null,
+            pesertaNama: peserta.nama || peserta.name
+        };
+        
+        // Reset tombol konfirmasi
+        const confirmBtn = document.getElementById('confirmPlacementBtn');
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = 'Simpan Penempatan';
+        confirmBtn.classList.add('disabled-btn');
+        
+        // Buka modal
+        openModal('placementModal');
+        
+        console.log('Placement modal opened successfully');
+        
+    } catch (error) {
+        console.error('Error opening placement modal:', error);
+        showNotification('Gagal membuka modal penempatan', 'error');
+    }
 }
 
 // Pilih mentor di modal
 function selectMentor(mentorId) {
-    state.currentPlacement.mentorId = mentorId;
+    console.log('Mentor selected:', mentorId);
     
-    // Update UI untuk menunjukkan mentor yang dipilih
-    document.querySelectorAll('#mentorOptions > div').forEach(div => {
-        div.classList.remove('border-primary', 'bg-blue-50');
+    // Reset semua selection
+    document.querySelectorAll('.mentor-option').forEach(option => {
+        option.classList.remove('border-primary', 'bg-blue-50', 'selected-mentor');
     });
     
-    const mentor = state.mentorList.find(m => m.id === mentorId);
-    if (mentor) {
-        // Enable confirm button
-        document.getElementById('confirmPlacementBtn').disabled = false;
-        
-        // Tandai mentor yang dipilih
-        const selectedDiv = Array.from(document.querySelectorAll('#mentorOptions > div'))
-            .find(div => div.textContent.includes(mentor.nama || mentor.name));
-        if (selectedDiv) {
-            selectedDiv.classList.add('border-primary', 'bg-blue-50');
-        }
+    // Highlight mentor yang dipilih
+    const selectedOption = document.querySelector(`[data-mentor-id="${mentorId}"]`);
+    if (selectedOption) {
+        selectedOption.classList.add('border-primary', 'bg-blue-50', 'selected-mentor');
     }
+    
+    // Simpan mentor yang dipilih
+    state.currentPlacement.mentorId = mentorId;
+    
+    // Enable tombol simpan
+    const confirmBtn = document.getElementById('confirmPlacementBtn');
+    confirmBtn.disabled = false;
+    confirmBtn.classList.remove('disabled-btn');
+    
+    console.log('Current placement:', state.currentPlacement);
 }
 
 // Konfirmasi penempatan
 async function confirmPlacement() {
-    if (!state.currentPlacement || !state.currentPlacement.mentorId) return;
+    if (!state.currentPlacement || !state.currentPlacement.mentorId) {
+        showNotification('Pilih mentor terlebih dahulu', 'warning');
+        return;
+    }
     
     try {
         showSubmitLoading(true);
         
-        // **API BACKEND:** POST /api/admin-bidang/penempatan/assign
+        console.log('Confirming placement:', state.currentPlacement);
+        
+        // Kirim data ke API
         const response = await fetch(API_CONFIG.endpoints.placement, {
             method: 'POST',
             headers: {
@@ -613,19 +749,29 @@ async function confirmPlacement() {
         }
         
         // Update data lokal
-        const pesertaIndex = state.pesertaList.findIndex(p => p.id === state.currentPlacement.pesertaId);
+        const pesertaIndex = state.pesertaList.findIndex(p => 
+            p.id.toString() === state.currentPlacement.pesertaId.toString()
+        );
+        
         if (pesertaIndex !== -1) {
-            const mentor = state.mentorList.find(m => m.id === state.currentPlacement.mentorId);
+            const mentor = state.mentorList.find(m => 
+                m.id.toString() === state.currentPlacement.mentorId.toString()
+            );
+            
+            // Update data peserta
             state.pesertaList[pesertaIndex].mentor_id = state.currentPlacement.mentorId;
             state.pesertaList[pesertaIndex].mentor_nama = mentor?.nama || mentor?.name;
             state.pesertaList[pesertaIndex].status_penempatan = 'assigned';
-        }
-        
-        // Update jumlah bimbingan mentor
-        const mentorIndex = state.mentorList.findIndex(m => m.id === state.currentPlacement.mentorId);
-        if (mentorIndex !== -1) {
-            state.mentorList[mentorIndex].jumlah_bimbingan = 
-                (state.mentorList[mentorIndex].jumlah_bimbingan || 0) + 1;
+            
+            // Update jumlah bimbingan mentor
+            const mentorIndex = state.mentorList.findIndex(m => 
+                m.id.toString() === state.currentPlacement.mentorId.toString()
+            );
+            
+            if (mentorIndex !== -1) {
+                state.mentorList[mentorIndex].jumlah_bimbingan = 
+                    (state.mentorList[mentorIndex].jumlah_bimbingan || 0) + 1;
+            }
         }
         
         showNotification(
@@ -634,10 +780,10 @@ async function confirmPlacement() {
         );
         
         closeModal('placementModal');
-        filterPeserta();
+        filterPeserta(); // Refresh tabel
         
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Error confirming placement:', error);
         showNotification(error.message || 'Gagal melakukan penempatan', 'error');
     } finally {
         showSubmitLoading(false);
@@ -770,9 +916,9 @@ function debounce(func, wait) {
 }
 
 function resetFilters() {
-    document.getElementById('filterStatus').value = 'unassigned';
+    document.getElementById('filterStatus').value = 'all';
     document.getElementById('searchPeserta').value = '';
-    state.currentFilters.status = 'unassigned';
+    state.currentFilters.status = 'all';
     state.currentFilters.search = '';
     filterPeserta();
 }
