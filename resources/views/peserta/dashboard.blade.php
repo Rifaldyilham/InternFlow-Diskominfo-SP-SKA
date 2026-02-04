@@ -148,7 +148,7 @@
             </div>
             <div>
                 <div style="font-weight: 600; color: var(--primary);">Logbook Harian</div>
-                <div style="font-size: 0.85rem; color: #666;">Isi kegiatan hari ini</div>
+                <div style="font-size: 0.85rem; color: #666;">Isi kegiatan</div>
             </div>
         </a>
         
@@ -158,7 +158,7 @@
             </div>
             <div>
                 <div style="font-weight: 600; color: var(--primary);">Absensi</div>
-                <div style="font-size: 0.85rem; color: #666;">Absen masuk/pulang</div>
+                <div style="font-size: 0.85rem; color: #666;">Absen masuk</div>
             </div>
         </a>
         
@@ -168,7 +168,7 @@
             </div>
             <div>
                 <div style="font-weight: 600; color: var(--primary);">Sertifikat</div>
-                <div style="font-size: 0.85rem; color: #666;">Lihat status sertifikat</div>
+                <div style="font-size: 0.85rem; color: #666;">Lihat sertifikat</div>
             </div>
         </a>
     </div>

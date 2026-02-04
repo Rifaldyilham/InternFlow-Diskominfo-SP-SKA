@@ -215,10 +215,6 @@
                             <span class="info-label">Bergabung:</span>
                             <span class="info-value" id="detailJoinDate">-</span>
                         </div>
-                        <div class="info-row">
-                            <span class="info-label">Terakhir Login:</span>
-                            <span class="info-value" id="detailLastLogin">-</span>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -739,11 +735,16 @@ async function showDetail(id) {
             ? '<span class="status-active">Aktif</span>'
             : '<span class="status-inactive">Nonaktif</span>';
         document.getElementById('detailNip').textContent = user.pegawai?.nip || '-';
-        document.getElementById('detailBidang').textContent = user.pegawai?.id_bidang || '-';
+        const bidangElement = document.getElementById('detailBidang');
+        if (user.pegawai?.bidang?.nama_bidang) {
+            bidangElement.textContent = user.pegawai.bidang.nama_bidang;
+        } else if (user.pegawai?.id_bidang) {
+            // Jika hanya dapat ID, konversi ke nama
+            bidangElement.textContent = convertBidangIdToName(user.pegawai.id_bidang);
+        } else {
+            bidangElement.textContent = '-';
+        }
         document.getElementById('detailJoinDate').textContent = formatDate(user.created_at);
-        document.getElementById('detailLastLogin').textContent = user.last_login_at 
-            ? `${formatDate(user.last_login_at)} ${formatTime(user.last_login_at)}`
-            : 'Belum pernah login';
         
         // Update edit button
         const editBtn = document.getElementById('detailEditBtn');
@@ -762,6 +763,16 @@ async function showDetail(id) {
     } finally {
         showLoading(false);
     }
+}
+
+function convertBidangIdToName(id) {
+    const bidangMap = {
+        '1': 'Teknologi & Informatika',
+        '2': 'Statistika',
+        '3': 'Komunikasi Publik dan Media',
+        '4': 'Sekretariat'
+    };
+    return bidangMap[id] || `Bidang ${id}`;
 }
 
 function openModal(modalId) {
