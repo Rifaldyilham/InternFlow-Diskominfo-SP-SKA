@@ -184,24 +184,36 @@ document.addEventListener('DOMContentLoaded', function() {
 // Load dashboard data
 async function loadDashboardData() {
     try {
-        const response = await fetch('/api/peserta/dashboard', {
-            headers: { 'Accept': 'application/json' }
+        const response = await fetch('/api/peserta/dashboard-detail', {
+            headers: { 
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
         });
 
-        if (!response.ok) throw new Error('Gagal memuat data');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
         const data = await response.json();
 
         if (data.hasPengajuan) {
             renderDashboardData(data.pengajuan);
         } else {
-            simulateEmptyState();
+            showEmptyState();
         }
         
     } catch (error) {
         console.error('Error loading dashboard:', error);
-        simulateEmptyState();
+        showEmptyState();
     }
+}
+
+// Tampilkan empty state
+function showEmptyState() {
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('emptyState').classList.remove('hidden');
 }
 
 // Simulasi empty state (belum ada pengajuan)
@@ -222,14 +234,169 @@ function renderDashboardData(pengajuan) {
     const activeMagangState = document.getElementById('activeMagangState');
     activeMagangState.classList.remove('hidden');
     
+    // Update data bidang
+    if (pengajuan.bidang) {
+        document.getElementById('bidangNama').textContent = pengajuan.bidang.nama;
+    } else if (pengajuan.bidang_pilihan) {
+        document.getElementById('bidangNama').textContent = `${pengajuan.bidang_pilihan.nama} (Belum ditempatkan)`;
+    } else {
+        document.getElementById('bidangNama').textContent = 'Belum ditentukan';
+    }
+    
+    // Update data mentor
+    const mentorInfo = document.getElementById('mentorInfo');
+    if (pengajuan.mentor) {
+        mentorInfo.innerHTML = `<strong>Mentor:</strong> ${pengajuan.mentor.nama} (NIP: ${pengajuan.mentor.nip})`;
+    } else {
+        mentorInfo.innerHTML = '<strong>Mentor:</strong> Belum ditetapkan';
+    }
+    
+    // Update periode
+    const periodeInfo = document.getElementById('periodeInfo');
+    if (pengajuan.tanggal_mulai && pengajuan.tanggal_selesai) {
+        const start = formatDate(pengajuan.tanggal_mulai);
+        const end = formatDate(pengajuan.tanggal_selesai);
+        periodeInfo.innerHTML = `<strong>Periode:</strong> ${start} - ${end}`;
+    } else {
+        periodeInfo.innerHTML = '<strong>Periode:</strong> Belum ditentukan';
+    }
+    
+    // Update status magang badge
+    const statusMagangBadge = document.getElementById('statusMagangBadge');
+    const magangStatusConfig = getMagangStatusConfig(pengajuan.status, pengajuan.status_verifikasi);
+    statusMagangBadge.textContent = magangStatusConfig.text;
+    statusMagangBadge.className = `status-badge ${magangStatusConfig.class}`;
+    
     // Update pengajuan status badge
     const pengajuanStatusBadge = document.getElementById('pengajuanStatusBadge');
-    const statusConfig = getStatusConfig(pengajuan.status);
-    pengajuanStatusBadge.textContent = statusConfig.text;
-    pengajuanStatusBadge.className = `status-badge ${statusConfig.class}`;
+    const verifikasiConfig = getVerifikasiStatusConfig(pengajuan.status_verifikasi);
+    pengajuanStatusBadge.textContent = verifikasiConfig.text;
+    pengajuanStatusBadge.className = `status-badge ${verifikasiConfig.class}`;
     
-    // Show quick actions
-    document.getElementById('quickActionsSection').classList.remove('hidden');
+    // Update progress dan hari tersisa (simulasi)
+    updateProgressInfo(pengajuan);
+    
+    // Show quick actions hanya jika sudah terverifikasi
+    if (pengajuan.status_verifikasi === 'terverifikasi') {
+        document.getElementById('quickActionsSection').classList.remove('hidden');
+        // Optionally show sertifikat progress section
+        if (pengajuan.tanggal_selesai) {
+            const endDate = new Date(pengajuan.tanggal_selesai);
+            const today = new Date();
+            if (today >= endDate) {
+                document.getElementById('sertifikatProgressSection').classList.remove('hidden');
+                updateSertifikatProgress(pengajuan);
+            }
+        }
+    }
+}
+
+function updateProgressInfo(pengajuan) {
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    const hariTersisaText = document.getElementById('hariTersisaText');
+    
+    if (pengajuan.tanggal_mulai && pengajuan.tanggal_selesai) {
+        const start = new Date(pengajuan.tanggal_mulai);
+        const end = new Date(pengajuan.tanggal_selesai);
+        const today = new Date();
+        
+        if (today < start) {
+            // Belum mulai
+            progressBar.style.width = '0%';
+            progressText.textContent = 'Belum Dimulai';
+            const daysUntilStart = Math.ceil((start - today) / (1000 * 60 * 60 * 24));
+            hariTersisaText.textContent = `${daysUntilStart} hari lagi`;
+        } else if (today > end) {
+            // Sudah selesai
+            progressBar.style.width = '100%';
+            progressText.textContent = '100% Selesai';
+            const daysSinceEnd = Math.floor((today - end) / (1000 * 60 * 60 * 24));
+            hariTersisaText.textContent = `${daysSinceEnd} hari lalu`;
+        } else {
+            // Sedang berjalan
+            const totalDays = (end - start) / (1000 * 60 * 60 * 24);
+            const daysPassed = (today - start) / (1000 * 60 * 60 * 24);
+            const progress = Math.min(100, Math.max(0, (daysPassed / totalDays) * 100));
+            const remainingDays = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
+            
+            progressBar.style.width = `${progress}%`;
+            progressText.textContent = `${Math.round(progress)}% Selesai`;
+            hariTersisaText.textContent = `${remainingDays} hari tersisa`;
+        }
+    } else {
+        progressBar.style.width = '0%';
+        progressText.textContent = 'Belum Ditentukan';
+        hariTersisaText.textContent = '- hari';
+    }
+}
+
+// Update sertifikat progress
+function updateSertifikatProgress(pengajuan) {
+    // Simulasi progress sertifikat berdasarkan status
+    const steps = ['step1', 'step2', 'step3'];
+    const stepTexts = [
+        'Menunggu penilaian mentor',
+        'Proses di admin bidang',
+        'Penerbitan oleh kepegawaian'
+    ];
+    
+    let currentStep = 0;
+    
+    // Logic untuk menentukan step berdasarkan kondisi
+    if (pengajuan.status_verifikasi === 'terverifikasi') {
+        currentStep = pengajuan.mentor ? 1 : 0;
+    }
+    
+    // Update step badges
+    steps.forEach((stepId, index) => {
+        const stepCircle = document.querySelector(`#${stepId} .step-circle`);
+        if (index < currentStep) {
+            stepCircle.classList.add('step-completed');
+            stepCircle.classList.remove('step-active');
+        } else if (index === currentStep) {
+            stepCircle.classList.add('step-active');
+            stepCircle.classList.remove('step-completed');
+        } else {
+            stepCircle.classList.remove('step-active', 'step-completed');
+        }
+    });
+    
+    // Update progress text
+    document.getElementById('sertifikatProgressText').textContent = stepTexts[currentStep];
+    
+    // Update step badge
+    const stepBadge = document.getElementById('sertifikatStepBadge');
+    stepBadge.textContent = `Step ${currentStep + 1}/3`;
+    stepBadge.className = `status-badge ${currentStep === 2 ? 'status-approved' : 'status-pending'}`;
+}
+
+// Get status configuration for verification
+function getVerifikasiStatusConfig(status) {
+    const configs = {
+        'pending': { text: 'MENUNGGU VERIFIKASI', class: 'status-pending' },
+        'terverifikasi': { text: 'TERVERIFIKASI', class: 'status-approved' },
+        'ditolak': { text: 'DITOLAK', class: 'status-rejected' }
+    };
+    return configs[status] || { text: 'MENUNGGU VERIFIKASI', class: 'status-pending' };
+}
+
+// Get status configuration for magang
+function getMagangStatusConfig(status, verificationStatus) {
+    if (verificationStatus === 'ditolak') {
+        return { text: 'DITOLAK', class: 'status-rejected' };
+    }
+    
+    if (verificationStatus === 'pending') {
+        return { text: 'MENUNGGU VERIFIKASI', class: 'status-pending' };
+    }
+    
+    const configs = {
+        'aktif': { text: 'SEDANG BERJALAN', class: 'status-approved' },
+        'nonaktif': { text: 'SELESAI', class: 'status-rejected' }
+    };
+    
+    return configs[status] || { text: 'TIDAK AKTIF', class: 'status-rejected' };
 }
 
 // Get status configuration

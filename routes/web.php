@@ -136,23 +136,44 @@ Route::prefix('api/admin')->middleware(['auth'])->group(function () {
 
 // API endpoints untuk peserta dashboard
 Route::prefix('api/peserta')->middleware(['auth'])->group(function () {
-
-    Route::get('/dashboard', function () {
+    // Route dashboard dengan data lengkap
+    Route::get('/dashboard-detail', function () {
         $user = \Illuminate\Support\Facades\Auth::user();
-        $peserta = \App\Models\PesertaMagang::where('id_user', $user->id_user)->first();
+        $peserta = \App\Models\PesertaMagang::with(['bidang', 'pegawai'])
+            ->where('id_user', $user->id_user)
+            ->first();
 
         if (!$peserta) {
             return response()->json(['hasPengajuan' => false]);
         }
 
-        return response()->json([
+        // Format data untuk frontend
+        $data = [
             'hasPengajuan' => true,
             'pengajuan' => [
                 'id' => $peserta->id_pesertamagang,
-                'status' => $peserta->status_verifikasi,
+                'nama' => $peserta->nama,
+                'status' => $peserta->status,
+                'status_verifikasi' => $peserta->status_verifikasi,
+                'tanggal_mulai' => $peserta->tanggal_mulai,
+                'tanggal_selesai' => $peserta->tanggal_selesai,
+                'bidang' => $peserta->bidang ? [
+                    'id' => $peserta->bidang->id_bidang,
+                    'nama' => $peserta->bidang->nama_bidang
+                ] : null,
+                'mentor' => $peserta->pegawai ? [
+                    'id' => $peserta->pegawai->id_pegawai,
+                    'nama' => $peserta->pegawai->nama,
+                    'nip' => $peserta->pegawai->nip
+                ] : null,
+                'bidang_pilihan' => $peserta->bidangPilihan ? [
+                    'id' => $peserta->bidangPilihan->id_bidang,
+                    'nama' => $peserta->bidangPilihan->nama_bidang
+                ] : null
             ]
-        ]);
-    });
+        ];
 
+        return response()->json($data);
+    });
 });
 
