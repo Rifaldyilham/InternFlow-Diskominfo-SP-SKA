@@ -384,11 +384,11 @@ function renderEmptyTable(message) {
 // ============================
 
 function goToLogbook(pesertaId, pesertaNama) {
-    window.location.href = `/mentor/verifikasi?peserta=${pesertaId}&type=logbook`;
+    window.location.href = `/mentor/logbook?peserta=${pesertaId}&type=logbook`;
 }
 
 function goToAbsensi(pesertaId, pesertaNama) {
-    window.location.href = `/mentor/verifikasi?peserta=${pesertaId}&type=absensi`;
+    window.location.href = `/mentor/absensi?peserta=${pesertaId}&type=absensi`;
 }
 
 // ============================

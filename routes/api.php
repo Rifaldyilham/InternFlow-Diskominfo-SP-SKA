@@ -5,8 +5,6 @@ use App\Http\Controllers\Api\Admin\UserApiController;
 use App\Http\Controllers\Api\Admin\RoleApiController;
 use App\Http\Controllers\Api\Admin\BidangApiController;
 use App\Http\Controllers\Admin\VerifikasiBerikasController;
-use App\Http\Controllers\Mentor\AbsensiController;
-use App\Http\Controllers\PesertaMagang\AbsensiPesertaController;
 use App\Models\Bidang;
 use App\Models\PesertaMagang;
 
@@ -36,10 +34,3 @@ Route::prefix('admin')->group(function () {
         Route::post('/verify', [VerifikasiBerikasController::class, 'verify']);
     });
 });
-
-Route::prefix('peserta')
-    ->middleware('auth:sanctum')
-    ->group(function () {
-        Route::post('/absensi', [AbsensiPesertaController::class, 'store']);
-    });
-

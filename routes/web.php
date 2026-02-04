@@ -78,6 +78,8 @@ Route::prefix('peserta')->middleware(['auth', 'role:Peserta Magang'])->group(fun
 
     Route::get('/absensi', [AbsensiPesertaController::class, 'index'])
         ->name('peserta.absensi');
+
+    Route::post('/absensi', [AbsensiPesertaController::class, 'store']);
 });
 
 // Routes untuk Mentor
@@ -87,8 +89,28 @@ Route::prefix('mentor')->middleware(['auth', 'role:Mentor'])->group(function () 
     })->name('mentor.bimbingan');
     
     Route::get('/verifikasi', function () {
-        return view('mentor.verifikasi');
+        return view('mentor.verifikasi', [
+            'pageTitle' => 'Verifikasi Peserta',
+            'pageSubtitle' => 'Verifikasi logbook dan absensi peserta',
+            'initialTab' => 'logbook',
+        ]);
     })->name('mentor.verifikasi');
+
+    Route::get('/logbook', function () {
+        return view('mentor.verifikasi', [
+            'pageTitle' => 'Logbook Peserta',
+            'pageSubtitle' => 'Detail logbook peserta bimbingan',
+            'initialTab' => 'logbook',
+        ]);
+    })->name('mentor.logbook');
+
+    Route::get('/absensi', function () {
+        return view('mentor.verifikasi', [
+            'pageTitle' => 'Absensi Peserta',
+            'pageSubtitle' => 'Detail absensi peserta bimbingan',
+            'initialTab' => 'absensi',
+        ]);
+    })->name('mentor.absensi');
     
     Route::get('/penilaian', function () {
         return view('mentor.penilaian');
@@ -100,6 +122,8 @@ Route::prefix('api/mentor')->middleware(['auth'])->group(function () {
     Route::get('/stats', [\App\Http\Controllers\MentorBimbinganController::class, 'stats']);
     Route::get('/peserta', [\App\Http\Controllers\MentorBimbinganController::class, 'peserta']);
     Route::get('/peserta/{id}', [\App\Http\Controllers\MentorBimbinganController::class, 'detailPeserta']);
+    Route::get('/absensi', [\App\Http\Controllers\Mentor\AbsensiController::class, 'index']);
+    Route::get('/absensi/{pesertaId}', [\App\Http\Controllers\Mentor\AbsensiController::class, 'byPeserta']);
 });
 
 // Routes untuk Admin Bidang
@@ -176,4 +200,3 @@ Route::prefix('api/peserta')->middleware(['auth'])->group(function () {
         return response()->json($data);
     });
 });
-

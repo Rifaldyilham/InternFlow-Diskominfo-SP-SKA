@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Mentor;
 use App\Http\Controllers\Controller;
 use App\Models\Absensi;
 use App\Models\Pesertamagang;
+use App\Models\Pegawai;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -12,7 +13,16 @@ class AbsensiController extends Controller
 {
     public function index(Request $request)
     {
-        $pegawaiId = auth()->user()->pegawai->id_pegawai;
+        $user = auth()->user();
+        $pegawai = Pegawai::where('id_user', $user->id_user)->first();
+
+        if (!$pegawai) {
+            return response()->json([
+                'data' => []
+            ]);
+        }
+        
+        $pegawaiId = $pegawai->id_pegawai;
 
         // tanggal yang dipilih mentor
         $tanggal = $request->tanggal 
@@ -22,42 +32,81 @@ class AbsensiController extends Controller
         // ambil semua peserta bimbingan mentor
         $pesertaList = Pesertamagang::where('id_pegawai', $pegawaiId)->get();
 
+        $pesertaIds = $pesertaList->pluck('id_pesertamagang');
+        $absenMap = collect();
+
+        if ($pesertaIds->isNotEmpty()) {
+            $absenMap = Absensi::whereIn('id_pesertamagang', $pesertaIds)
+                ->whereDate('waktu_absen', $tanggal)
+                ->get()
+                ->keyBy('id_pesertamagang');
+        }
+
         $result = [];
 
         foreach ($pesertaList as $peserta) {
+            if ($peserta->tanggal_mulai) {
+                $mulai = Carbon::parse($peserta->tanggal_mulai)->toDateString();
+                if ($tanggal < $mulai) {
+                    continue;
+                }
+            }
+            if ($peserta->tanggal_selesai) {
+                $selesai = Carbon::parse($peserta->tanggal_selesai)->toDateString();
+                if ($tanggal > $selesai) {
+                    continue;
+                }
+            }
 
-            // cek apakah peserta ini absen di tanggal tsb
-            $absen = Absensi::where('id_pesertamagang', $peserta->id_pesertamagang)
-                ->whereDate('waktu_absen', $tanggal)
-                ->first();
+            $absen = $absenMap->get($peserta->id_pesertamagang);
 
             if ($absen) {
+                $waktuAbsen = $absen->waktu_absen instanceof \Carbon\Carbon
+                    ? $absen->waktu_absen
+                    : Carbon::parse($absen->waktu_absen);
                 // ADA ABSENSI
                 $result[] = [
-                    'nama'   => $peserta->nama,
-                    'status' => $absen->status, 
-                    'waktu'  => $absen->waktu_absen,
-                    'lokasi' => $absen->lokasi,
-                    'bukti'  => $absen->bukti_kegiatan,
+                    'id'           => $absen->id_absensi,
+                    'nama'         => $peserta->nama,
+                    'tanggal'      => $waktuAbsen ? $waktuAbsen->toDateString() : $tanggal,
+                    'waktu_submit' => $waktuAbsen ? $waktuAbsen->format('H:i') : null,
+                    'status'       => $absen->status,
+                    'lokasi'       => $absen->lokasi,
+                    'bukti'        => $absen->bukti_kegiatan,
+                    'created_at'   => $absen->created_at,
                 ];
             } else {
                 // TIDAK ADA ABSENSI = ALPHA
                 $result[] = [
-                    'nama'   => $peserta->nama,
-                    'status' => 'alpha',
-                    'waktu'  => null,
-                    'lokasi' => null,
-                    'bukti'  => null,
+                    'id'           => null,
+                    'nama'         => $peserta->nama,
+                    'tanggal'      => $tanggal,
+                    'waktu_submit' => null,
+                    'status'       => 'alpha',
+                    'lokasi'       => null,
+                    'bukti'        => null,
+                    'created_at'   => null,
                 ];
             }
         }
 
-        return response()->json($result);
+        return response()->json([
+            'data' => $result
+        ]);
     }
 
     public function byPeserta(Request $request, $pesertaId)
     {
-        $pegawaiId = auth()->user()->pegawai->id_pegawai;
+        $user = auth()->user();
+        $pegawai = Pegawai::where('id_user', $user->id_user)->first();
+
+        if (!$pegawai) {
+            return response()->json([
+                'message' => 'Data mentor tidak ditemukan'
+            ], 404);
+        }
+        
+        $pegawaiId = $pegawai->id_pegawai;
 
         // Pastikan peserta ini bimbingan mentor tsb
         $isValid = \App\Models\Pesertamagang::where('id_pesertamagang', $pesertaId)

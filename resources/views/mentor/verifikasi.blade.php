@@ -1,7 +1,7 @@
 @extends('layouts.mentor')
 
-@section('title', 'Verifikasi Peserta')
-@section('subtitle', 'Verifikasi logbook dan absensi peserta')
+@section('title', $pageTitle ?? 'Verifikasi Peserta')
+@section('subtitle', $pageSubtitle ?? 'Verifikasi logbook dan absensi peserta')
 
 @section('styles')
 <link rel="stylesheet" href="{{ asset('css/mentor/mentor.css') }}">
@@ -191,11 +191,13 @@
             <table class="mentor-table">
                 <thead>
                     <tr>
+                        <th>Peserta</th>
                         <th>Tanggal</th>
                         <th>Status</th>
                         <th>Waktu</th>
                         <th>Lokasi</th>
                         <th>Bukti</th>
+                        <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody id="absensiTableBody">
@@ -336,6 +338,7 @@
 
 @section('scripts')
 <script>
+window.initialTab = @json($initialTab ?? 'logbook');
 // ============================
 // KONFIGURASI API (Backend-ready)
 // ============================
@@ -394,6 +397,9 @@ document.addEventListener('DOMContentLoaded', function() {
     setupCSRF();
     checkSelectedPeserta();
     setupEventListeners();
+    if (window.initialTab && ['logbook', 'absensi'].includes(window.initialTab)) {
+        switchTab(window.initialTab);
+    }
 });
 
 function setupCSRF() {
@@ -423,8 +429,9 @@ function checkSelectedPeserta() {
                 showNoPesertaSelected();
             }
         } else {
-            // Jika tidak ada data sama sekali, tampilkan pesan
+            // Jika tidak ada data sama sekali, tampilkan pesan logbook saja
             showNoPesertaSelected();
+            loadAbsensiData();
         }
     }
 }
@@ -437,9 +444,9 @@ async function loadSelectedPeserta(pesertaId, type = 'logbook') {
         // **API BACKEND:** GET /api/mentor/peserta/{id}
         const response = await fetch(`${API_CONFIG.endpoints.detailPeserta}/${pesertaId}`, {
             headers: {
-                'Accept': 'application/json',
-                'Authorization': 'Bearer ' + localStorage.getItem('token')
-            }
+                'Accept': 'application/json'
+            },
+            credentials: 'same-origin'
         });
         
         if (!response.ok) throw new Error('Gagal mengambil data peserta');
@@ -509,9 +516,9 @@ async function loadStats() {
         // **API BACKEND:** GET /api/mentor/verifikasi/stats/{pesertaId}
         const response = await fetch(`${API_CONFIG.endpoints.statsVerifikasi}/${state.selectedPeserta.id}`, {
             headers: {
-                'Accept': 'application/json',
-                'Authorization': 'Bearer ' + localStorage.getItem('token')
-            }
+                'Accept': 'application/json'
+            },
+            credentials: 'same-origin'
         });
         
         if (!response.ok) throw new Error('Gagal mengambil statistik');
@@ -538,9 +545,9 @@ async function loadLogbookData() {
             `${API_CONFIG.endpoints.logbookPeserta}/${state.selectedPeserta.id}?page=${state.logbookCurrentPage}&per_page=${state.logbookItemsPerPage}`,
             {
                 headers: {
-                    'Accept': 'application/json',
-                    'Authorization': 'Bearer ' + localStorage.getItem('token')
-                }
+                    'Accept': 'application/json'
+                },
+                credentials: 'same-origin'
             }
         );
         
@@ -587,21 +594,20 @@ async function loadLogbookData() {
 }
 
 async function loadAbsensiData() {
-    if (!state.selectedPeserta) return;
-    
     try {
         showLoading('absensi', true);
         
-        // **API BACKEND:** GET /api/mentor/absensi/{pesertaId}
-        const response = await fetch(
-            `${API_CONFIG.endpoints.absensiPeserta}/${state.selectedPeserta.id}?page=${state.absensiCurrentPage}&per_page=${state.absensiItemsPerPage}`,
-            {
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': 'Bearer ' + localStorage.getItem('token')
-                }
-            }
-        );
+        const absensiUrl = state.selectedPeserta
+            ? `${API_CONFIG.endpoints.absensiPeserta}/${state.selectedPeserta.id}?page=${state.absensiCurrentPage}&per_page=${state.absensiItemsPerPage}`
+            : `${API_CONFIG.endpoints.absensiPeserta}?page=${state.absensiCurrentPage}&per_page=${state.absensiItemsPerPage}`;
+
+        // **API BACKEND:** GET /api/mentor/absensi (all) atau /api/mentor/absensi/{pesertaId}
+        const response = await fetch(absensiUrl, {
+            headers: {
+                'Accept': 'application/json'
+            },
+            credentials: 'same-origin'
+        });
         
         if (!response.ok) throw new Error('Gagal mengambil data absensi');
         
@@ -630,7 +636,7 @@ async function loadAbsensiData() {
         //     }
         // }
         
-        state.absensiList = data.data || [];
+        state.absensiList = data.data || data || [];
         state.absensiTotalItems = data.meta?.total || data.total || state.absensiList.length;
         
         filterAbsensiData();
@@ -690,7 +696,6 @@ function showNoPesertaSelected() {
     `;
     
     if (logbookTable) logbookTable.innerHTML = message;
-    if (absensiTable) absensiTable.innerHTML = message;
     if (pesertaInfo) pesertaInfo.style.display = 'none';
 }
 
@@ -847,7 +852,7 @@ function filterAbsensiData() {
     state.filteredAbsensi = state.absensiList.filter(absensi => {
         // Filter berdasarkan pencarian
         if (searchQuery) {
-            const searchText = `${absensi.status} ${absensi.lokasi} ${absensi.keterangan}`.toLowerCase();
+            const searchText = `${absensi.nama || ''} ${absensi.status} ${absensi.lokasi} ${absensi.keterangan}`.toLowerCase();
             if (!searchText.includes(searchQuery)) {
                 return false;
             }
@@ -886,14 +891,19 @@ function renderAbsensiTable() {
     const end = start + state.absensiItemsPerPage;
     const pageData = state.filteredAbsensi.slice(start, end);
     
-    tbody.innerHTML = pageData.map(absensi => {
+    tbody.innerHTML = pageData.map((absensi, idx) => {
         const statusClass = getAbsensiStatusClass(absensi.status);
         const statusText = getAbsensiStatusText(absensi.status);
+        const pesertaNama = absensi.nama || state.selectedPeserta?.nama || '-';
         // Waktu submit absensi (realtime saat peserta submit)
         const waktuSubmit = absensi.waktu_submit || absensi.created_at?.split(' ')[1]?.substring(0, 5) || '-';
+        const absensiIndex = start + idx;
         
         return `
             <tr>
+                <td>
+                    <div class="font-medium">${pesertaNama}</div>
+                </td>
                 <td>
                     <div class="font-medium">${formatDate(absensi.tanggal)}</div>
                 </td>
@@ -908,12 +918,13 @@ function renderAbsensiTable() {
                     ` : ''}
                 </td>
                 <td>
-                    ${absensi.bukti ? `
-                        <button onclick="viewAbsensiBukti('${absensi.id}')" 
-                                class="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1">
-                            <i class='bx bx-image'></i> Lihat
-                        </button>
-                    ` : '-'}
+                    ${absensi.bukti ? 'Ada' : '-'}
+                </td>
+                <td>
+                    <button onclick="viewAbsensiDetailByIndex(${absensiIndex})" 
+                            class="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1">
+                        <i class='bx bx-show'></i> Detail
+                    </button>
                 </td>
             </tr>
         `;
@@ -924,7 +935,7 @@ function renderEmptyAbsensiTable(message) {
     const tbody = document.getElementById('absensiTableBody');
     tbody.innerHTML = `
         <tr>
-            <td colspan="5">
+            <td colspan="7">
                 <div class="empty-state-mentor">
                     <i class='bx bx-calendar-x'></i>
                     <h4>${message}</h4>
@@ -950,9 +961,9 @@ async function viewLogbookDetail(logbookId) {
         // **API BACKEND:** GET /api/mentor/logbook/{pesertaId}/{logbookId}
         const response = await fetch(`${API_CONFIG.endpoints.logbookPeserta}/${state.selectedPeserta.id}/${logbookId}`, {
             headers: {
-                'Accept': 'application/json',
-                'Authorization': 'Bearer ' + localStorage.getItem('token')
-            }
+                'Accept': 'application/json'
+            },
+            credentials: 'same-origin'
         });
         
         if (!response.ok) throw new Error('Gagal mengambil detail logbook');
@@ -1084,8 +1095,9 @@ document.getElementById('verificationForm').addEventListener('submit', async fun
         const response = await fetch(API_CONFIG.endpoints.verifyLogbook, {
             method: 'POST',
             headers: {
-                'Authorization': 'Bearer ' + localStorage.getItem('token')
+                'Accept': 'application/json'
             },
+            credentials: 'same-origin',
             body: formData
         });
         
@@ -1122,10 +1134,23 @@ async function viewAbsensiBukti(absensiId) {
     }
 }
 
+function viewAbsensiDetailByIndex(index) {
+    try {
+        const absensi = state.filteredAbsensi[index];
+        if (!absensi) return;
+        renderAbsensiDetailModal(absensi);
+        openModal('absensiModal');
+    } catch (error) {
+        console.error('Error loading absensi detail:', error);
+        showNotification('Gagal memuat detail absensi', 'error');
+    }
+}
+
 function renderAbsensiDetailModal(absensi) {
     const statusClass = getAbsensiStatusClass(absensi.status);
     const statusText = getAbsensiStatusText(absensi.status);
     const waktuSubmit = absensi.waktu_submit || absensi.created_at?.split(' ')[1]?.substring(0, 5) || '-';
+    const pesertaNama = absensi.nama || state.selectedPeserta?.nama || 'peserta';
     
     document.getElementById('absensiModalTitle').textContent = `Absensi - ${formatDate(absensi.tanggal)}`;
     
@@ -1138,11 +1163,11 @@ function renderAbsensiDetailModal(absensi) {
                 <div class="mt-4">
                     <label class="text-sm text-gray-500 mb-2">Bukti Kehadiran</label>
                     <div class="border rounded-lg p-4 text-center">
-                        <img src="/storage/absensi/${absensi.bukti}" 
+                        <img src="/storage/${absensi.bukti}" 
                              alt="Bukti Absensi" 
                              class="max-w-full h-auto rounded-lg mx-auto max-h-96">
                         <div class="mt-3 text-sm text-gray-600">
-                            Foto bukti absensi ${state.selectedPeserta.nama}
+                            Foto bukti absensi ${pesertaNama}
                         </div>
                     </div>
                 </div>

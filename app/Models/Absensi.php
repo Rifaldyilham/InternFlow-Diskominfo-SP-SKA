@@ -11,7 +11,6 @@ class Absensi extends Model
 
     protected $fillable = [
         'id_pesertamagang',
-        'id_mentor',
         'waktu_absen',
         'status',
         'lokasi',
@@ -21,11 +20,6 @@ class Absensi extends Model
 
     public function peserta()
     {
-        return $this->belongsTo(Pesertamagang::class, 'id_pesertamagang');
-    }
-
-    public function pegawai()
-    {
-        return $this->belongsTo(Pegawai::class, 'id_mentor');
+        return $this->belongsTo(Pesertamagang::class, 'id_pesertamagang', 'id_pesertamagang');
     }
 }

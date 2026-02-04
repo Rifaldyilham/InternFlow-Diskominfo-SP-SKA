@@ -7,6 +7,14 @@
     <h2 style="color: var(--primary); margin-bottom: 30px; display: flex; align-items: center; gap: 10px;">
         <i class='bx bx-calendar-check'></i> Absensi Harian Magang
     </h2>
+
+    @if(isset($infoMessage))
+        <div id="absensiAlert" style="background: #e6f2ff; border: 1px solid #3498db; color: #1f4e79; padding: 12px 16px; border-radius: 10px; margin-bottom: 20px;">
+            {{ $infoMessage }}
+        </div>
+    @else
+        <div id="absensiAlert" style="display: none; background: #e6f2ff; border: 1px solid #3498db; color: #1f4e79; padding: 12px 16px; border-radius: 10px; margin-bottom: 20px;"></div>
+    @endif
     
     <!-- Statistik Absensi -->
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
@@ -24,11 +32,12 @@
         </div>
         <div style="background: linear-gradient(135deg, rgba(231, 76, 60, 0.1) 0%, rgba(192, 57, 43, 0.1) 100%); padding: 20px; border-radius: 12px;">
             <div style="font-size: 2.5rem; font-weight: 700; color: #e74c3c;">{{ $alpha }}</div>
-            <div style="color: #666;">Alfa</div>
+            <div style="color: #666;">Alpha</div>
         </div>
     </div>
     
     <!-- Form Absensi Hari Ini -->
+    @if(!isset($infoMessage))
     <div id="absensiForm" style="background: #f8fafc; padding: 30px; border-radius: 16px; margin-bottom: 30px; border: 2px solid var(--accent);">
         <h3 style="color: var(--primary); margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
             <i class='bx bx-edit'></i> Absensi Hari Ini
@@ -136,7 +145,8 @@
                         <input type="file" id="buktiFile" accept=".jpg,.jpeg,.png,.pdf" style="display:none;" onchange="previewBukti(this)">
                     </div>
                     <div id="buktiPreview" style="margin-top: 10px;"></div>
-                
+                </div>
+
                 <!--izin notes -->
                 <div id="izinNotes" style="display: none;">
                     <div class="form-group">
@@ -174,6 +184,7 @@
             </div>
         </div>
     </div>
+    @endif
 
 <script>
     // Global variables
@@ -348,16 +359,16 @@
     // Calculate distance between two coordinates in meters
     function calculateDistance(lat1, lon1, lat2, lon2) {
         const R = 6371e3; // Earth radius in meters
-        const φ1 = lat1 * Math.PI/180;
-        const φ2 = lat2 * Math.PI/180;
-        const Δφ = (lat2-lat1) * Math.PI/180;
-        const Δλ = (lon2-lon1) * Math.PI/180;
-        
-        const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
-                 Math.cos(φ1) * Math.cos(φ2) *
-                 Math.sin(Δλ/2) * Math.sin(Δλ/2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        
+        const phi1 = lat1 * Math.PI / 180;
+        const phi2 = lat2 * Math.PI / 180;
+        const deltaPhi = (lat2 - lat1) * Math.PI / 180;
+        const deltaLambda = (lon2 - lon1) * Math.PI / 180;
+
+        const a = Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
+                 Math.cos(phi1) * Math.cos(phi2) *
+                 Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
         return R * c;
     }
     
@@ -381,9 +392,9 @@
             }
             
             // Check file type
-            const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
             if (!validTypes.includes(uploadedFile.type)) {
-                alert('Format file tidak valid! Hanya JPG/PNG yang diperbolehkan.');
+                alert('Format file tidak valid! Hanya JPG/PNG/PDF yang diperbolehkan.');
                 input.value = '';
                 preview.innerHTML = '';
                 uploadedFile = null;
@@ -398,7 +409,7 @@
                         <i class='bx bx-image' style="font-size: 2rem; color: #2ecc71;"></i>
                         <div style="flex: 1;">
                             <div style="font-weight: 600; color: var(--primary);">${fileName}</div>
-                            <div style="font-size: 0.9rem; color: #666;">${fileSize} MB • ${uploadedFile.type}</div>
+                            <div style="font-size: 0.9rem; color: #666;">${fileSize} MB - ${uploadedFile.type}</div>
                         </div>
                         <button onclick="removeFile()" style="background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 1.2rem;">
                             <i class='bx bx-trash'></i>
@@ -407,16 +418,18 @@
                 </div>
             `;
             
-            // Preview image
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                preview.innerHTML += `
-                    <div style="margin-top: 15px; text-align: center;">
-                        <img src="${e.target.result}" style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 2px solid #e2e8f0;">
-                    </div>
-                `;
-            };
-            reader.readAsDataURL(uploadedFile);
+            if (uploadedFile.type !== 'application/pdf') {
+                // Preview image
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML += `
+                        <div style="margin-top: 15px; text-align: center;">
+                            <img src="${e.target.result}" style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 2px solid #e2e8f0;">
+                        </div>
+                    `;
+                };
+                reader.readAsDataURL(uploadedFile);
+            }
             
             // Update upload zone
             uploadZone.style.background = 'rgba(46, 204, 113, 0.1)';
@@ -478,7 +491,7 @@
     const formData = new FormData();
     formData.append('status', currentAbsensiStatus);
 
-    // HADIR → wajib lokasi + bukti
+    // HADIR -> wajib lokasi + bukti
     if (currentAbsensiStatus === 'hadir') {
         if (!uploadedFile) {
             alert('Upload bukti wajib');
@@ -491,7 +504,7 @@
         formData.append('lokasi', JSON.stringify(userLocation));
     }
 
-    // IZIN / SAKIT → wajib alasan + bukti surat
+    // IZIN / SAKIT -> wajib alasan + bukti surat
     if (currentAbsensiStatus === 'izin' || currentAbsensiStatus === 'sakit') {
         const alasan = document.getElementById('alasanText').value;
         if (alasan.trim().length < 10) {
@@ -512,28 +525,44 @@
         formData.append('bukti_kegiatan', uploadedFile);
     }
 
-    fetch('/api/peserta/absensi', {
+    fetch('/peserta/absensi', {
         method: 'POST',
         headers: {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
         },
+        credentials: 'same-origin',
         body: formData
     })
-    .then(res => {
-        if (!res.ok) {
-            return res.json().then(err => {
-                throw err;
-            });
+    .then(async res => {
+        let payload = null;
+        try {
+            payload = await res.json();
+        } catch (e) {
+            payload = null;
         }
-        return res.json();
+
+        if (!res.ok) {
+            const message = payload?.message || 'Gagal menyimpan absensi';
+            if (res.status === 409 || res.status === 422) {
+                const alertBox = document.getElementById('absensiAlert');
+                if (alertBox) {
+                    alertBox.textContent = message;
+                    alertBox.style.display = 'block';
+                }
+            } else {
+                alert(message);
+            }
+            throw new Error(message);
+        }
+
+        return payload;
     })
     .then(data => {
-        alert(data.message);
+        alert(data?.message || 'Absen berhasil');
         window.location.reload();
     })
     .catch(err => {
         console.error(err);
-        alert('Gagal menyimpan absensi');
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
     });

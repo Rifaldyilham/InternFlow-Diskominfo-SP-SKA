@@ -13,15 +13,17 @@ class AbsensiPesertaController extends Controller
         $user = auth()->user();
 
         if (!$user->peserta) {
-            return redirect()
-                ->route('peserta.pendaftaran')
-                ->with('error', 'Silahkan daftar magang terlebih dahulu.');
+            return view('peserta.absensi', [
+                'infoMessage' => 'Silahkan mengajukan magang terlebih dahulu.',
+                'total' => 0, 'hadir' => 0, 'izin' => 0, 'sakit' => 0, 'alpha' => 0
+            ]);
         }
 
         if ($user->peserta->status_verifikasi !== 'terverifikasi') {
-            return redirect()
-                ->route('peserta.dashboard')
-                ->with('error', 'Anda belum diverifikasi admin.');
+            return view('peserta.absensi', [
+                'infoMessage' => 'Pengajuan sudah masuk. Silahkan tunggu verifikasi admin.',
+                'total' => 0, 'hadir' => 0, 'izin' => 0, 'sakit' => 0, 'alpha' => 0
+            ]);
         }
 
         $pesertaId = auth()->user()->peserta->id_pesertamagang;
@@ -42,12 +44,23 @@ class AbsensiPesertaController extends Controller
 
         $alpha = max(0, $total - ($hadir + $izin + $sakit));
 
+
+        $alreadyAbsen = Absensi::where('id_pesertamagang', $pesertaId)
+            ->whereDate('waktu_absen', now()->toDateString())
+            ->exists();
+
+        $infoMessage = null;
+        if ($alreadyAbsen) {
+            $infoMessage = 'Anda sudah absen hari ini.';
+        }
+
         return view('peserta.absensi', compact(
             'total',
             'hadir',
             'izin',
             'sakit',
-            'alpha'
+            'alpha',
+            'infoMessage'
         ));
 
     }
@@ -64,12 +77,35 @@ class AbsensiPesertaController extends Controller
             'lokasi' => 'nullable|string',
         ]);
 
+        $peserta = auth()->user()->peserta;
+
+        if ($peserta->tanggal_mulai && now()->toDateString() < $peserta->tanggal_mulai) {
+            return response()->json([
+                'message' => 'Belum waktunya absen. Absensi dimulai tanggal ' . \Carbon\Carbon::parse($peserta->tanggal_mulai)->format('d M Y')
+            ], 422);
+        }
+
+        if ($peserta->tanggal_selesai && now()->toDateString() > $peserta->tanggal_selesai) {
+            return response()->json([
+                'message' => 'Masa magang sudah selesai. Anda tidak bisa absen lagi.'
+            ], 422);
+        }
+
         $path = $request->file('bukti_kegiatan')
             ->store('bukti-absensi', 'public');
 
+        $pesertaId = auth()->user()->peserta->id_pesertamagang;
+
+        $alreadyAbsen = Absensi::where('id_pesertamagang', $pesertaId)
+            ->whereDate('waktu_absen', now()->toDateString())
+            ->exists();
+
+        if ($alreadyAbsen) {
+            return response()->json(['message' => 'Anda sudah absen hari ini'], 409);
+        }
+
         Absensi::create([
             'id_pesertamagang' => auth()->user()->peserta->id_pesertamagang,
-            'id_pegawai'       => auth()->user()->peserta->id_pegawai,
             'waktu_absen'      => now(),
             'status'           => $request->status,
             'lokasi'           => $request->lokasi,
