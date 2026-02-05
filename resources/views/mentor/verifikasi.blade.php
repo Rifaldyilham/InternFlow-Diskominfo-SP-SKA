@@ -18,20 +18,17 @@
                 </div>
                 <div>
                     <h3 id="selectedPesertaName" class="text-xl font-bold text-white"></h3>
-                    <div class="peserta-info-meta">
-                        <span id="selectedPesertaNim"></span>
-                        <span id="selectedPesertaUniv"></span>
-                        <span id="selectedPesertaBidang"></span>
-                    </div>
+                      <div class="peserta-info-meta">
+                          <span id="selectedPesertaNim"></span>
+                          <span id="selectedPesertaUniv"></span>
+                          <span id="selectedPesertaBidang"></span>
+                      </div>
                 </div>
             </div>
             <div class="peserta-info-right">
                 <a href="/mentor/bimbingan" class="btn btn-white">
                     <i class='bx bx-arrow-back'></i> Kembali
                 </a>
-                <button onclick="clearSelectedPeserta()" class="text-white hover:text-gray-200">
-                    <i class='bx bx-x text-2xl'></i>
-                </button>
             </div>
         </div>
     </div>
@@ -99,6 +96,7 @@
             <table class="mentor-table">
                 <thead>
                     <tr>
+                        <th>Peserta</th>
                         <th>Tanggal</th>
                         <th>Kegiatan</th>
                         <th>Waktu</th>
@@ -109,7 +107,7 @@
                 <tbody id="logbookTableBody">
                     <!-- Data akan diisi oleh JavaScript -->
                     <tr id="loadingRow">
-                        <td colspan="5" class="text-center py-12">
+                        <td colspan="6" class="text-center py-12">
                             <div class="loading-skeleton-mentor flex flex-col items-center gap-5">
                                 <i class='bx bx-loader-circle bx-spin text-4xl text-primary'></i>
                                 <div class="text-center text-gray-600">
@@ -535,21 +533,20 @@ async function loadStats() {
 }
 
 async function loadLogbookData() {
-    if (!state.selectedPeserta) return;
-    
     try {
         showLoading('logbook', true);
-        
-        // **API BACKEND:** GET /api/mentor/logbook/{pesertaId}
-        const response = await fetch(
-            `${API_CONFIG.endpoints.logbookPeserta}/${state.selectedPeserta.id}?page=${state.logbookCurrentPage}&per_page=${state.logbookItemsPerPage}`,
-            {
-                headers: {
-                    'Accept': 'application/json'
-                },
-                credentials: 'same-origin'
-            }
-        );
+
+        const logbookUrl = state.selectedPeserta
+            ? `${API_CONFIG.endpoints.logbookPeserta}?pesertaId=${state.selectedPeserta.id}&page=${state.logbookCurrentPage}&per_page=${state.logbookItemsPerPage}`
+            : `${API_CONFIG.endpoints.logbookPeserta}?page=${state.logbookCurrentPage}&per_page=${state.logbookItemsPerPage}`;
+
+        // **API BACKEND:** GET /api/mentor/logbook (all) atau /api/mentor/logbook?pesertaId=...
+        const response = await fetch(logbookUrl, {
+            headers: {
+                'Accept': 'application/json'
+            },
+            credentials: 'same-origin'
+        });
         
         if (!response.ok) throw new Error('Gagal mengambil data logbook');
         
@@ -775,20 +772,26 @@ function renderLogbookTable() {
     
     const start = (state.logbookCurrentPage - 1) * state.logbookItemsPerPage;
     const end = start + state.logbookItemsPerPage;
-    const pageData = state.filteredLogbook.slice(start, end);
-    
-    tbody.innerHTML = pageData.map(logbook => {
-        const statusClass = getLogbookStatusClass(logbook.status);
-        const statusText = getLogbookStatusText(logbook.status);
-        // Gunakan format waktu dari backend (contoh: "08:00 - 16:00")
-        const waktuDisplay = logbook.waktu || `${logbook.waktu_mulai || '08:00'} - ${logbook.waktu_selesai || '16:00'}`;
-        
-        return `
-            <tr>
-                <td>
-                    <div class="font-medium">${formatDate(logbook.tanggal)}</div>
-                </td>
-                <td>
+      const pageData = state.filteredLogbook.slice(start, end);
+      
+      tbody.innerHTML = pageData.map(logbook => {
+          const statusClass = getLogbookStatusClass(logbook.status);
+          const statusText = getLogbookStatusText(logbook.status);
+          // Gunakan format waktu dari backend (contoh: "08:00 - 16:00")
+          const waktuDisplay = logbook.waktu || `${logbook.waktu_mulai || '08:00'} - ${logbook.waktu_selesai || '16:00'}`;
+          const pesertaNama = logbook.peserta?.nama || '-';
+          const pesertaNim = logbook.peserta?.nim || '-';
+          
+          return `
+              <tr>
+                  <td>
+                      <div class="font-medium">${pesertaNama}</div>
+                      <div class="text-sm text-gray-500">${pesertaNim}</div>
+                  </td>
+                  <td>
+                      <div class="font-medium">${formatDate(logbook.tanggal)}</div>
+                  </td>
+                  <td>
                     <div class="font-medium truncate max-w-xs">${logbook.kegiatan}</div>
                     <div class="text-sm text-gray-500 truncate">${logbook.deskripsi?.substring(0, 60)}...</div>
                 </td>
@@ -818,13 +821,13 @@ function renderLogbookTable() {
 }
 
 function renderEmptyLogbookTable(message) {
-    const tbody = document.getElementById('logbookTableBody');
-    tbody.innerHTML = `
-        <tr>
-            <td colspan="5">
-                <div class="empty-state-mentor">
-                    <i class='bx bx-notepad'></i>
-                    <h4>${message}</h4>
+      const tbody = document.getElementById('logbookTableBody');
+      tbody.innerHTML = `
+          <tr>
+              <td colspan="6">
+                  <div class="empty-state-mentor">
+                      <i class='bx bx-notepad'></i>
+                      <h4>${message}</h4>
                     ${state.logbookFilters.search || state.logbookFilters.date || state.logbookFilters.status !== 'all' ? `
                         <button onclick="resetLogbookFilter()" class="btn btn-primary mt-4">
                             Reset Filter

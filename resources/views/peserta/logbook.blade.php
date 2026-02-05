@@ -3,7 +3,7 @@
 @section('title', 'Logbook Harian')
 
 @section('styles')
-<link rel="stylesheet" href="{{ asset('peserta/peserta.css') }}">
+<link rel="stylesheet" href="{{ asset('css/peserta/peserta.css') }}">
 @endsection
 
 @section('content')
@@ -146,63 +146,8 @@
                 </div>
             </div>
             
-            <!-- Status Kehadiran -->
-            <div id="statusSection" class="form-section hidden">
-                <h4 class="section-title">
-                    <i class='bx bx-user-check'></i> Status Kehadiran
-                </h4>
-                
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <button type="button" onclick="setKehadiranStatus('hadir')" 
-                            id="btnHadir"
-                            class="p-4 border-2 border-green-200 rounded-lg text-left hover:bg-green-50 transition-colors">
-                        <div class="flex items-center gap-3 mb-2">
-                            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                                <i class='bx bx-check-circle text-xl text-green-600'></i>
-                            </div>
-                            <div>
-                                <div class="font-bold text-primary">Hadir</div>
-                                <div class="text-sm text-gray-600">Bekerja di kantor</div>
-                            </div>
-                        </div>
-                    </button>
-                    
-                    <button type="button" onclick="setKehadiranStatus('izin')" 
-                            id="btnIzin"
-                            class="p-4 border-2 border-yellow-200 rounded-lg text-left hover:bg-yellow-50 transition-colors">
-                        <div class="flex items-center gap-3 mb-2">
-                            <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
-                                <i class='bx bx-alarm-exclamation text-xl text-yellow-600'></i>
-                            </div>
-                            <div>
-                                <div class="font-bold text-primary">Izin</div>
-                                <div class="text-sm text-gray-600">Tidak masuk kantor</div>
-                            </div>
-                        </div>
-                    </button>
-                    
-                    <button type="button" onclick="setKehadiranStatus('sakit')" 
-                            id="btnSakit"
-                            class="p-4 border-2 border-red-200 rounded-lg text-left hover:bg-red-50 transition-colors">
-                        <div class="flex items-center gap-3 mb-2">
-                            <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                                <i class='bx bx-plus-medical text-xl text-red-600'></i>
-                            </div>
-                            <div>
-                                <div class="font-bold text-primary">Sakit</div>
-                                <div class="text-sm text-gray-600">Tidak sehat</div>
-                            </div>
-                        </div>
-                    </button>
-                </div>
-                
-                <div class="mt-4" id="selectedStatusInfo">
-                    <!-- Status info will be shown here -->
-                </div>
-            </div>
-            
             <!-- Form Logbook (HADIR) -->
-            <div id="logbookHadirForm" class="hidden">
+            <div id="logbookHadirForm">
                 <form id="formLogbookHadir">
                     @csrf
                     <div class="form-group">
@@ -216,43 +161,20 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="hasil">Hasil/Pencapaian</label>
-                        <textarea id="hasil" name="hasil" rows="3" placeholder="Apa yang berhasil diselesaikan atau dipelajari hari ini?"></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="tantangan">Tantangan/Kendala</label>
-                        <textarea id="tantangan" name="tantangan" rows="2" placeholder="Kendala teknis atau non-teknis yang dihadapi"></textarea>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="waktu_mulai">Waktu Mulai</label>
-                            <input type="time" id="waktu_mulai" name="waktu_mulai" value="08:00">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="waktu_selesai">Waktu Selesai</label>
-                            <input type="time" id="waktu_selesai" name="waktu_selesai" value="16:00">
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Upload Bukti Kegiatan (Opsional)</label>
+                        <label>Upload Bukti Kegiatan *</label>
                         <div class="upload-area" onclick="document.getElementById('bukti_file').click()">
                             <div class="upload-icon">
                                 <i class='bx bx-image-add'></i>
                             </div>
                             <div style="font-weight: 600; margin-bottom: 5px;">Unggah Foto/Dokumen</div>
                             <small>Format JPG/PNG/PDF, max 5MB</small>
-                            <input type="file" id="bukti_file" name="bukti_file" accept=".jpg,.jpeg,.png,.pdf" class="hidden" onchange="previewBukti(this)">
+                            <input type="file" id="bukti_file" name="bukti_file" accept=".jpg,.jpeg,.png,.pdf" class="hidden" required onchange="previewBukti(this)">
                         </div>
                         <div id="bukti_preview" class="mt-3"></div>
                     </div>
                     
                     <input type="hidden" id="logbook_id" name="logbook_id">
                     <input type="hidden" id="logbook_tanggal" name="tanggal">
-                    <input type="hidden" id="logbook_jenis" name="jenis">
                     
                     <div class="form-actions">
                         <button type="button" onclick="submitLogbookHadir()" class="btn btn-primary btn-lg">
@@ -357,9 +279,6 @@ let state = {
     }
 };
 
-// ============================================
-// INITIALIZATION
-// ============================================
 document.addEventListener('DOMContentLoaded', function() {
     checkMagangStatus();
     setupEventListeners();
@@ -386,37 +305,32 @@ function setupEventListeners() {
 async function checkMagangStatus() {
     try {
         showLoading();
-        
-        // INI AKAN DIGANTI DENGAN API CALL DI BACKEND
-        // const response = await fetch('/api/peserta/logbook/status');
-        // const data = await response.json();
-        
-        // Contoh response yang diharapkan dari backend:
-        // {
-        //     "status": "active",
-        //     "magang": {
-        //         "id": 1,
-        //         "bidang": "Informatika",
-        //         "mentor": "Dr. Ahmad Fauzi, M.Kom.",
-        //         "tanggal_mulai": "2024-01-01",
-        //         "tanggal_selesai": "2024-03-30",
-        //         "status": "berjalan",
-        //         "hari_ke": 16,
-        //         "total_hari": 90
-        //     },
-        //     "stats": {
-        //         "total_hari": 15,
-        //         "sudah_diisi": 8,
-        //         "menunggu": 1,
-        //         "belum_diisi": 6
-        //     }
-        // }
-        
-        // UNTUK SEKARANG: Tampilkan loading dan tunggu backend
-        setTimeout(() => {
-            showError('Backend belum diimplement. Silakan hubungi developer.');
-        }, 1000);
-        
+
+        const response = await fetch('/api/peserta/logbook/status', {
+            headers: { 'Accept': 'application/json' }
+        });
+        if (!response.ok) {
+            throw new Error('Gagal memuat status logbook.');
+        }
+        const data = await response.json();
+
+        document.getElementById('loadingState').classList.add('hidden');
+        hideAllStates();
+
+        if (!data.status_verifikasi || data.status_verifikasi !== 'terverifikasi') {
+            document.getElementById('notVerifiedState').classList.remove('hidden');
+            return;
+        }
+
+        if (data.status_magang === 'nonaktif') {
+            document.getElementById('finishedState').classList.remove('hidden');
+            return;
+        }
+
+        state.magangData = data.magang || null;
+        state.logbookStats = data.stats || null;
+        document.getElementById('activeState').classList.remove('hidden');
+        initializeActiveState();
     } catch (error) {
         console.error('Error checking magang status:', error);
         showError('Gagal memuat data. Silakan refresh halaman.');
@@ -430,10 +344,6 @@ async function checkMagangStatus() {
  */
 async function checkDateStatus() {
     if (!state.selectedDate) return;
-    
-    // Show status section
-    document.getElementById('statusSection').classList.remove('hidden');
-    resetKehadiranStatus();
     updateTanggalInfo();
     
     try {
@@ -482,22 +392,23 @@ async function checkAbsensiStatus() {
  */
 async function loadLogbookList(page = 1) {
     try {
-        // INI AKAN DIGANTI DENGAN API CALL DI BACKEND
-        // const params = new URLSearchParams({
-        //     page: page,
-        //     bulan: state.filters.bulan,
-        //     status: state.filters.status
-        // });
-        // const response = await fetch(`/api/peserta/logbook?${params}`);
-        // const data = await response.json();
-        
-        // state.currentPage = data.current_page;
-        // state.lastPage = data.last_page;
-        // state.logbookList = page === 1 ? data.data : [...state.logbookList, ...data.data];
-        // renderLogbookList();
-        
-        // Tampilkan placeholder
-        showLogbookPlaceholder();
+        const params = new URLSearchParams({
+            page: page,
+            bulan: state.filters.bulan,
+            status: state.filters.status
+        });
+        const response = await fetch(`/api/peserta/logbook?${params}`, {
+            headers: { 'Accept': 'application/json' }
+        });
+        if (!response.ok) {
+            throw new Error('Gagal memuat data logbook.');
+        }
+        const data = await response.json();
+
+        state.currentPage = data.current_page || 1;
+        state.lastPage = data.last_page || 1;
+        state.logbookList = page === 1 ? (data.data || []) : [...state.logbookList, ...(data.data || [])];
+        renderLogbookList();
         
     } catch (error) {
         console.error('Error loading logbook list:', error);
@@ -516,103 +427,42 @@ async function submitLogbookHadir() {
     
     try {
         const formData = new FormData();
-        const isEdit = document.getElementById('logbook_id').value !== '';
         
         // Add form data
         formData.append('tanggal', state.selectedDate);
-        formData.append('jenis', 'hadir');
         formData.append('kegiatan', document.getElementById('kegiatan').value);
         formData.append('deskripsi', document.getElementById('deskripsi').value);
-        formData.append('hasil', document.getElementById('hasil').value);
-        formData.append('tantangan', document.getElementById('tantangan').value);
-        formData.append('waktu_mulai', document.getElementById('waktu_mulai').value);
-        formData.append('waktu_selesai', document.getElementById('waktu_selesai').value);
         
         // Add file if exists
         const fileInput = document.getElementById('bukti_file');
         if (fileInput.files[0]) {
             formData.append('bukti_file', fileInput.files[0]);
         }
-        
-        if (isEdit) {
-            formData.append('_method', 'PUT');
-            formData.append('logbook_id', document.getElementById('logbook_id').value);
+
+        const response = await fetch('/api/peserta/logbook', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json'
+            },
+            body: formData
+        });
+
+        if (!response.ok) {
+            const data = await response.json().catch(() => ({}));
+            throw new Error(data.message || 'Gagal menyimpan logbook.');
         }
-        
-        // INI AKAN DIGANTI DENGAN API CALL DI BACKEND
-        // const url = isEdit ? 
-        //     `/api/peserta/logbook/${document.getElementById('logbook_id').value}` : 
-        //     '/api/peserta/logbook';
-        // const response = await fetch(url, {
-        //     method: 'POST',
-        //     headers: {
-        //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-        //         'Accept': 'application/json'
-        //     },
-        //     body: formData
-        // });
-        
-        // if (response.ok) {
-        //     showSuccessModal();
-        //     resetForm();
-        //     loadLogbookList();
-        //     updateStats();
-        // } else {
-        //     throw new Error('Failed to save logbook');
-        // }
-        
-        // Untuk sekarang tampilkan sukses dummy
+
         showSuccessModal();
         resetForm();
+        loadLogbookList();
         
     } catch (error) {
         console.error('Error submitting logbook:', error);
-        showNotification('error', 'Gagal menyimpan logbook. Silakan coba lagi.');
+        showNotification('error', error.message || 'Gagal menyimpan logbook. Silakan coba lagi.');
     }
 }
 
-/**
- * 6. Fungsi untuk submit izin/sakit
- * Backend perlu implement:
- * - POST /api/peserta/logbook/izin-sakit
- */
-async function submitIzinSakit(jenis) {
-    if (!state.selectedDate) {
-        showNotification('error', 'Harap pilih tanggal terlebih dahulu!');
-        return;
-    }
-    
-    try {
-        // INI AKAN DIGANTI DENGAN API CALL DI BACKEND
-        // const response = await fetch('/api/peserta/logbook/izin-sakit', {
-        //     method: 'POST',
-        //     headers: {
-        //         'Content-Type': 'application/json',
-        //         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        //     },
-        //     body: JSON.stringify({
-        //         tanggal: state.selectedDate,
-        //         jenis: jenis,
-        //         alasan: jenis === 'izin' ? 'Izin tidak masuk' : 'Sakit tidak masuk'
-        //     })
-        // });
-        
-        // if (response.ok) {
-        //     showNotification('success', `${jenis === 'izin' ? 'Izin' : 'Laporan sakit'} berhasil dikirim!`);
-        //     resetForm();
-        //     loadLogbookList();
-        //     updateStats();
-        // }
-        
-        // Untuk sekarang tampilkan notifikasi dummy
-        showNotification('success', `${jenis === 'izin' ? 'Izin' : 'Laporan sakit'} berhasil dikirim!`);
-        resetForm();
-        
-    } catch (error) {
-        console.error('Error submitting izin/sakit:', error);
-        showNotification('error', `Gagal mengirim ${jenis === 'izin' ? 'izin' : 'laporan sakit'}. Silakan coba lagi.`);
-    }
-}
 
 // ============================================
 // HELPER FUNCTIONS (Frontend only)
@@ -644,6 +494,7 @@ function showError(message) {
 function validateFormHadir() {
     const kegiatan = document.getElementById('kegiatan').value.trim();
     const deskripsi = document.getElementById('deskripsi').value.trim();
+    const fileInput = document.getElementById('bukti_file');
     
     if (!kegiatan) {
         showNotification('error', 'Harap isi kegiatan utama!');
@@ -654,6 +505,11 @@ function validateFormHadir() {
     if (!deskripsi) {
         showNotification('error', 'Harap isi deskripsi kegiatan!');
         document.getElementById('deskripsi').focus();
+        return false;
+    }
+
+    if (!fileInput.files[0]) {
+        showNotification('error', 'Harap upload bukti kegiatan!');
         return false;
     }
     
@@ -684,92 +540,10 @@ function setTanggal(type) {
     checkDateStatus();
 }
 
-function setKehadiranStatus(status) {
-    state.currentStatus = status;
-    resetKehadiranStatus();
-    
-    const btn = document.getElementById(`btn${status.charAt(0).toUpperCase() + status.slice(1)}`);
-    
-    if (status === 'hadir') {
-        btn.style.background = '#e6fff3';
-        btn.style.borderColor = '#2ecc71';
-        
-        document.getElementById('selectedStatusInfo').innerHTML = `
-            <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
-                <div class="flex items-center gap-3">
-                    <i class='bx bx-check-circle text-2xl text-green-600'></i>
-                    <div>
-                        <div class="font-bold text-green-700">Status: Hadir</div>
-                        <div class="text-sm text-green-600">Silakan isi logbook kegiatan hari ini</div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        document.getElementById('logbookHadirForm').classList.remove('hidden');
-        
-    } else if (status === 'izin') {
-        btn.style.background = '#fff9e6';
-        btn.style.borderColor = '#f1c40f';
-        
-        document.getElementById('selectedStatusInfo').innerHTML = `
-            <div class="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-500">
-                <div class="flex items-center gap-3">
-                    <i class='bx bx-alarm-exclamation text-2xl text-yellow-600'></i>
-                    <div>
-                        <div class="font-bold text-yellow-700">Status: Izin</div>
-                        <div class="text-sm text-yellow-600">Izin akan dikirim otomatis</div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        document.getElementById('logbookHadirForm').classList.add('hidden');
-        submitIzinSakit('izin');
-        
-    } else { // sakit
-        btn.style.background = '#ffe6e6';
-        btn.style.borderColor = '#e74c3c';
-        
-        document.getElementById('selectedStatusInfo').innerHTML = `
-            <div class="bg-red-50 p-4 rounded-lg border-l-4 border-red-500">
-                <div class="flex items-center gap-3">
-                    <i class='bx bx-plus-medical text-2xl text-red-600'></i>
-                    <div>
-                        <div class="font-bold text-red-700">Status: Sakit</div>
-                        <div class="text-sm text-red-600">Laporan sakit akan dikirim otomatis</div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        document.getElementById('logbookHadirForm').classList.add('hidden');
-        submitIzinSakit('sakit');
-    }
-}
-
-function resetKehadiranStatus() {
-    ['Hadir', 'Izin', 'Sakit'].forEach(status => {
-        const btn = document.getElementById(`btn${status}`);
-        if (btn) {
-            btn.style.background = '';
-            btn.style.borderColor = status === 'Hadir' ? '#d1fae5' : 
-                                  status === 'Izin' ? '#fef3c7' : 
-                                  '#fee2e2';
-        }
-    });
-    
-    document.getElementById('logbookHadirForm').classList.add('hidden');
-    document.getElementById('selectedStatusInfo').innerHTML = '';
-}
 
 function resetForm() {
     document.getElementById('kegiatan').value = '';
     document.getElementById('deskripsi').value = '';
-    document.getElementById('hasil').value = '';
-    document.getElementById('tantangan').value = '';
-    document.getElementById('waktu_mulai').value = '08:00';
-    document.getElementById('waktu_selesai').value = '16:00';
     document.getElementById('bukti_file').value = '';
     document.getElementById('bukti_preview').innerHTML = '';
     document.getElementById('logbook_id').value = '';
@@ -780,8 +554,6 @@ function resetForm() {
     state.selectedDate = today;
     
     updateTanggalInfo();
-    resetKehadiranStatus();
-    document.getElementById('statusSection').classList.add('hidden');
 }
 
 function updateTanggalInfo() {
@@ -820,69 +592,6 @@ function updateTanggalInfo() {
     document.getElementById('dateStatus').innerHTML = statusInfo;
 }
 
-function showLogbookPlaceholder() {
-    const container = document.getElementById('logbookList');
-    container.innerHTML = `
-        <div class="empty-state">
-            <div class="empty-state-icon">
-                <i class='bx bx-book-open'></i>
-            </div>
-            <h4 class="text-lg font-semibold text-gray-700 mb-2">Backend Belum Tersedia</h4>
-            <p class="text-gray-500 mb-4">Fitur logbook memerlukan implementasi backend terlebih dahulu.</p>
-            <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
-                <div class="font-semibold text-blue-700 mb-2">Endpoints yang perlu diimplement:</div>
-                <ul class="text-sm text-gray-600 space-y-1">
-                    <li><code>GET /api/peserta/logbook/status</code> - Status magang & stats</li>
-                    <li><code>GET /api/peserta/logbook/check?tanggal=...</code> - Cek logbook per tanggal</li>
-                    <li><code>POST /api/peserta/logbook</code> - Simpan logbook baru</li>
-                    <li><code>PUT /api/peserta/logbook/{id}</code> - Update logbook</li>
-                    <li><code>GET /api/peserta/logbook</code> - List logbook dengan filter</li>
-                </ul>
-            </div>
-        </div>
-    `;
-}
-
-function showEditModal(logbook) {
-    // Simpan data logbook ke state
-    state.currentLogbook = logbook;
-    document.getElementById('logbook_id').value = logbook.id;
-    
-    // Show edit modal
-    document.getElementById('editModal').classList.remove('hidden');
-}
-
-function closeEditModal() {
-    document.getElementById('editModal').classList.add('hidden');
-    state.currentLogbook = null;
-    resetForm();
-}
-
-function loadLogbookForEdit() {
-    if (!state.currentLogbook) return;
-    
-    // Fill form with existing data
-    const logbook = state.currentLogbook;
-    
-    document.getElementById('tanggalKegiatan').value = logbook.tanggal;
-    state.selectedDate = logbook.tanggal;
-    document.getElementById('logbook_id').value = logbook.id;
-    
-    if (logbook.jenis === 'hadir') {
-        setKehadiranStatus('hadir');
-        document.getElementById('kegiatan').value = logbook.kegiatan;
-        document.getElementById('deskripsi').value = logbook.deskripsi;
-        document.getElementById('hasil').value = logbook.hasil || '';
-        document.getElementById('tantangan').value = logbook.tantangan || '';
-        document.getElementById('waktu_mulai').value = logbook.waktu_mulai || '08:00';
-        document.getElementById('waktu_selesai').value = logbook.waktu_selesai || '16:00';
-    } else {
-        setKehadiranStatus(logbook.jenis);
-    }
-    
-    closeEditModal();
-    updateTanggalInfo();
-}
 
 function previewBukti(input) {
     const preview = document.getElementById('bukti_preview');
@@ -957,6 +666,78 @@ function showNotification(type, message) {
     setTimeout(() => {
         notification.remove();
     }, 5000);
+}
+
+function renderLogbookList() {
+    const container = document.getElementById('logbookList');
+    const loadMoreContainer = document.getElementById('loadMoreContainer');
+
+    if (!state.logbookList || state.logbookList.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class='bx bx-book-open'></i>
+                </div>
+                <h4 class="text-lg font-semibold text-gray-700 mb-2">Belum Ada Logbook</h4>
+                <p class="text-gray-500 mb-4">Silakan isi logbook harian untuk melihat riwayatnya.</p>
+            </div>
+        `;
+        if (loadMoreContainer) loadMoreContainer.classList.add('hidden');
+        return;
+    }
+
+    const itemsHtml = state.logbookList.map(item => {
+        const statusText = getLogbookStatusText(item.status);
+        const statusClass = getLogbookStatusClass(item.status);
+        const tanggal = formatDate(item.tanggal);
+
+        return `
+            <div class="logbook-item">
+                <div class="flex justify-between items-start mb-3">
+                    <div>
+                        <div class="text-sm text-gray-500">${tanggal}</div>
+                        <div class="font-semibold text-primary">${item.kegiatan}</div>
+                    </div>
+                    <span class="status-badge ${statusClass}">${statusText}</span>
+                </div>
+                <div class="text-gray-700 text-sm">
+                    ${item.deskripsi || '-'}
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    container.innerHTML = itemsHtml;
+
+    if (loadMoreContainer) {
+        if (state.currentPage < state.lastPage) {
+            loadMoreContainer.classList.remove('hidden');
+        } else {
+            loadMoreContainer.classList.add('hidden');
+        }
+    }
+}
+
+function getLogbookStatusText(status) {
+    if (status === 'diverifikasi') return 'Diverifikasi';
+    if (status === 'ditolak') return 'Ditolak';
+    return 'Menunggu';
+}
+
+function getLogbookStatusClass(status) {
+    if (status === 'diverifikasi') return 'status-approved';
+    if (status === 'ditolak') return 'status-rejected';
+    return 'status-pending';
+}
+
+function formatDate(dateString) {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('id-ID', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+    });
 }
 
 function filterLogbook() {

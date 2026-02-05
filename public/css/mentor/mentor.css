@@ -1132,7 +1132,7 @@
 
 /* Peserta Info Card */
 .peserta-info-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: rgb(8, 52, 130);
     color: white;
     border-radius: 16px;
     padding: 25px;

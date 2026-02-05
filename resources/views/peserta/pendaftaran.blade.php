@@ -17,6 +17,16 @@
         </div>
     </div>
     
+    <div id="rejectedAlert" class="hidden">
+        <div class="info-alert">
+            <i class='bx bx-info-circle'></i>
+            <div>
+                <strong>Pengajuan Ditolak</strong>
+                <p>Pengajuan Anda sebelumnya ditolak. Silakan lengkapi data dan ajukan kembali.</p>
+            </div>
+        </div>
+    </div>
+    
     <!-- Loading State -->
     <div id="loadingState" class="text-center py-8">
         <i class='bx bx-loader-circle bx-spin text-4xl text-primary'></i>
@@ -29,7 +39,7 @@
             <div class="applied-status-header">
                 <div>
                     <h3 class="text-primary font-bold text-xl mb-2">Pengajuan Sudah Diajukan</h3>
-                    <p class="text-gray-600">Anda sudah memiliki pengajuan magang yang sedang diproses</p>
+                    <p class="text-gray-600" id="appliedStatusText">Anda sudah memiliki pengajuan magang yang sedang diproses</p>
                 </div>
                 <div id="appliedStatusBadge" class="status-badge status-pending">MENUNGGU</div>
             </div>
@@ -58,7 +68,7 @@
     </div>
     
     <!-- Form Pengajuan -->
-    <form id="formPengajuan" action="{{  route('peserta.store') }}" method="POST" enctype="multipart/form-data"> @csrf
+    <form id="formPengajuan" class="hidden" action="{{  route('peserta.store') }}" method="POST" enctype="multipart/form-data"> @csrf
         <!-- Data Pribadi -->
         <div class="form-section">
             <h3 class="section-title">
@@ -319,6 +329,8 @@ const API_CONFIG = {
     }
 };
 
+const initialPengajuan = @json($existingPengajuan ?? null);
+
 // State management
 let state = {
     hasExistingPengajuan: false,
@@ -371,25 +383,40 @@ async function checkExistingPengajuan() {
     try {
         showLoading(true);
         
-        // Simulasi API call - nanti ganti dengan fetch
-        // const response = await fetch(API_CONFIG.endpoints.check);
-        // const data = await response.json();
-        
-        // Untuk sekarang, simulasi belum ada pengajuan
-        setTimeout(() => {
-            showLoading(false);
-            
-            // Jika sudah ada pengajuan
-            // if (data.hasPengajuan) {
-            //     state.hasExistingPengajuan = true;
-            //     state.existingPengajuan = data.pengajuan;
-            //     showAlreadyApplied(data.pengajuan);
-            // } else {
-            //     showForm();
-            // }
-            
-            showForm(); // Tampilkan form karena belum ada pengajuan
-        }, 1000);
+        let data = null;
+        try {
+            const response = await fetch(API_CONFIG.endpoints.check, {
+                headers: { 'Accept': 'application/json' }
+            });
+            if (response.ok) {
+                data = await response.json();
+            }
+        } catch (e) {
+            data = null;
+        }
+
+        // Fallback ke data blade kalau API belum siap
+        if (!data && initialPengajuan) {
+            data = { hasPengajuan: true, pengajuan: initialPengajuan };
+        }
+
+        showLoading(false);
+
+        if (data && data.hasPengajuan && data.pengajuan) {
+            const statusVerifikasi = data.pengajuan.status_verifikasi || 'pending';
+            if (statusVerifikasi === 'ditolak') {
+                document.getElementById('rejectedAlert').classList.remove('hidden');
+                showForm();
+                return;
+            }
+
+            state.hasExistingPengajuan = true;
+            state.existingPengajuan = data.pengajuan;
+            showAlreadyApplied(data.pengajuan);
+            return;
+        }
+
+        showForm();
         
     } catch (error) {
         console.error('Error checking existing pengajuan:', error);
@@ -667,25 +694,43 @@ function validateForm() {
 function showAlreadyApplied(pengajuan) {
     document.getElementById('loadingState').classList.add('hidden');
     document.getElementById('alreadyAppliedState').classList.remove('hidden');
+    hideForm();
     
     // Update pengajuan details
-    document.getElementById('appliedBidang').textContent = pengajuan.bidang || '-';
+    const bidangNama = pengajuan.bidang?.nama_bidang
+        || pengajuan.bidang_pilihan?.nama_bidang
+        || pengajuan.bidang
+        || '-';
+    document.getElementById('appliedBidang').textContent = bidangNama;
     document.getElementById('appliedPeriode').textContent = 
         `${formatDate(pengajuan.tanggal_mulai)} - ${formatDate(pengajuan.tanggal_selesai)}`;
     document.getElementById('appliedTanggal').textContent = formatDate(pengajuan.created_at);
     
     // Update status badge
     const badge = document.getElementById('appliedStatusBadge');
-    const status = pengajuan.status || 'pending';
-    
+    const status = pengajuan.status_verifikasi || 'pending';
+
     badge.textContent = getStatusText(status);
     badge.className = `status-badge ${getStatusClass(status)}`;
+
+    const statusMessage = document.getElementById('appliedStatusText');
+    if (status === 'pending') {
+        statusMessage.textContent = 'Pengajuan Anda menunggu verifikasi admin.';
+    } else if (status === 'terverifikasi') {
+        statusMessage.textContent = 'Pengajuan Anda sudah diverifikasi.';
+    } else {
+        statusMessage.textContent = 'Pengajuan Anda sedang diproses.';
+    }
 }
 
 // Show form
 function showForm() {
     document.getElementById('loadingState').classList.add('hidden');
     document.getElementById('formPengajuan').classList.remove('hidden');
+}
+
+function hideForm() {
+    document.getElementById('formPengajuan').classList.add('hidden');
 }
 
 // Show success modal
@@ -802,6 +847,8 @@ function formatDateForInput(date) {
 function getStatusText(status) {
     const statusMap = {
         'pending': 'MENUNGGU',
+        'terverifikasi': 'DITERIMA',
+        'ditolak': 'DITOLAK',
         'accepted': 'DITERIMA',
         'rejected': 'DITOLAK',
         'review': 'DALAM REVIEW'
@@ -812,6 +859,8 @@ function getStatusText(status) {
 function getStatusClass(status) {
     const classMap = {
         'pending': 'status-pending',
+        'terverifikasi': 'status-approved',
+        'ditolak': 'status-rejected',
         'accepted': 'status-approved',
         'rejected': 'status-rejected',
         'review': 'status-review'

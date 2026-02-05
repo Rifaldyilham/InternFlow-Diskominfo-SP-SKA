@@ -6,8 +6,11 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Admin\ManajemenAkunController;
 use App\Http\Controllers\Admin\VerifikasiBerikasController;
 use App\Http\Controllers\AdminBidang\DashboardController;
+use App\Http\Controllers\Mentor\VerifikasiLogbookController;
+use App\Http\Controllers\Mentor\AbsensiController;
 use App\Http\Controllers\PesertaController;
 use App\Http\Controllers\PesertaMagang\AbsensiPesertaController;
+use App\Http\Controllers\PesertaMagang\LogbookController;
 use App\Http\Controllers\Admin\ManajemenBidangController;
 
 // Route untuk dashboard utama
@@ -124,6 +127,9 @@ Route::prefix('api/mentor')->middleware(['auth'])->group(function () {
     Route::get('/peserta/{id}', [\App\Http\Controllers\MentorBimbinganController::class, 'detailPeserta']);
     Route::get('/absensi', [\App\Http\Controllers\Mentor\AbsensiController::class, 'index']);
     Route::get('/absensi/{pesertaId}', [\App\Http\Controllers\Mentor\AbsensiController::class, 'byPeserta']);
+    Route::get('/logbook/{pesertaId}', [VerifikasiLogbookController::class, 'index']);
+    Route::get('/logbook', [VerifikasiLogbookController::class, 'index']);
+    Route::post('/logbook/verify', [VerifikasiLogbookController::class, 'verify']);
 });
 
 // Routes untuk Admin Bidang
@@ -165,6 +171,7 @@ Route::prefix('api/peserta')->middleware(['auth'])->group(function () {
         $user = \Illuminate\Support\Facades\Auth::user();
         $peserta = \App\Models\PesertaMagang::with(['bidang', 'pegawai'])
             ->where('id_user', $user->id_user)
+            ->orderByDesc('created_at')
             ->first();
 
         if (!$peserta) {
@@ -199,4 +206,8 @@ Route::prefix('api/peserta')->middleware(['auth'])->group(function () {
 
         return response()->json($data);
     });
+
+    Route::get('/logbook/status', [LogbookController::class, 'status']);
+    Route::get('/logbook', [LogbookController::class, 'index']);
+    Route::post('/logbook', [LogbookController::class, 'store']);
 });

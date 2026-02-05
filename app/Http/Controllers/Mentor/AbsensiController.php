@@ -64,7 +64,7 @@ class AbsensiController extends Controller
                 $waktuAbsen = $absen->waktu_absen instanceof \Carbon\Carbon
                     ? $absen->waktu_absen
                     : Carbon::parse($absen->waktu_absen);
-                // ADA ABSENSI
+               
                 $result[] = [
                     'id'           => $absen->id_absensi,
                     'nama'         => $peserta->nama,

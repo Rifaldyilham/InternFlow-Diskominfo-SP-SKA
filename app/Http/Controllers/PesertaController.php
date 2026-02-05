@@ -19,6 +19,14 @@ class PesertaController extends Controller
             return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu.');
         }
 
+        $latestPengajuan = PesertaMagang::where('id_user', $user->id_user)
+            ->orderByDesc('created_at')
+            ->first();
+
+        if ($latestPengajuan && $latestPengajuan->status_verifikasi !== 'ditolak') {
+            return redirect()->back()->with('error', 'Anda sudah memiliki pengajuan yang menunggu verifikasi.');
+        }
+
         $data = $request->only([
             'nama',
             'email',
@@ -35,7 +43,6 @@ class PesertaController extends Controller
         $data['bidang_pilihan'] = $request->bidang_pilihan;
         $data['id_bidang'] = null;
 
-        // ✅ PERBAIKAN: Validasi dan simpan file dengan benar
         try {
             // Validasi dan upload surat
             if ($request->hasFile('surat_file')) {
@@ -114,11 +121,41 @@ class PesertaController extends Controller
         return redirect()->back()->with('success', 'Pendaftaran peserta berhasil.');
     }
 
+    public function statusPengajuan()
+    {
+        $user = \Illuminate\Support\Facades\Auth::user();
+        if (!$user) {
+            return response()->json(['hasPengajuan' => false], 401);
+        }
+
+        $pengajuan = \App\Models\PesertaMagang::with(['bidang', 'bidangPilihan', 'pegawai'])
+            ->where('id_user', $user->id_user)
+            ->orderByDesc('created_at')
+            ->first();
+
+        if (!$pengajuan) {
+            return response()->json(['hasPengajuan' => false]);
+        }
+
+        return response()->json([
+            'hasPengajuan' => true,
+            'pengajuan' => $pengajuan
+        ]);
+    }
+
     public function create()
     {
         $bidang = Bidang::where('status', 'aktif')->get();
 
-        return view('peserta.pendaftaran', compact('bidang'));
+        $user = Auth::user();
+        $existingPengajuan = null;
+        if ($user) {
+            $existingPengajuan = PesertaMagang::where('id_user', $user->id_user)
+                ->orderByDesc('created_at')
+                ->first();
+        }
+
+        return view('peserta.pendaftaran', compact('bidang', 'existingPengajuan'));
     }
 
 }

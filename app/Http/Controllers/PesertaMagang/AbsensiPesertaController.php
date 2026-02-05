@@ -4,6 +4,7 @@ namespace App\Http\Controllers\PesertaMagang;
 
 use App\Http\Controllers\Controller;
 use App\Models\Absensi;
+use App\Models\PesertaMagang;
 use Illuminate\Http\Request;
 
 class AbsensiPesertaController extends Controller
@@ -12,21 +13,28 @@ class AbsensiPesertaController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user->peserta) {
+        $peserta = null;
+        if ($user) {
+            $peserta = PesertaMagang::where('id_user', $user->id_user)
+                ->orderByDesc('created_at')
+                ->first();
+        }
+
+        if (!$peserta) {
             return view('peserta.absensi', [
                 'infoMessage' => 'Silahkan mengajukan magang terlebih dahulu.',
                 'total' => 0, 'hadir' => 0, 'izin' => 0, 'sakit' => 0, 'alpha' => 0
             ]);
         }
 
-        if ($user->peserta->status_verifikasi !== 'terverifikasi') {
+        if ($peserta->status_verifikasi !== 'terverifikasi') {
             return view('peserta.absensi', [
                 'infoMessage' => 'Pengajuan sudah masuk. Silahkan tunggu verifikasi admin.',
                 'total' => 0, 'hadir' => 0, 'izin' => 0, 'sakit' => 0, 'alpha' => 0
             ]);
         }
 
-        $pesertaId = auth()->user()->peserta->id_pesertamagang;
+        $pesertaId = $peserta->id_pesertamagang;
 
         $total = Absensi::where('id_pesertamagang', $pesertaId)->count();
 
@@ -77,15 +85,41 @@ class AbsensiPesertaController extends Controller
             'lokasi' => 'nullable|string',
         ]);
 
-        $peserta = auth()->user()->peserta;
+        $user = auth()->user();
+        $peserta = null;
+        if ($user) {
+            $peserta = PesertaMagang::where('id_user', $user->id_user)
+                ->orderByDesc('created_at')
+                ->first();
+        }
 
-        if ($peserta->tanggal_mulai && now()->toDateString() < $peserta->tanggal_mulai) {
+        if (!$peserta) {
+            return response()->json(['message' => 'Peserta tidak ditemukan.'], 404);
+        }
+
+        if ($peserta->status_verifikasi !== 'terverifikasi') {
+            return response()->json([
+                'message' => 'Pengajuan belum diverifikasi. Anda belum bisa absen.'
+            ], 403);
+        }
+
+        if (!$peserta->tanggal_mulai) {
+            return response()->json([
+                'message' => 'Tanggal mulai magang belum ditetapkan.'
+            ], 422);
+        }
+
+        $today = \Carbon\Carbon::today();
+        $start = \Carbon\Carbon::parse($peserta->tanggal_mulai);
+        $end = $peserta->tanggal_selesai ? \Carbon\Carbon::parse($peserta->tanggal_selesai) : null;
+
+        if ($today->lt($start)) {
             return response()->json([
                 'message' => 'Belum waktunya absen. Absensi dimulai tanggal ' . \Carbon\Carbon::parse($peserta->tanggal_mulai)->format('d M Y')
             ], 422);
         }
 
-        if ($peserta->tanggal_selesai && now()->toDateString() > $peserta->tanggal_selesai) {
+        if ($end && $today->gt($end)) {
             return response()->json([
                 'message' => 'Masa magang sudah selesai. Anda tidak bisa absen lagi.'
             ], 422);
@@ -94,7 +128,7 @@ class AbsensiPesertaController extends Controller
         $path = $request->file('bukti_kegiatan')
             ->store('bukti-absensi', 'public');
 
-        $pesertaId = auth()->user()->peserta->id_pesertamagang;
+        $pesertaId = $peserta->id_pesertamagang;
 
         $alreadyAbsen = Absensi::where('id_pesertamagang', $pesertaId)
             ->whereDate('waktu_absen', now()->toDateString())
@@ -105,7 +139,7 @@ class AbsensiPesertaController extends Controller
         }
 
         Absensi::create([
-            'id_pesertamagang' => auth()->user()->peserta->id_pesertamagang,
+            'id_pesertamagang' => $peserta->id_pesertamagang,
             'waktu_absen'      => now(),
             'status'           => $request->status,
             'lokasi'           => $request->lokasi,

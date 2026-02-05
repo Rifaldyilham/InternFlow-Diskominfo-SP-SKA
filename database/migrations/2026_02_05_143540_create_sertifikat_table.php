@@ -11,15 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('logbook', function (Blueprint $table) {
-            $table->id('id_logbook');
+        Schema::create('sertifikat', function (Blueprint $table) {
+            $table->id('id_sertifikat');
             $table->unsignedBigInteger('id_pesertamagang');
-            $table->string('nama_kegiatan',100);
-            $table->date('tanggal');
-            $table->text('deskripsi');
-            $table->string('bukti_kegiatan');
-            $table->enum('status',['belum diverifikasi','diverifikasi','ditolak']);
-            $table->string('catatan_mentor');
+            $table->string('nomor_sertifikat', 100);
+            $table->datetime('tanggal_terbit')->useCurrent;
+            $table->string('file_sertifikat');
             $table->timestamps();
 
             $table->foreign('id_pesertamagang')
@@ -34,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('logbook');
+        Schema::dropIfExists('sertifikat');
     }
 };
