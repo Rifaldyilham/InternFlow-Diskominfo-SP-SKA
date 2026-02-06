@@ -798,6 +798,196 @@
     align-items: center;
 }
 
+
+.modal-header {
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.modal-header .btn {
+    padding: 6px 12px;
+}
+.peserta-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, var(--primary), #4f6d8c);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.peserta-avatar-lg {
+    width: 60px;
+    height: 60px;
+    font-size: 1.3rem;
+}
+
+/* ============================
+   RESPONSIVE DOCUMENT VIEW ICONS
+============================ */
+/* Untuk popup detail dokumen */
+.modal-body .flex.items-center.gap-3 {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.modal-body .flex.items-center.gap-3 .w-10 {
+    width: 2.5rem;
+    height: 2.5rem;
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+}
+
+.modal-body .flex.items-center.gap-3 .action-btn.view {
+    width: 2.5rem;
+    height: 2.5rem;
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+    font-size: 1rem;
+}
+
+/* Responsive untuk layar kecil */
+@media (max-width: 768px) {
+    .modal-body .flex.items-center.gap-3 {
+        gap: 0.5rem;
+        padding: 0.75rem;
+    }
+    
+    .modal-body .flex.items-center.gap-3 .w-10 {
+        width: 2rem;
+        height: 2rem;
+        min-width: 2rem;
+        min-height: 2rem;
+    }
+    
+    .modal-body .flex.items-center.gap-3 i {
+        font-size: 1rem;
+    }
+    
+    .modal-body .flex.items-center.gap-3 .action-btn.view {
+        width: 2rem;
+        height: 2rem;
+        min-width: 2rem;
+        min-height: 2rem;
+        font-size: 0.9rem;
+    }
+    
+    /* Text pada dokumen */
+    .modal-body .flex.items-center.gap-3 .flex-1 {
+        min-width: 0;
+        flex: 1;
+    }
+    
+    .modal-body .flex.items-center.gap-3 .font-medium {
+        font-size: 0.875rem;
+        line-height: 1.2;
+    }
+    
+    .modal-body .flex.items-center.gap-3 .text-sm {
+        font-size: 0.75rem;
+    }
+}
+
+/* Untuk layar sangat kecil (mobile) */
+@media (max-width: 480px) {
+    .modal-body .p-3.bg-gray-50.rounded-lg {
+        padding: 0.75rem;
+    }
+    
+    .modal-body .flex.items-center.gap-3 {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .modal-body .flex.items-center.gap-3 > div {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .modal-body .flex.items-center.gap-3 .flex-1 {
+        margin-right: 0.5rem;
+    }
+    
+    .modal-body .flex.items-center.gap-3 .action-btn.view {
+        align-self: center;
+    }
+    
+    /* Untuk dua baris dokumen */
+    .modal-body .flex.items-center.gap-3.mb-2 {
+        margin-bottom: 0.75rem;
+    }
+}
+
+/* ============================
+   ACTION BUTTONS (TERIMA/TOLAK)
+============================ */
+.action-btn.approve {
+    background: rgba(16, 185, 129, 0.1); /* hijau muda */
+    color: #10b981; /* hijau */
+}
+
+.action-btn.approve:hover {
+    background: #10b981;
+    color: white;
+}
+
+.action-btn.reject {
+    background: rgba(239, 68, 68, 0.1); /* merah muda */
+    color: #ef4444; /* merah */
+}
+
+.action-btn.reject:hover {
+    background: #ef4444;
+    color: white;
+}
+
+/* Button variants untuk modal */
+.btn-success {
+    background: #10b981;
+    color: white;
+    border: 1px solid #10b981;
+}
+
+.btn-success:hover {
+    background: #059669;
+    border-color: #059669;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+.btn-danger {
+    background: #ef4444;
+    color: white;
+    border: 1px solid #ef4444;
+}
+
+.btn-danger:hover {
+    background: #dc2626;
+    border-color: #dc2626;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+/* Size variants */
+.btn-sm {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+}
+
+/* Flex untuk tombol dalam modal */
+.flex.gap-3 {
+    gap: 12px;
+}
+
 /* BIDANG BADGE */
 .bidang-badge {
     display: inline-block;

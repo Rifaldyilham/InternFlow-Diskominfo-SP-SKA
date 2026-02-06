@@ -88,7 +88,7 @@
                 
                 <div class="form-group">
                     <label for="no_telp">No. WhatsApp *</label>
-                    <input type="tel" id="no_telp" name="no_telp" placeholder="0812-3456-7890" required>
+                    <input type="tel" id="no_telp" name="no_telp" placeholder="0812-xxxx-xxxx" required>
                 </div>
             </div>
         </div>
@@ -107,12 +107,12 @@
             <div class="form-row">
                 <div class="form-group">
                     <label for="universitas">Universitas/Sekolah *</label>
-                    <input type="text" id="universitas" name="universitas" placeholder="Universitas Sebelas Maret" required>
+                    <input type="text" id="universitas" name="universitas" placeholder="Universitas Anda" required>
                 </div>
                 
                 <div class="form-group">
                     <label for="jurusan">Program Studi/Jurusan *</label>
-                    <input type="text" id="jurusan" name="jurusan" placeholder="Teknik Informatika" required>
+                    <input type="text" id="jurusan" name="jurusan" placeholder="Jurusan Anda" required>
                 </div>
             </div>
             
@@ -221,7 +221,7 @@
                         <li>Mengikuti seluruh aturan dan tata tertib selama magang di Diskominfo SP Surakarta</li>
                         <li>Hadir tepat waktu dan mengikuti kegiatan magang sesuai jadwal</li>
                         <li>Menyelesaikan tugas dan tanggung jawab yang diberikan oleh mentor/pembimbing</li>
-                        <li>Menjaga kerahasiaan informasi internal organisasi</li>
+                        <li>Menjaga kerahasiaan informasi internal</li>
                         <li>Mengembalikan semua aset organisasi yang dipinjamkan setelah magang selesai</li>
                     </ul>
                     <p>Diskominfo SP Surakarta berhak untuk:</p>

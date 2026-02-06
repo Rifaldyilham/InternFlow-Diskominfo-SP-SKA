@@ -511,113 +511,179 @@ async function showDetailPeserta(pesertaId) {
     }
 }
 
+{{-- C:\MAGANG\monitoring-magang\monitoring-magang\resources\views\admin-bidang\penempatan.blade.php --}}
+
+{{-- Ganti fungsi renderDetailPeserta dengan kode berikut: --}}
+
 function renderDetailPeserta(peserta) {
     const modalContent = document.getElementById('detailPesertaContent');
     const isAssigned = peserta.mentor_id && peserta.status_penempatan === 'assigned';
+    const isActive = peserta.status === 'aktif';
     
     // Format berkas jika ada
     const berkasHTML = `
         ${peserta.surat_penempatan_path ? 
-            `<div class="mt-3">
-                <a href="${peserta.surat_penempatan_path}" target="_blank" class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800">
-                    <i class='bx bx-file'></i> Surat Penempatan
-                </a>
-            </div>` : ''
-        }
-        ${peserta.cv_path ? 
-            `<div class="mt-2">
-                <a href="${peserta.cv_path}" target="_blank" class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800">
-                    <i class='bx bx-file'></i> Curriculum Vitae
-                </a>
+            `<div class="mt-4">
+                <h5 class="font-semibold mb-3 text-primary">Dokumen</h5>
+                <div class="p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                            <i class='bx bx-file text-red-600'></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-medium">Surat Penempatan</div>
+                            <div class="text-sm text-gray-500">${formatDate(peserta.created_at)}</div>
+                        </div>
+                        <a href="${peserta.surat_penempatan_path}" target="_blank" 
+                           class="action-btn view" title="Lihat Dokumen">
+                            <i class='bx bx-show'></i>
+                        </a>
+                    </div>
+                    ${peserta.cv_path ? `
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class='bx bx-file text-blue-600'></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-medium">Curriculum Vitae</div>
+                                <div class="text-sm text-gray-500">CV Peserta</div>
+                            </div>
+                            <a href="${peserta.cv_path}" target="_blank" 
+                               class="action-btn view" title="Lihat Dokumen">
+                                <i class='bx bx-show'></i>
+                            </a>
+                        </div>
+                    ` : ''}
+                </div>
             </div>` : ''
         }
     `;
     
     modalContent.innerHTML = `
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-                <h4 class="font-medium text-gray-700 mb-3">Informasi Pribadi</h4>
-                <div class="space-y-3">
-                    <div>
-                        <label class="text-sm text-gray-500">Nama Lengkap</label>
-                        <div class="font-medium">${peserta.nama || peserta.name}</div>
-                    </div>
-                    <div>
-                        <label class="text-sm text-gray-500">NIM</label>
-                        <div class="font-medium">${peserta.nim || '-'}</div>
-                    </div>
-                    <div>
-                        <label class="text-sm text-gray-500">Email</label>
-                        <div class="font-medium">${peserta.email || '-'}</div>
-                    </div>
-                    <div>
-                        <label class="text-sm text-gray-500">Telepon</label>
-                        <div class="font-medium">${peserta.telepon || peserta.no_telp || '-'}</div>
-                    </div>
+        <div class="space-y-6">
+            <!-- Header dengan avatar dan status -->
+            <div class="flex items-center gap-4 p-4 bg-blue-50 rounded-lg">
+                <div class="peserta-avatar" style="width: 60px; height: 60px; font-size: 1.2rem;">
+                    ${getInitials(peserta.nama || peserta.name)}
                 </div>
-                
-                ${berkasHTML}
+                <div>
+                    <h4 class="font-bold text-lg">${peserta.nama || peserta.name || '-'}</h4>
+                    <div class="text-gray-600">${peserta.nim || '-'} • ${peserta.universitas || '-'}</div>
+                </div>
             </div>
             
+            <!-- Informasi Utama -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="text-sm text-gray-500">NIM</label>
+                    <div class="font-medium">${peserta.nim || '-'}</div>
+                </div>
+                <div>
+                    <label class="text-sm text-gray-500">Program Studi</label>
+                    <div class="font-medium">${peserta.jurusan || peserta.program_studi || peserta.prodi || '-'}</div>
+                </div>
+                <div>
+                    <label class="text-sm text-gray-500">Email</label>
+                    <div class="font-medium">${peserta.email || '-'}</div>
+                </div>
+                <div>
+                    <label class="text-sm text-gray-500">Telepon</label>
+                    <div class="font-medium">${peserta.telepon || peserta.no_telp || peserta.no_hp || '-'}</div>
+                </div>
+                <div>
+                    <label class="text-sm text-gray-500">Bidang Pilihan</label>
+                    <div class="font-medium">${peserta.bidang_pilihan || '-'}</div>
+                </div>
+                <div>
+                    <label class="text-sm text-gray-500">Bidang Penempatan</label>
+                    <div class="font-medium">${peserta.bidang_penempatan || '-'}</div>
+                </div>
+            </div>
+            
+            <!-- Periode Magang -->
             <div>
-                <h4 class="font-medium text-gray-700 mb-3">Informasi Akademik & Magang</h4>
-                <div class="space-y-3">
-                    <div>
-                        <label class="text-sm text-gray-500">Universitas</label>
-                        <div class="font-medium">${peserta.universitas || '-'}</div>
+                <h5 class="font-semibold mb-3 text-primary">Periode Magang</h5>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="p-3 bg-gray-50 rounded-lg">
+                        <label class="text-sm text-gray-500 block mb-1">Tanggal Mulai</label>
+                        <div class="font-medium">${formatDate(peserta.tanggal_mulai)}</div>
                     </div>
-                    <div>
-                        <label class="text-sm text-gray-500">Program Studi</label>
-                        <div class="font-medium">${peserta.jurusan || peserta.prodi || '-'}</div>
-                    </div>
-                    <div>
-                        <label class="text-sm text-gray-500">Periode Magang</label>
-                        <div class="font-medium">
-                            ${formatDate(peserta.tanggal_mulai)} s/d ${formatDate(peserta.tanggal_selesai)}
-                        </div>
-                    </div>
-                    <div>
-                        <label class="text-sm text-gray-500">Bidang Pilihan</label>
-                        <div class="font-medium">${peserta.bidang_pilihan || '-'}</div>
-                    </div>
-                    <div>
-                        <label class="text-sm text-gray-500">Bidang Penempatan</label>
-                        <div class="font-medium">${peserta.bidang_penempatan || '-'}</div>
+                    <div class="p-3 bg-gray-50 rounded-lg">
+                        <label class="text-sm text-gray-500 block mb-1">Tanggal Selesai</label>
+                        <div class="font-medium">${formatDate(peserta.tanggal_selesai)}</div>
                     </div>
                 </div>
-                
-                <div class="mt-6">
-                    <h4 class="font-medium text-gray-700 mb-2">Alasan & Catatan</h4>
-                    <div class="p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                        <div class="mb-3">
-                            <label class="text-sm text-gray-500 block mb-1">Alasan Magang:</label>
-                            <div class="text-gray-800">${peserta.alasan || '-'}</div>
-                        </div>
-                        ${peserta.catatan_verifikasi ? `
-                            <div>
-                                <label class="text-sm text-gray-500 block mb-1">Catatan Verifikasi:</label>
-                                <div class="text-gray-800">${peserta.catatan_verifikasi}</div>
-                            </div>
-                        ` : ''}
-                    </div>
-                </div>
-                
-                ${isAssigned && peserta.mentor_nama ? `
-                    <div class="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                        <h4 class="font-medium text-green-800 mb-2">Mentor Pembimbing</h4>
-                        <div class="flex items-center gap-3">
+            </div>
+            
+            <!-- Mentor Pembimbing (jika sudah ditetapkan) -->
+            ${isAssigned && peserta.mentor_nama ? `
+                <div>
+                    <h5 class="font-semibold mb-3 text-primary">Mentor Pembimbing</h5>
+                    <div class="p-4 bg-green-50 border border-green-200 rounded-lg">
+                        <div class="flex items-center gap-4">
                             <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
                                 <i class='bx bx-user-check text-green-600 text-xl'></i>
                             </div>
-                            <div>
-                                <div class="font-medium">${peserta.mentor_nama}</div>
-                                <div class="text-sm text-green-700">Sudah ditugaskan</div>
+                            <div class="flex-1">
+                                <div class="font-bold">${peserta.mentor_nama}</div>
+                                <div class="text-sm text-gray-600">
+                                    ${peserta.mentor_email || peserta.mentor_jabatan || 'Mentor'}
+                                </div>
+                            </div>
+                            <button onclick="showMentorDetail('${peserta.mentor_id}')" 
+                                    class="action-btn view">
+                                <i class='bx bx-show'></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            ` : ''}
+            
+            <!-- Alasan & Catatan -->
+            <div>
+                <h5 class="font-semibold mb-3 text-primary">Alasan Magang</h5>
+                <div class="p-4 bg-gray-50 rounded-lg">
+                    <div class="text-gray-700 leading-relaxed">
+                        ${peserta.alasan || peserta.alasan_magang || '-'}
+                    </div>
+                </div>
+                ${peserta.catatan_verifikasi ? `
+                    <div class="mt-4">
+                        <h5 class="font-semibold mb-3 text-primary">Catatan Verifikasi</h5>
+                        <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                            <div class="flex items-start gap-3">
+                                <i class='bx bx-note text-yellow-600 mt-0.5'></i>
+                                <div class="text-gray-700">${peserta.catatan_verifikasi}</div>
                             </div>
                         </div>
                     </div>
                 ` : ''}
             </div>
+            
+            <!-- Dokumen -->
+            ${berkasHTML}
         </div>
+        
+        <!-- Tombol Aksi -->
+        ${!isAssigned ? `
+            <div class="mt-8 pt-6 border-t border-gray-200">
+                <div class="flex justify-end">
+                    <button onclick="closeModal('detailPesertaModal')" 
+                            class="btn btn-secondary">
+                        <i class='bx bx-x'></i> Tutup
+                    </button>
+                </div>
+            </div>
+        ` : `
+            <div class="mt-8 pt-6 border-t border-gray-200">
+                <div class="flex justify-end">
+                    <button onclick="closeModal('detailPesertaModal')" 
+                            class="btn btn-secondary">
+                        <i class='bx bx-x'></i> Tutup
+                    </button>
+                </div>
+            </div>
+        `}
     `;
     
     openModal('detailPesertaModal');

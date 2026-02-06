@@ -8,13 +8,6 @@
 @endsection
 
 @section('content')
-<div class="content-header">
-    <div class="header-actions">
-        <button onclick="refreshData()" class="btn btn-secondary">
-            <i class='bx bx-refresh'></i> Refresh
-        </button>
-    </div>
-</div>
 
 <!-- Stats Cards -->
 <div class="stats-grid">
@@ -100,48 +93,51 @@
 
 <!-- Tabel Peserta -->
 <div class="form-card">
-    <h3 class="text-xl font-bold mb-6">Daftar Peserta Pengajuan Magang</h3>
+    <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-bold text-primary flex items-center gap-2">
+            <i class='bx bx-list-check'></i> Daftar Peserta Pengajuan Magang
+        </h3>
+        <div class="table-count">
+            Menampilkan semua pengajuan
+        </div>
+    </div>
     
     <div class="table-container">
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>Nama Peserta</th>
-                    <th>NIM</th>
+                    <th>Peserta</th>
                     <th>Universitas</th>
                     <th>Status</th>
                     <th>Tanggal Pendaftaran</th>
                     <th class="w-40">Aksi</th>
                 </tr>
             </thead>
-            <tbody id="pesertaTableBody">
-                <tr id="loadingRow">
-                    <td colspan="6" style="text-align: center; padding: 50px;">
-                        <i class='bx bx-loader-circle bx-spin'></i> Memuat data...
-                    </td>
-                </tr>
-            </tbody>
+            <tbody id="pesertaTableBody"></tbody>
         </table>
     </div>
-    
+
+    <!-- Empty State -->
     <div id="emptyState" class="hidden text-center py-12">
-        <i class='bx bx-inbox text-4xl text-gray-300'></i>
-        <p class="text-gray-500 mt-4">Tidak ada peserta</p>
+        <i class='bx bx-user-x text-4xl text-gray-300 mb-4'></i>
+        <h4 class="text-lg font-medium text-gray-500 mb-2">Tidak ada peserta</h4>
+        <p class="text-gray-400 mb-6">Tidak ada peserta yang sesuai dengan filter yang dipilih</p>
+        <button onclick="resetFilters()" class="btn btn-primary">
+            <i class='bx bx-reset'></i> Reset Filter
+        </button>
     </div>
 </div>
 
-<!-- Modal Verifikasi -->
+<!-- Modal Verifikasi (Detail Peserta Style) -->
 <div id="verifikasiModal" class="modal">
-    <div class="modal-content max-w-2xl">
+    <div class="modal-content max-w-3xl">
         <div class="modal-header">
-            <h3 class="modal-title">Verifikasi Berkas Peserta</h3>
-            <button class="modal-close" onclick="closeModal('verifikasiModal')">&times;</button>
+            <h3 class="modal-title">Detail & Verifikasi Peserta</h3>
         </div>
-        <div class="modal-body" id="verifikasiContent">
-            <!-- Content akan dimuat -->
-        </div>
+        <div class="modal-body" id="verifikasiContent"></div>
     </div>
 </div>
+
 
 <!-- Modal Penempatan -->
 <div id="penempatanModal" class="modal">
@@ -219,12 +215,87 @@ async function submitPenempatan() {
     loadData();
 }
 
-//tolak peserta
-async function rejectPeserta(id) {
-    const catatan = prompt('Alasan penolakan (opsional):');
-    if (catatan === null) return;
+// Ganti function rejectPeserta dengan ini:
+let rejectPesertaId = null;
 
-    await submitVerifikasiAPI(id, 'ditolak', catatan);
+function showRejectModal(pesertaId) {
+    rejectPesertaId = pesertaId;
+    
+    // Cari data peserta untuk nama
+    const peserta = state.pesertaList.find(p => p.id === pesertaId);
+    
+    // Buat modal reject custom
+    const modalHTML = `
+        <div id="rejectModal" class="modal">
+            <div class="modal-content" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h3 class="modal-title">Tolak Peserta</h3>
+                    <button class="modal-close" onclick="closeModal('rejectModal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                        <div class="flex items-center gap-3">
+                            <i class='bx bx-error-circle text-red-600 text-2xl'></i>
+                            <div>
+                                <h4 class="font-bold text-red-800">Konfirmasi Penolakan</h4>
+                                <p class="text-red-700 text-sm mt-1">
+                                    Anda akan menolak peserta: <span class="font-bold">${peserta?.nama || 'Peserta'}</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="rejectReason" class="block text-sm font-medium mb-2 text-gray-700">
+                            Alasan Penolakan (Opsional)
+                        </label>
+                        <textarea id="rejectReason" 
+                                  class="form-input w-full h-32" 
+                                  placeholder="Masukkan alasan penolakan (jika diperlukan)..."></textarea>
+                    </div>
+                    
+                    <div class="mt-6 flex gap-3 justify-end">
+                        <button onclick="closeModal('rejectModal')" 
+                                class="btn btn-secondary">
+                            <i class='bx bx-x'></i> Batal
+                        </button>
+                        <button onclick="confirmReject()" 
+                                class="btn btn-danger">
+                            <i class='bx bx-check'></i> Konfirmasi Tolak
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Tambahkan modal ke body
+    const modalContainer = document.createElement('div');
+    modalContainer.innerHTML = modalHTML;
+    document.body.appendChild(modalContainer);
+    
+    // Tampilkan modal
+    document.getElementById('rejectModal').style.display = 'flex';
+}
+
+async function confirmReject() {
+    const catatan = document.getElementById('rejectReason').value;
+    
+    try {
+        await submitVerifikasiAPI(rejectPesertaId, 'ditolak', catatan);
+        
+        // Hapus modal dari DOM
+        const modal = document.getElementById('rejectModal');
+        if (modal) {
+            modal.parentElement.remove();
+        }
+        
+        // Tutup modal detail juga
+        closeModal('verifikasiModal');
+        
+    } catch (error) {
+        console.error('Error rejecting peserta:', error);
+    }
 }
 
 function setupCSRF() {
@@ -290,45 +361,72 @@ function renderTable() {
 
     emptyState.classList.add('hidden');
 
-    tbody.innerHTML = state.filteredPeserta.map(p => `
+    let html = '';
+
+    state.filteredPeserta.forEach(p => {
+        html += `
         <tr>
-    <td>${p.nama}</td>
-    <td>${p.nim}</td>
-    <td>${p.universitas}</td>
-    <td> <span class="status-badge ${getStatusClass(p.status_verifikasi)}">
-        ${getStatusText(p.status_verifikasi)}
-    </span></td>
-    <td>${formatDate(p.created_at)}</td>  
-    <td>                  
-    <!-- LIHAT DETAIL -->
-    <button
-        onclick="showVerifikasi('${p.id}')"
-        class="action-btn view"
-        title="Lihat Detail">
-        <i class='bx bx-show'></i>
-    </button>
+            <td>
+                <div class="flex items-center gap-3">
+                    <div class="peserta-avatar">
+                        ${getInitials(p.nama)}
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-medium">${p.nama}</div>
+                        <div class="text-sm text-gray-500">${p.nim}</div>
+                    </div>
+                </div>
+            </td>
 
-    ${p.status_verifikasi === 'pending' ? `
-        <!-- TERIMA -->
-        <button
-            onclick="approvePeserta(${p.id})"
-            class="action-btn approve"
-            title="Terima">
-            <i class='bx bx-check'></i>
-        </button>
+            <td>${p.universitas || '-'}</td>
 
-        <!-- TOLAK -->
-        <button
-            onclick="rejectPeserta(${p.id})"
-            class="action-btn reject"
-            title="Tolak">
-            <i class='bx bx-x'></i>
-        </button>
-    ` : ''}
+            <td>
+                <span class="status-badge ${getStatusClass(p.status_verifikasi)}">
+                    ${getStatusText(p.status_verifikasi)}
+                </span>
+            </td>
 
-</td>
-    `).join('');
+            <td>${formatDate(p.created_at)}</td>
+
+            <td>
+                <div class="action-buttons flex gap-2">
+                    <button onclick="showVerifikasi('${p.id}')"
+                        class="action-btn view"
+                        title="Lihat Detail">
+                        <i class='bx bx-show'></i>
+                    </button>
+
+                    ${p.status_verifikasi === 'pending' ? `
+                        <button onclick="approvePeserta(${p.id})"
+                            class="action-btn approve"
+                            title="Terima">
+                            <i class='bx bx-check'></i>
+                        </button>
+
+                        <button onclick="showRejectModal(${p.id})"
+        class="action-btn reject"
+        title="Tolak">
+    <i class='bx bx-x'></i>
+</button>
+                    ` : ''}
+                </div>
+            </td>
+        </tr>
+        `;
+    });
+
+    tbody.innerHTML = html;
 }
+
+function getInitials(name) {
+    if (!name) return '--';
+    return name
+        .split(' ')
+        .map(n => n.charAt(0).toUpperCase())
+        .join('')
+        .substring(0, 2);
+}
+
 
 async function showVerifikasi(pesertaId) {
     try {
@@ -337,73 +435,179 @@ async function showVerifikasi(pesertaId) {
         
         const { data: p } = await res.json();
 
-        // Format berkas dengan link yang benar
+        // Format tanggal
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('id-ID', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            });
+        }
+
+        // Get initials for avatar
+        function getInitials(name) {
+            if (!name) return '--';
+            return name
+                .split(' ')
+                .map(n => n.charAt(0).toUpperCase())
+                .join('')
+                .substring(0, 2);
+        }
+
+        // Format berkas dengan link
         let berkasHtml = '';
         
-        // CV
-        if (p.berkas['CV / Resume']) {
-            berkasHtml += `<li>
-                <a href="${p.berkas['CV / Resume']}" target="_blank" class="text-primary hover:underline">
-                    <i class='bx bx-file'></i> CV / Resume
-                </a>
-            </li>`;
-        } else {
-            berkasHtml += `<li><i class='bx bx-x'></i> CV / Resume (tidak ada)</li>`;
-        }
-        
-        // Surat Pengantar
-        if (p.berkas['Surat Pengantar']) {
-            berkasHtml += `<li>
-                <a href="${p.berkas['Surat Pengantar']}" target="_blank" class="text-primary hover:underline">
-                    <i class='bx bx-file'></i> Surat Pengantar
-                </a>
-            </li>`;
-        } else {
-            berkasHtml += `<li><i class='bx bx-x'></i> Surat Pengantar (tidak ada)</li>`;
+        if (p.berkas) {
+            berkasHtml = `
+                <div class="mt-4">
+                    <h5 class="font-semibold mb-3 text-primary">Dokumen</h5>
+                    <div class="p-3 bg-gray-50 rounded-lg">
+                        ${p.berkas['CV / Resume'] ? `
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                                <i class='bx bx-file text-red-600'></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-medium">CV / Resume</div>
+                                <div class="text-sm text-gray-500">Dokumen CV Peserta</div>
+                            </div>
+                            <a href="${p.berkas['CV / Resume']}" target="_blank" 
+                               class="action-btn view" title="Lihat Dokumen">
+                                <i class='bx bx-show'></i>
+                            </a>
+                        </div>
+                        ` : '<div class="text-gray-500 text-sm">CV / Resume tidak tersedia</div>'}
+                        
+                        ${p.berkas['Surat Pengantar'] ? `
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class='bx bx-file text-blue-600'></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-medium">Surat Pengantar</div>
+                                <div class="text-sm text-gray-500">Surat Pengantar Magang</div>
+                            </div>
+                            <a href="${p.berkas['Surat Pengantar']}" target="_blank" 
+                               class="action-btn view" title="Lihat Dokumen">
+                                <i class='bx bx-show'></i>
+                            </a>
+                        </div>
+                        ` : '<div class="text-gray-500 text-sm">Surat Pengantar tidak tersedia</div>'}
+                    </div>
+                </div>
+            `;
         }
 
         document.getElementById('verifikasiContent').innerHTML = `
-            <div class="detail-section">
-                <h4 class="font-bold text-lg mb-4">Informasi Peserta</h4>
-                <div class="space-y-3">
-                    <p><b>Nama:</b> ${p.nama}</p>
-                    <p><b>NIM:</b> ${p.nim}</p>
-                    <p><b>Email:</b> ${p.email}</p>
-                    <p><b>Universitas:</b> ${p.universitas}</p>
-                    <p><b>Program Studi:</b> ${p.program_studi}</p>
-                    <p><b>No. Telepon:</b> ${p.no_telp}</p>
-                </div>
-            </div>
-
-            <hr class="my-6">
-
-            <div class="detail-section">
-                <h4 class="font-bold text-lg mb-4">Informasi Magang</h4>
-                <div class="space-y-3">
-                    <p><b>Periode:</b> ${p.tanggal_mulai} s/d ${p.tanggal_selesai}</p>
-                    <p><b>Bidang Pilihan:</b> ${p.bidang_pilihan}</p>
-                    <p><b>Alasan Magang:</b></p>
-                    <div class="bg-gray-50 p-4 rounded-lg">
-                        <p class="whitespace-pre-line">${p.alasan || '-'}</p>
+            <div class="space-y-6">
+                <!-- Header dengan avatar -->
+                <div class="flex items-center gap-4 p-4 bg-blue-50 rounded-lg">
+                    <div class="peserta-avatar" style="width: 60px; height: 60px; font-size: 1.2rem;">
+                        ${getInitials(p.nama)}
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-lg">${p.nama}</h4>
+                        <div class="text-gray-600">${p.nim} • ${p.universitas}</div>
                     </div>
                 </div>
-            </div>
-
-            <hr class="my-6">
-
-            <div class="detail-section">
-                <h4 class="font-bold text-lg mb-4">Berkas Pengajuan</h4>
-                <ul class="space-y-2">
-                    ${berkasHtml}
-                </ul>
+                
+                <!-- Informasi Utama -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-sm text-gray-500">NIM</label>
+                        <div class="font-medium">${p.nim || '-'}</div>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-500">Program Studi</label>
+                        <div class="font-medium">${p.program_studi || '-'}</div>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-500">Email</label>
+                        <div class="font-medium">${p.email || '-'}</div>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-500">Telepon</label>
+                        <div class="font-medium">${p.no_telp || '-'}</div>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-500">Bidang Pilihan</label>
+                        <div class="font-medium">${p.bidang_pilihan || '-'}</div>
+                    </div>
+                </div>
+                
+                <!-- Periode Magang -->
+                <div>
+                    <h5 class="font-semibold mb-3 text-primary">Periode Magang</h5>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <label class="text-sm text-gray-500 block mb-1">Tanggal Mulai</label>
+                            <div class="font-medium">${formatDate(p.tanggal_mulai)}</div>
+                        </div>
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <label class="text-sm text-gray-500 block mb-1">Tanggal Selesai</label>
+                            <div class="font-medium">${formatDate(p.tanggal_selesai)}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Alasan & Catatan -->
+                <div>
+                    <h5 class="font-semibold mb-3 text-primary">Alasan Magang</h5>
+                    <div class="p-4 bg-gray-50 rounded-lg">
+                        <div class="text-gray-700 leading-relaxed whitespace-pre-line">
+                            ${p.alasan || '-'}
+                        </div>
+                    </div>
+                    ${p.catatan_verifikasi ? `
+                        <div class="mt-4">
+                            <h5 class="font-semibold mb-3 text-primary">Catatan Verifikasi</h5>
+                            <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                <div class="flex items-start gap-3">
+                                    <i class='bx bx-note text-yellow-600 mt-0.5'></i>
+                                    <div class="text-gray-700">${p.catatan_verifikasi}</div>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+                
+                <!-- Dokumen -->
+                ${berkasHtml}
+                
+                <!-- Tombol Aksi -->
+                ${p.status_verifikasi === 'pending' ? `
+                    <div class="mt-8 pt-6 border-t border-gray-200">
+                        <div class="flex justify-end gap-3">
+                            <button onclick="approvePeserta(${p.id})" 
+                                    class="btn btn-success flex items-center gap-2">
+                                <i class='bx bx-check'></i> Terima
+                            </button>
+                            <button onclick="showRejectModal(${p.id})" 
+                                    class="btn btn-danger flex items-center gap-2">
+                                <i class='bx bx-x'></i> Tolak
+                            </button>
+                        </div>
+                    </div>
+                ` : `
+                    <div class="mt-8 pt-6 border-t border-gray-200">
+                        <div class="flex justify-end">
+                            <button onclick="closeModal('verifikasiModal')" 
+                                    class="btn btn-secondary">
+                                <i class='bx bx-x'></i> Tutup
+                            </button>
+                        </div>
+                    </div>
+                `}
             </div>
         `;
-
+        
         document.getElementById('verifikasiModal').style.display = 'flex';
 
     } catch (err) {
         console.error(err);
-        alert('Gagal memuat detail peserta');
+        showNotification('Gagal memuat detail peserta', 'error');
     }
 }
 
@@ -472,9 +676,6 @@ function resetFilters() {
     filterData();
 }
 
-function refreshData() {
-    loadData();
-}
 
 function debounce(func, wait) {
     let timeout;
@@ -497,6 +698,28 @@ function showNotification(message, type = 'info') {
     notification.innerHTML = `<i class='bx ${type === 'success' ? 'bx-check-circle' : 'bx-error-circle'}'></i> ${message}`;
     document.body.appendChild(notification);
     setTimeout(() => notification.remove(), 3000);
+}
+
+
+function closeRejectModal() {
+    const modal = document.getElementById('rejectModal');
+    if (modal) {
+        modal.style.display = 'none';
+        // Hapus dari DOM setelah animasi
+        setTimeout(() => {
+            if (modal.parentElement) {
+                modal.parentElement.remove();
+            }
+        }, 300);
+    }
+}
+
+// Update closeModal function
+function closeModal(id) {
+    const modal = document.getElementById(id);
+    if (modal) {
+        modal.style.display = 'none';
+    }
 }
 </script>
 @endsection
