@@ -345,7 +345,7 @@ function renderPesertaModalContent(mentor, mentorName) {
     let pesertaListHTML = '';
     if (mentor.peserta && mentor.peserta.length > 0) {
         pesertaListHTML = `
-            <div class="table-container" style="margin-top: 15px; max-height: 400px; overflow-y: auto;">
+            <div class="table-container"style="margin-top: 15px; max-height: 400px; overflow: auto;">
                 <table style="width: 100%; border-collapse: collapse;">
                     <thead style="background: #f8f9fa; position: sticky; top: 0;">
                         <tr>
@@ -361,10 +361,8 @@ function renderPesertaModalContent(mentor, mentorName) {
                             <tr style="${index % 2 === 0 ? 'background: #f8f9fa;' : ''}">
                                 <td style="padding: 12px 15px; border-bottom: 1px solid #eee;">
                                     <div style="display: flex; align-items: center; gap: 10px;">
-                                        <div style="width: 35px; height: 35px; border-radius: 50%; 
-                                                    background: linear-gradient(45deg, var(--primary), var(--secondary));
-                                                    color: white; display: flex; align-items: center; justify-content: center; 
-                                                    font-weight: 600; font-size: 0.9rem;">
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <div class="peserta-avatar">
                                             ${getInitials(p.nama)}
                                         </div>
                                         <div>
@@ -405,32 +403,35 @@ function renderPesertaModalContent(mentor, mentorName) {
     }
     
     content.innerHTML = `
-        <div style="margin-bottom: 20px;">
-            <div style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
-                <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(45deg, var(--primary), var(--secondary));
-                            color: white; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 600;">
-                    ${getInitials(mentorName)}
+        <div class="mentor-header">
+    <div class="mentor-header-card">
+
+        <div class="mentor-avatar">
+            ${getInitials(mentorName)}
+        </div>
+
+        <div class="mentor-info">
+            <h4 class="mentor-name">${mentorName}</h4>
+
+            <div class="mentor-meta">
+                <div>
+                    <span class="meta-label">NIP</span>
+                    <span class="meta-value">${mentor.nip || '-'}</span>
                 </div>
-                <div style="flex: 1;">
-                    <h4 style="margin: 0; color: var(--primary);">${mentorName}</h4>
-                    <div style="display: flex; gap: 15px; margin-top: 5px;">
-                        <div>
-                            <div style="font-size: 0.85rem; color: #666;">NIP</div>
-                            <div style="font-weight: 500; font-family: monospace;">${mentor.nip || '-'}</div>
-                        </div>
-                        <div>
-                            <div style="font-size: 0.85rem; color: #666;">Email</div>
-                            <div style="font-weight: 500;">${mentor.email || '-'}</div>
-                        </div>
-                    </div>
-                </div>
-                <div style="text-align: right;">
-                    <div style="font-size: 0.85rem; color: #666;">Total Peserta</div>
-                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">${mentor.jumlah_bimbingan || 0}</div>
+
+                <div>
+                    <span class="meta-label">Email</span>
+                    <span class="meta-value">${mentor.email || '-'}</span>
                 </div>
             </div>
         </div>
-        
+
+        <div class="mentor-total">
+            <span class="meta-label">Total Peserta</span>
+            <span class="mentor-count">${mentor.jumlah_bimbingan || 0}</span>
+        </div>
+    </div>
+</div>    
         ${pesertaListHTML}
     `;
 }
@@ -590,11 +591,6 @@ if (!document.querySelector('#notification-animation')) {
                 transform: translateX(0);
                 opacity: 1;
             }
-        }
-        
-        /* Modal untuk peserta */
-        #pesertaModal .modal-content {
-            max-width: 500px;
         }
     `;
     document.head.appendChild(style);

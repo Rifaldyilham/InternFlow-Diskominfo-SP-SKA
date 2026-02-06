@@ -51,9 +51,9 @@
         <div class="form-card">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xl font-bold text-primary flex items-center gap-2">
-                    <i class='bx bx-list-ul'></i> Daftar Peserta di Bidang Ini
+                    </i> Daftar Peserta di Bidang Ini
                 </h3>
-                <div class="text-sm text-gray-600">
+                <div class="table-count">
                     Peserta sudah diverifikasi kepegawaian
                 </div>
             </div>
@@ -353,56 +353,66 @@ function renderPesertaTable() {
         console.log(`Peserta ${peserta.nama}: hasMentor = ${hasMentor}, mentor_id = ${peserta.mentor_id}`);
         
         html += `
-            <tr>
-                <td>
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                            <i class='bx bx-user text-blue-600'></i>
-                        </div>
-                        <div>
-                            <div class="font-medium">${peserta.nama || peserta.name}</div>
-                            <div class="text-sm text-gray-500">${peserta.nim || '-'}</div>
-                        </div>
-                    </div>
-                </td>
-                <td>${peserta.universitas || '-'}</td>
-                <td>${peserta.jurusan || peserta.prodi || '-'}</td>
-                <td>
-                    <div>${tanggalMulai}</div>
-                    <div class="text-xs text-gray-500">s/d ${tanggalSelesai}</div>
-                </td>
-                <td>
-                    ${isAssigned ? 
-                        `<span class="status-badge status-active">
-                            <i class='bx bx-user-check'></i> Sudah Ditempatkan
-                            ${peserta.mentor_nama ? `<div class="text-xs mt-1">(${peserta.mentor_nama})</div>` : ''}
-                        </span>` : 
-                        `<span class="status-badge status-pending">
-                            <i class='bx bx-time'></i> Belum Ditempatkan
-                        </span>`
-                    }
-                </td>
-                <td>
-                    <div class="action-buttons flex gap-2">
-                        <button onclick="showDetailPeserta('${peserta.id}')" 
-                                class="action-btn view" title="Lihat Detail">
-                            <i class='bx bx-show'></i>
-                        </button>
-                        <button onclick="showPlacementModal('${peserta.id}')" 
-                                class="action-btn edit ${isAssigned ? 'disabled-btn' : ''}" 
-                                title="Tempatkan ke Mentor"
-                                ${isAssigned ? 'disabled' : ''}>
-                            <i class='bx bx-transfer-alt'></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `;
+    <tr>
+        <td>
+            <div class="flex items-center gap-3">
+                <div class="peserta-avatar">
+                    ${getInitials(peserta.nama || peserta.name)}
+                </div>
+                <div class="flex-1">
+                    <div class="font-medium">${peserta.nama || peserta.name}</div>
+                    <div class="text-sm text-gray-500">${peserta.nim || '-'}</div>
+                </div>
+            </div>
+        </td>
+        <td>${peserta.universitas || '-'}</td>
+        <td>${peserta.jurusan || peserta.prodi || '-'}</td>
+        <td>
+            <div>${tanggalMulai}</div>
+            <div class="text-xs text-gray-500">s/d ${tanggalSelesai}</div>
+        </td>
+        <td>
+            ${isAssigned ? 
+                `<span class="status-badge status-active">
+                    <i class='bx bx-user-check'></i> Sudah Ditempatkan
+                    ${peserta.mentor_nama ? `<div class="text-xs mt-1">(${peserta.mentor_nama})</div>` : ''}
+                </span>` : 
+                `<span class="status-badge status-pending">
+                    <i class='bx bx-time'></i> Belum Ditempatkan
+                </span>`
+            }
+        </td>
+        <td>
+            <div class="action-buttons flex gap-2">
+                <button onclick="showDetailPeserta('${peserta.id}')" 
+                        class="action-btn view" title="Lihat Detail">
+                    <i class='bx bx-show'></i>
+                </button>
+                <button onclick="showPlacementModal('${peserta.id}')" 
+                        class="action-btn edit ${isAssigned ? 'disabled-btn' : ''}" 
+                        title="Tempatkan ke Mentor"
+                        ${isAssigned ? 'disabled' : ''}>
+                    <i class='bx bx-transfer-alt'></i>
+                </button>
+            </div>
+        </td>
+    </tr>
+`;
     });
     
     tbody.innerHTML = html;
     updateFilterResultCount();
 }
+
+function getInitials(name) {
+    if (!name) return '--';
+    return name
+        .split(' ')
+        .map(n => n.charAt(0).toUpperCase())
+        .join('')
+        .substring(0, 2);
+}
+
 
 // Render daftar mentor di modal
 function renderMentorOptions(mentorList) {
