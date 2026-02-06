@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title') - Admin InternFlow</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -31,7 +33,7 @@
     
     <!-- Alpine.js -->
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    
+
     <!-- Custom Layout CSS -->
     <link rel="stylesheet" href="{{ asset('css/layouts/layouts.css') }}">
     
@@ -97,7 +99,7 @@
                 </div>
 
                 <div class="header-right">
-                    <div class="user-profile" onclick="window.location.href='/admin/profil'">
+                    <div class="user-profile">
                         <div class="avatar" id="userAvatar">
                             {{-- Avatar akan diisi oleh JavaScript --}}
                         </div>
@@ -117,25 +119,38 @@
     </div>
 
     <script>
-                function confirmLogout() {
-            if (confirm('Apakah Anda yakin ingin keluar?')) {
-                // Gunakan form POST untuk logout Laravel
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = "{{ route('logout') }}";
-                
-                // CSRF token
-                const token = document.querySelector('meta[name="csrf-token"]').content;
-                const csrfInput = document.createElement('input');
-                csrfInput.type = 'hidden';
-                csrfInput.name = '_token';
-                csrfInput.value = token;
-                form.appendChild(csrfInput);
-                
-                document.body.appendChild(form);
-                form.submit();
-            }
+function confirmLogout() {
+    Swal.fire({
+        title: 'Logout?',
+        text: "Anda akan keluar dari sistem admin.",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#213448',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Ya, Keluar',
+        cancelButtonText: 'Batal',
+        width: '360px',
+        padding: '1rem'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Gunakan form POST untuk logout Laravel
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = "{{ route('logout') }}";
+            
+            // CSRF token
+            const token = document.querySelector('meta[name="csrf-token"]').content;
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_token';
+            csrfInput.value = token;
+            form.appendChild(csrfInput);
+            
+            document.body.appendChild(form);
+            form.submit();
         }
+    });
+}
         
 document.addEventListener('alpine:init', () => {
     Alpine.data('app', () => ({
@@ -167,108 +182,6 @@ document.addEventListener('alpine:init', () => {
 })
 </script>
 
-    {{-- <script>
-        // Inisialisasi Alpine.js
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('app', () => ({
-                init() {
-                    this.updateUserName();
-                    this.setupEventListeners();
-                },
-                
-                isActive(path) {
-                    const currentPath = window.location.pathname;
-                    if (path === '/admin/dashboard' && (currentPath === '/' || currentPath === '')) {
-                        return true;
-                    }
-                    return currentPath.startsWith(path);
-                },
-                
-                updateUserName() {
-                    // Nama user dari Laravel Auth
-                    const userName = document.getElementById('userName').textContent;
-                    const userInitials = this.getInitials(userName);
-                    
-                    document.getElementById('userAvatar').textContent = userInitials;
-                },
-                
-                getInitials(name) {
-                    return name
-                        .split(' ')
-                        .map(word => word.charAt(0).toUpperCase())
-                        .join('')
-                        .substring(0, 2);
-                },
-                
-                setupEventListeners() {
-                    // Handle overlay click untuk menutup sidebar
-                    const overlay = document.querySelector('.sidebar-overlay');
-                    if (overlay) {
-                        overlay.addEventListener('click', () => {
-                            this.sidebarOpen = false;
-                            this.overlayOpen = false;
-                        });
-                    }
-                    
-                    // Handle resize window untuk desktop
-                    window.addEventListener('resize', () => {
-                        if (window.innerWidth > 992) {
-                            this.sidebarOpen = false;
-                            this.overlayOpen = false;
-                        }
-                    });
-                }
-            }));
-        });
-
-        // Tutup sidebar saat link diklik di mobile
-        document.querySelectorAll('.menu-item').forEach(item => {
-            item.addEventListener('click', function() {
-                if (window.innerWidth <= 992) {
-                    const sidebar = document.querySelector('.sidebar');
-                    const overlay = document.querySelector('.sidebar-overlay');
-                    sidebar.classList.remove('active');
-                    if (overlay) {
-                        overlay.classList.remove('active');
-                    }
-                }
-            });
-        });
-
-        // Inisialisasi saat DOM ready
-        document.addEventListener('DOMContentLoaded', function() {
-            // Set active menu berdasarkan URL
-            const currentPath = window.location.pathname;
-            document.querySelectorAll('.menu-item').forEach(item => {
-                const href = item.getAttribute('href');
-                if (currentPath === href || (href !== '/' && currentPath.startsWith(href))) {
-                    item.classList.add('active');
-                }
-            });
-            
-            // Fallback untuk home
-            if (currentPath === '/' || currentPath === '') {
-                const homeItem = document.querySelector('.menu-item[href="/admin/dashboard"]');
-                if (homeItem) homeItem.classList.add('active');
-            }
-            
-            // Update avatar dengan inisial dari nama user yang login
-            const userName = document.getElementById('userName').textContent;
-            const avatar = document.getElementById('userAvatar');
-            
-            function getInitials(name) {
-                return name
-                    .split(' ')
-                    .map(word => word.charAt(0).toUpperCase())
-                    .join('')
-                    .substring(0, 2);
-            }
-            
-            if (avatar) {
-                avatar.textContent = getInitials(userName);
-            }
-        });
-    </script> --}}
 
     @yield('scripts')
 </body>

@@ -129,7 +129,7 @@ body {
 /* ========== HEADER ========== */
 .header {
     height: var(--header-height);
-    background: white;
+    background: url('https://diskominfosp.surakarta.go.id/fe/assets/img/nav-bar.jpg') center/cover no-repeat;
     padding: 0 20px;
     display: flex;
     align-items: center;
@@ -140,6 +140,7 @@ body {
     z-index: 999;
     flex-shrink: 0;
 }
+
 
 .header-left {
     display: flex;
@@ -818,3 +819,4 @@ table {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+

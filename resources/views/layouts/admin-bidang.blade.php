@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title') - Admin Bidang InternFlow</title>
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -89,7 +92,7 @@
                 </div>
 
                 <div class="header-right">
-                    <div class="user-profile" onclick="window.location.href='/admin-bidang/profil'">
+                    <div class="user-profile">
                         <div class="avatar" id="userAvatar">
                             {{-- Avatar akan diisi oleh JavaScript --}}
                         </div>
@@ -154,24 +157,37 @@
 
         // Fungsi logout
         function confirmLogout() {
-            if (confirm('Apakah Anda yakin ingin keluar?')) {
-                // Gunakan form POST untuk logout Laravel
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = "{{ route('logout') }}";
-                
-                // CSRF token
-                const token = document.querySelector('meta[name="csrf-token"]').content;
-                const csrfInput = document.createElement('input');
-                csrfInput.type = 'hidden';
-                csrfInput.name = '_token';
-                csrfInput.value = token;
-                form.appendChild(csrfInput);
-                
-                document.body.appendChild(form);
-                form.submit();
-            }
+    Swal.fire({
+        title: 'Logout?',
+        text: "Anda akan keluar dari sistem admin Bidang.",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#213448',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Ya, Keluar',
+        cancelButtonText: 'Batal',
+        width: '360px',
+        padding: '1rem'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Gunakan form POST untuk logout Laravel
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = "{{ route('logout') }}";
+            
+            // CSRF token
+            const token = document.querySelector('meta[name="csrf-token"]').content;
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_token';
+            csrfInput.value = token;
+            form.appendChild(csrfInput);
+            
+            document.body.appendChild(form);
+            form.submit();
         }
+    });
+}
 
         // Tutup sidebar saat link diklik di mobile
         document.querySelectorAll('.menu-item').forEach(item => {

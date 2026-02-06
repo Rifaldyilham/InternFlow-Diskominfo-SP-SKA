@@ -49,20 +49,19 @@
 
         /* Container utama */
         .auth-container {
-            background: rgba(255, 255, 255, 0.88);
-            backdrop-filter: blur(12px);
+            position: relative;
+            background: url('https://diskominfosp.surakarta.go.id/fe/assets/img/nav-bar.jpg') center/cover;
             padding: 40px 35px;
             border-radius: 24px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
-            border: 1px solid rgba(255, 255, 255, 0.3);
             max-width: 480px;
             width: 100%;
             margin: 30px auto;
             text-align: center;
             color: #15222F;
-            position: relative;
-            z-index: 10;
+            overflow: hidden;
         }
+
 
         /* Logo */
         .logo {
@@ -135,7 +134,9 @@
             transform: translateY(-50%);
             color: #547792;
             font-size: 1.1rem;
-        }pp
+        }
+
+        pp
 
         /* Error Messages */
         .error-message {
@@ -297,7 +298,7 @@
             <span>Intern</span><span>Flow</span>
         </div>
 
-        <p class="subtitle">Sistem Monitoring Magang Diskominfo Surakarta</p>
+        <p class="subtitle">Sistem Monitoring Magang Diskominfo SP Surakarta</p>
 
         <form method="POST" action="{{ route('login.store') }}">
             @csrf
@@ -318,8 +319,9 @@
                 <div class="input-container">
                     <input type="password" name="password" id="password" required placeholder="Masukkan password">
                     <span class="input-icon" id="togglePassword" style="cursor: pointer;">
-                        👁
+                        <i class="bi bi-eye"></i>
                     </span>
+
                 </div>
                 @error('password')
                 <span class="error-message">{{ $message }}</span>
@@ -407,11 +409,15 @@
             const passwordInput = document.getElementById('password');
 
             togglePassword.addEventListener('click', function () {
-                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                passwordInput.setAttribute('type', type);
+                const icon = this.querySelector('i');
+                const type = passwordInput.type === 'password' ? 'text' : 'password';
 
-                this.textContent = type === 'password' ? '👁' : '🔒';
+                passwordInput.type = type;
+
+                icon.classList.toggle('bi-eye');
+                icon.classList.toggle('bi-eye-slash');
             });
+
 
         });
 

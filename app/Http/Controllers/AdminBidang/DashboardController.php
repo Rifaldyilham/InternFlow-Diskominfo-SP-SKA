@@ -219,13 +219,13 @@ public function apiPeserta(Request $request): JsonResponse
         'mentor_nama' => $peserta->pegawai?->nama ?? null,
         'email' => $peserta->email ?? null,
         'telepon' => $peserta->no_telp ?? null,
-        'alasan' => $peserta->alasan ?? null, // TAMBAHKAN
-        'bidang_pilihan' => $peserta->bidangPilihan?->nama_bidang ?? null, // TAMBAHKAN
-        'catatan_verifikasi' => $peserta->catatan_verifikasi ?? null, // TAMBAHKAN
-        'bidang_penempatan' => $peserta->bidang?->nama_bidang ?? null, // TAMBAHKAN
-        'status_verifikasi' => $peserta->status_verifikasi ?? 'pending', // TAMBAHKAN
-        'surat_penempatan_path' => $peserta->surat_penempatan_path ?? null, // TAMBAHKAN
-        'cv_path' => $peserta->cv_path ?? null, // TAMBAHKAN
+        'alasan' => $peserta->alasan ?? null,
+        'bidang_pilihan' => $peserta->bidangPilihan?->nama_bidang ?? null,
+        'catatan_verifikasi' => $peserta->catatan_verifikasi ?? null,
+        'bidang_penempatan' => $peserta->bidang?->nama_bidang ?? null,
+        'status_verifikasi' => $peserta->status_verifikasi ?? 'pending',
+        'surat_penempatan_path' => $peserta->surat_penempatan_path ?\Illuminate\Support\Facades\Storage::url($peserta->surat_penempatan_path) : null,
+        'cv_path' => $peserta->cv_path ? \Illuminate\Support\Facades\Storage::url($peserta->cv_path): null,
     ];
 
     return response()->json(['data' => $item]);

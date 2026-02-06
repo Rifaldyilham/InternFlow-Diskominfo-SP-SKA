@@ -49,20 +49,20 @@
 
         /* Container utama */
         .auth-container {
-            background: rgba(255, 255, 255, 0.88);
-            backdrop-filter: blur(12px);
+            position: relative;
+            background: url('https://diskominfosp.surakarta.go.id/fe/assets/img/nav-bar.jpg') center/cover;
             padding: 40px 35px;
             border-radius: 24px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
-            border: 1px solid rgba(255, 255, 255, 0.3);
             max-width: 480px;
             width: 100%;
             margin: 30px auto;
             text-align: center;
             color: #15222F;
-            position: relative;
-            z-index: 10;
+            overflow: hidden;
         }
+
+
 
         /* Logo */
         .logo {
@@ -309,6 +309,7 @@
                 opacity: 0;
                 transform: translateY(-5px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -375,7 +376,7 @@
             <span>Intern</span><span>Flow</span>
         </div>
 
-        <p class="subtitle">Daftar Akun - Sistem Monitoring Magang Diskominfo Surakarta</p>
+        <p class="subtitle">Daftar Akun - Sistem Monitoring Magang Diskominfo SP Surakarta</p>
 
         <form method="POST" action="{{ route('register.store') }}" id="registerForm">
             @csrf
@@ -410,15 +411,16 @@
                 <div class="input-container">
                     <input type="password" name="password" id="password" required placeholder="Masukkan password">
                     <span class="input-icon" id="togglePassword">
-                        👁
+                        <i class="bi bi-eye"></i>
                     </span>
+
                 </div>
                 @error('password')
                 <span class="error-message">{{ $message }}</span>
                 @enderror
                 <!-- Container untuk pesan validasi password -->
                 <div id="passwordValidationMessages"></div>
-                
+
                 <!-- Daftar persyaratan password -->
                 <div class="password-requirements">
                     <div class="requirement-item">
@@ -448,11 +450,12 @@
             <div class="form-group">
                 <label>Konfirmasi Password</label>
                 <div class="input-container">
-                    <input type="password" name="password_confirmation" id="passwordConfirmation" required 
+                    <input type="password" name="password_confirmation" id="passwordConfirmation" required
                         placeholder="Masukkan ulang password">
                     <span class="input-icon" id="togglePasswordConfirmation">
-                        👁
+                        <i class="bi bi-eye"></i>
                     </span>
+
                 </div>
                 <!-- Container untuk pesan validasi konfirmasi password -->
                 <div id="passwordConfirmationMessages"></div>
@@ -502,29 +505,38 @@
             const registerForm = document.getElementById('registerForm');
 
             // Toggle Password Visibility
-            const togglePassword = document.getElementById('togglePassword');
             togglePassword.addEventListener('click', function () {
-                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                passwordInput.setAttribute('type', type);
-                this.textContent = type === 'password' ? '👁' : '🔒';
+                const icon = this.querySelector('i');
+                const type = passwordInput.type === 'password' ? 'text' : 'password';
+
+                passwordInput.type = type;
+
+                icon.classList.toggle('bi-eye');
+                icon.classList.toggle('bi-eye-slash');
             });
 
+
             // Toggle Password Confirmation Visibility
-            const togglePasswordConfirmation = document.getElementById('togglePasswordConfirmation');
             togglePasswordConfirmation.addEventListener('click', function () {
-                const type = passwordConfirmationInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                passwordConfirmationInput.setAttribute('type', type);
-                this.textContent = type === 'password' ? '👁' : '🔒';
+                const icon = this.querySelector('i');
+                const type = passwordConfirmationInput.type === 'password' ? 'text' : 'password';
+
+                passwordConfirmationInput.type = type;
+
+                icon.classList.toggle('bi-eye');
+                icon.classList.toggle('bi-eye-slash');
             });
+
 
             // Fungsi untuk menampilkan pesan validasi
             function showValidationMessage(container, message, isError = true) {
                 container.innerHTML = '';
                 const messageElement = document.createElement('span');
-                messageElement.className = isError ? 'validation-message' : 'validation-message validation-success';
+                messageElement.className = isError ? 'validation-message' :
+                    'validation-message validation-success';
                 messageElement.textContent = message;
                 container.appendChild(messageElement);
-                
+
                 // Hapus pesan setelah 5 detik
                 setTimeout(() => {
                     if (container.contains(messageElement)) {
@@ -551,26 +563,33 @@
                 document.getElementById('reqSymbol').textContent = requirements.symbol ? '✅' : '❌';
 
                 // Update kelas untuk styling
-                document.getElementById('reqLength').className = requirements.length ? 'requirement-check requirement-met' : 'requirement-check requirement-not-met';
-                document.getElementById('reqUppercase').className = requirements.uppercase ? 'requirement-check requirement-met' : 'requirement-check requirement-not-met';
-                document.getElementById('reqLowercase').className = requirements.lowercase ? 'requirement-check requirement-met' : 'requirement-check requirement-not-met';
-                document.getElementById('reqNumber').className = requirements.number ? 'requirement-check requirement-met' : 'requirement-check requirement-not-met';
-                document.getElementById('reqSymbol').className = requirements.symbol ? 'requirement-check requirement-met' : 'requirement-check requirement-not-met';
+                document.getElementById('reqLength').className = requirements.length ?
+                    'requirement-check requirement-met' : 'requirement-check requirement-not-met';
+                document.getElementById('reqUppercase').className = requirements.uppercase ?
+                    'requirement-check requirement-met' : 'requirement-check requirement-not-met';
+                document.getElementById('reqLowercase').className = requirements.lowercase ?
+                    'requirement-check requirement-met' : 'requirement-check requirement-not-met';
+                document.getElementById('reqNumber').className = requirements.number ?
+                    'requirement-check requirement-met' : 'requirement-check requirement-not-met';
+                document.getElementById('reqSymbol').className = requirements.symbol ?
+                    'requirement-check requirement-met' : 'requirement-check requirement-not-met';
 
                 // Validasi real-time
                 passwordValidationMessages.innerHTML = '';
-                
+
                 if (password.length > 0) {
                     if (!requirements.length) {
                         showValidationMessage(passwordValidationMessages, 'Password harus minimal 8 karakter');
                         passwordInput.classList.add('input-error');
                         passwordInput.classList.remove('input-success');
                     } else if (!requirements.uppercase) {
-                        showValidationMessage(passwordValidationMessages, 'Password harus mengandung huruf besar');
+                        showValidationMessage(passwordValidationMessages,
+                            'Password harus mengandung huruf besar');
                         passwordInput.classList.add('input-error');
                         passwordInput.classList.remove('input-success');
                     } else if (!requirements.lowercase) {
-                        showValidationMessage(passwordValidationMessages, 'Password harus mengandung huruf kecil');
+                        showValidationMessage(passwordValidationMessages,
+                            'Password harus mengandung huruf kecil');
                         passwordInput.classList.add('input-error');
                         passwordInput.classList.remove('input-success');
                     } else if (!requirements.number) {
@@ -583,7 +602,8 @@
                         passwordInput.classList.remove('input-success');
                     } else {
                         // Semua persyaratan terpenuhi
-                        showValidationMessage(passwordValidationMessages, 'Password kuat dan memenuhi semua persyaratan', false);
+                        showValidationMessage(passwordValidationMessages,
+                            'Password kuat dan memenuhi semua persyaratan', false);
                         passwordInput.classList.remove('input-error');
                         passwordInput.classList.add('input-success');
                     }
@@ -598,12 +618,12 @@
             // Fungsi untuk memeriksa konfirmasi password
             function checkPasswordConfirmation(password, confirmation) {
                 passwordConfirmationMessages.innerHTML = '';
-                
+
                 if (confirmation.length === 0) {
                     passwordConfirmationInput.classList.remove('input-error', 'input-success');
                     return false;
                 }
-                
+
                 if (password !== confirmation) {
                     showValidationMessage(passwordConfirmationMessages, 'Password tidak cocok');
                     passwordConfirmationInput.classList.add('input-error');
@@ -620,31 +640,32 @@
             }
 
             // Event listener untuk validasi real-time password
-            passwordInput.addEventListener('input', function() {
+            passwordInput.addEventListener('input', function () {
                 checkPasswordStrength(this.value);
                 checkPasswordConfirmation(this.value, passwordConfirmationInput.value);
             });
 
             // Event listener untuk validasi real-time konfirmasi password
-            passwordConfirmationInput.addEventListener('input', function() {
+            passwordConfirmationInput.addEventListener('input', function () {
                 checkPasswordConfirmation(passwordInput.value, this.value);
             });
 
             // Validasi form sebelum submit
-            registerForm.addEventListener('submit', function(e) {
+            registerForm.addEventListener('submit', function (e) {
                 let isValid = true;
                 let errorMessages = [];
-                
+
                 // Validasi nama
                 const nameInput = this.querySelector('input[name="name"]');
                 if (!nameInput.value.trim()) {
                     isValid = false;
-                    showValidationMessage(nameInput.parentElement.parentElement, 'Nama lengkap harus diisi');
+                    showValidationMessage(nameInput.parentElement.parentElement,
+                        'Nama lengkap harus diisi');
                     nameInput.classList.add('input-error');
                 } else {
                     nameInput.classList.remove('input-error');
                 }
-                
+
                 // Validasi email
                 const emailInput = this.querySelector('input[name="email"]');
                 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -654,36 +675,42 @@
                     emailInput.classList.add('input-error');
                 } else if (!emailPattern.test(emailInput.value)) {
                     isValid = false;
-                    showValidationMessage(emailInput.parentElement.parentElement, 'Format email tidak valid');
+                    showValidationMessage(emailInput.parentElement.parentElement,
+                        'Format email tidak valid');
                     emailInput.classList.add('input-error');
                 } else {
                     emailInput.classList.remove('input-error');
                 }
-                
+
                 // Validasi password
                 const passwordIsValid = checkPasswordStrength(passwordInput.value);
                 if (!passwordIsValid) {
                     isValid = false;
-                    showValidationMessage(passwordValidationMessages, 'Password belum memenuhi semua persyaratan');
+                    showValidationMessage(passwordValidationMessages,
+                        'Password belum memenuhi semua persyaratan');
                     passwordInput.classList.add('input-error');
                 }
-                
+
                 // Validasi konfirmasi password
-                const passwordConfirmationIsValid = checkPasswordConfirmation(passwordInput.value, passwordConfirmationInput.value);
+                const passwordConfirmationIsValid = checkPasswordConfirmation(passwordInput.value,
+                    passwordConfirmationInput.value);
                 if (!passwordConfirmationIsValid) {
                     isValid = false;
                     showValidationMessage(passwordConfirmationMessages, 'Password tidak cocok');
                     passwordConfirmationInput.classList.add('input-error');
                 }
-                
+
                 // Jika tidak valid, cegah submit
                 if (!isValid) {
                     e.preventDefault();
-                    
+
                     // Scroll ke field pertama yang error
                     const firstError = document.querySelector('.input-error');
                     if (firstError) {
-                        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        firstError.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
                     }
                 }
             });
@@ -691,9 +718,9 @@
             // Hapus pesan error saat input difokuskan
             const allInputs = document.querySelectorAll('input');
             allInputs.forEach(input => {
-                input.addEventListener('focus', function() {
+                input.addEventListener('focus', function () {
                     this.classList.remove('input-error');
-                    
+
                     // Hapus pesan error di container yang sesuai
                     if (this.id === 'password') {
                         passwordValidationMessages.innerHTML = '';
@@ -701,24 +728,28 @@
                         passwordConfirmationMessages.innerHTML = '';
                     } else {
                         const parentFormGroup = this.closest('.form-group');
-                        const existingMessages = parentFormGroup.querySelectorAll('.validation-message');
+                        const existingMessages = parentFormGroup.querySelectorAll(
+                            '.validation-message');
                         existingMessages.forEach(msg => msg.remove());
                     }
                 });
-                
+
                 // Efek hover
-                input.addEventListener('mouseenter', function() {
-                    if (!this.classList.contains('input-error') && !this.classList.contains('input-success')) {
+                input.addEventListener('mouseenter', function () {
+                    if (!this.classList.contains('input-error') && !this.classList.contains(
+                            'input-success')) {
                         this.style.borderColor = 'rgba(84, 119, 146, 0.4)';
                     }
                 });
-                
-                input.addEventListener('mouseleave', function() {
-                    if (!this.classList.contains('input-error') && !this.classList.contains('input-success') && !this.matches(':focus')) {
+
+                input.addEventListener('mouseleave', function () {
+                    if (!this.classList.contains('input-error') && !this.classList.contains(
+                            'input-success') && !this.matches(':focus')) {
                         this.style.borderColor = 'rgba(21, 34, 47, 0.15)';
                     }
                 });
             });
         });
+
     </script>
 </x-guest-layout>
