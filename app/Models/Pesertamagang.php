@@ -58,6 +58,16 @@ class PesertaMagang extends Model
         return $this->belongsTo(Bidang::class, 'id_bidang', 'id_bidang');
     }
 
+    public function penilaian()
+    {
+        return $this->hasOne(Penilaian::class, 'id_pesertamagang', 'id_pesertamagang');
+    }
+
+    public function sertifikat()
+    {
+        return $this->hasOne(Sertifikat::class, 'id_pesertamagang', 'id_pesertamagang');
+    }
+
     // Relasi untuk peserta yang dibimbing oleh mentor
     public function pesertamagang()
     {

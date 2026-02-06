@@ -116,26 +116,7 @@
                 </div>
             </div>
             
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="semester">Semester/Tingkat *</label>
-                    <select id="semester" name="semester" required>
-                        <option value="">Pilih Semester</option>
-                        <option value="1">Semester 1</option>
-                        <option value="2">Semester 2</option>
-                        <option value="3">Semester 3</option>
-                        <option value="4">Semester 4</option>
-                        <option value="5">Semester 5</option>
-                        <option value="6">Semester 6</option>
-                        <option value="7">Semester 7</option>
-                        <option value="8">Semester 8</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="ipk">IPK/Nilai (Opsional)</label>
-                    <input type="number" id="ipk" name="ipk" step="0.01" min="0" max="4" placeholder="3.50">
-                </div>
-            </div>
+            <!-- Semester dan IPK dihilangkan sesuai kebutuhan -->
         </div>
         
         <!-- Pilihan Magang -->
@@ -465,31 +446,7 @@ function setupDateValidation() {
             endDateInput.value = this.value;
         }
         
-        // Validate duration (min 1 month, max 6 months)
-        validateDuration();
     });
-    
-    endDateInput.addEventListener('change', validateDuration);
-}
-
-// Validate duration between dates
-function validateDuration() {
-    const startDate = new Date(document.getElementById('tanggal_mulai').value);
-    const endDate = new Date(document.getElementById('tanggal_selesai').value);
-    
-    if (!startDate || !endDate) return;
-    
-    const diffTime = Math.abs(endDate - startDate);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    const diffMonths = diffDays / 30;
-    
-    if (diffMonths < 1) {
-        showFieldError('tanggal_selesai', 'Durasi magang minimal 1 bulan');
-    } else if (diffMonths > 6) {
-        showFieldError('tanggal_selesai', 'Durasi magang maksimal 6 bulan');
-    } else {
-        clearFieldError('tanggal_selesai');
-    }
 }
 
 // Setup file upload
@@ -639,7 +596,7 @@ function validateForm() {
     clearAllErrors();
     
     // Validate required fields
-    const requiredFields = ['no_telp', 'nim', 'universitas', 'jurusan', 'semester', 'bidang_pilihan', 'alasan'];
+    const requiredFields = ['no_telp', 'nim', 'universitas', 'jurusan', 'bidang_pilihan', 'alasan'];
     
     requiredFields.forEach(fieldId => {
         const field = document.getElementById(fieldId);

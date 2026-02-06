@@ -201,12 +201,6 @@
                     <h4><i class='bx bx-file-pdf'></i> File Sertifikat</h4>
                     
                     <div class="form-group">
-                        <label for="namaSertifikat">Nama Sertifikat *</label>
-                        <input type="text" id="namaSertifikat" name="nama_sertifikat" required 
-                               placeholder="Contoh: Sertifikat Magang - John Doe">
-                    </div>
-                    
-                    <div class="form-group">
                         <label for="nomorSertifikat">Nomor Sertifikat *</label>
                         <input type="text" id="nomorSertifikat" name="nomor_sertifikat" required 
                                placeholder="Contoh: SK/DISKOMINFO/2024/001">
@@ -216,12 +210,6 @@
                         <label for="tanggalTerbit">Tanggal Terbit *</label>
                         <input type="date" id="tanggalTerbit" name="tanggal_terbit" required 
                                value="<?php echo date('Y-m-d'); ?>">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="catatanSertifikat">Catatan</label>
-                        <textarea id="catatanSertifikat" name="catatan" rows="3" 
-                                  placeholder="Catatan tambahan (opsional)"></textarea>
                     </div>
                     
                     <div class="form-group">
@@ -311,7 +299,7 @@ const API_CONFIG = {
     baseUrl: window.location.origin,
     endpoints: {
         peserta: '/api/admin/peserta/sertifikat',
-        bidang: '/api/bidang',
+        bidang: '/api/admin/bidang',
         sertifikat: {
             upload: '/api/admin/sertifikat/upload',
             detail: '/api/admin/sertifikat',
@@ -485,6 +473,18 @@ function filterPeserta() {
     updateStats();
 }
 
+function isSelesaiMagang(peserta) {
+    if (peserta.status_magang === 'selesai') return true;
+    if (peserta.tanggal_selesai) {
+        const selesai = new Date(peserta.tanggal_selesai);
+        const today = new Date();
+        selesai.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+        return selesai <= today;
+    }
+    return false;
+}
+
 // Reset filter
 function resetFilter() {
     state.currentFilters = {
@@ -520,7 +520,7 @@ function renderTable() {
         const tanggalMulai = formatDate(peserta.tanggal_mulai);
         const tanggalSelesai = formatDate(peserta.tanggal_selesai);
         const hasSertifikat = peserta.sertifikat !== null;
-        const isSelesai = peserta.status_magang === 'selesai';
+        const isSelesai = isSelesaiMagang(peserta);
         const bidangNama = peserta.bidang?.nama_bidang || '-';
         
         return `
@@ -536,7 +536,7 @@ function renderTable() {
                 </td>
                 <td>
                     <div style="font-weight: 500;">${peserta.universitas || '-'}</div>
-                    <div style="font-size: 0.85rem; color: #666;">${peserta.jurusan || ''}</div>
+                    <div style="font-size: 0.85rem; color: #666;">${peserta.jurusan || peserta.program_studi || ''}</div>
                 </td>
                 <td>
                     <span class="bidang-badge">${bidangNama}</span>
@@ -608,7 +608,7 @@ function updateStats() {
     const totalPeserta = state.filteredPeserta.length;
     const sudahSertifikat = state.filteredPeserta.filter(p => p.sertifikat !== null).length;
     const belumSertifikat = state.filteredPeserta.filter(p => p.sertifikat === null).length;
-    const selesaiMagang = state.filteredPeserta.filter(p => p.status_magang === 'selesai').length;
+    const selesaiMagang = state.filteredPeserta.filter(p => isSelesaiMagang(p)).length;
     
     document.getElementById('totalPeserta').textContent = totalPeserta;
     document.getElementById('sudahSertifikat').textContent = sudahSertifikat;
@@ -622,20 +622,11 @@ async function showDetail(pesertaId) {
     try {
         showLoading('detail', true);
         
-        const peserta = state.pesertaList.find(p => p.id === pesertaId);
+        const peserta = state.pesertaList.find(p => p.id == pesertaId);
         if (!peserta) {
-            // Fetch detail from API if not in list
-            const response = await fetch(`/api/admin/peserta/${pesertaId}`, {
-                headers: { 'Accept': 'application/json' }
-            });
-            
-            if (!response.ok) throw new Error('Gagal mengambil detail peserta');
-            
-            const data = await response.json();
-            renderDetailModal(data.data || data);
-        } else {
-            renderDetailModal(peserta);
+            throw new Error('Data peserta tidak ditemukan');
         }
+        renderDetailModal(peserta);
         
     } catch (error) {
         console.error('Error:', error);
@@ -648,7 +639,7 @@ async function showDetail(pesertaId) {
 function renderDetailModal(peserta) {
     const tanggalMulai = formatDate(peserta.tanggal_mulai);
     const tanggalSelesai = formatDate(peserta.tanggal_selesai);
-    const isSelesai = peserta.status_magang === 'selesai';
+    const isSelesai = isSelesaiMagang(peserta);
     const hasSertifikat = peserta.sertifikat !== null;
     const bidangNama = peserta.bidang?.nama_bidang || '-';
     
@@ -752,19 +743,9 @@ function renderDetailModal(peserta) {
                             <span>${peserta.sertifikat.nomor_sertifikat || peserta.sertifikat.nomor}</span>
                         </div>
                         <div class="sertifikat-item">
-                            <label>Nama Sertifikat</label>
-                            <span>${peserta.sertifikat.nama_sertifikat || peserta.sertifikat.nama}</span>
-                        </div>
-                        <div class="sertifikat-item">
                             <label>Tanggal Terbit</label>
                             <span>${formatDate(peserta.sertifikat.tanggal_terbit)}</span>
                         </div>
-                        ${peserta.sertifikat.catatan ? `
-                            <div class="sertifikat-item full">
-                                <label>Catatan</label>
-                                <span>${peserta.sertifikat.catatan}</span>
-                            </div>
-                        ` : ''}
                     </div>
                 </div>
             </div>
@@ -789,7 +770,7 @@ function renderDetailModal(peserta) {
 
 // Upload modal
 function showUploadModal(pesertaId) {
-    const peserta = state.pesertaList.find(p => p.id === pesertaId);
+    const peserta = state.pesertaList.find(p => p.id == pesertaId);
     if (!peserta) return;
     
     state.currentPesertaId = pesertaId;
@@ -801,10 +782,8 @@ function showUploadModal(pesertaId) {
     document.getElementById('uploadAvatar').textContent = getInitials(peserta.nama);
     
     // Reset form
-    document.getElementById('namaSertifikat').value = `Sertifikat Magang - ${peserta.nama}`;
     document.getElementById('nomorSertifikat').value = `SK/DISKOMINFO/${new Date().getFullYear()}/XXX`;
     document.getElementById('tanggalTerbit').value = new Date().toISOString().split('T')[0];
-    document.getElementById('catatanSertifikat').value = '';
     document.getElementById('fileSertifikat').value = '';
     document.getElementById('fileName').textContent = 'Belum ada file dipilih';
     document.getElementById('fileError').style.display = 'none';
@@ -876,6 +855,7 @@ function showFileError(message) {
 async function viewSertifikat(pesertaId) {
     try {
         showLoading('view', true);
+        state.currentPesertaId = pesertaId;
         
         const response = await fetch(`${API_CONFIG.endpoints.sertifikat.detail}/${pesertaId}`, {
             headers: { 'Accept': 'application/json' }
@@ -898,17 +878,20 @@ async function viewSertifikat(pesertaId) {
 
 function renderViewSertifikatModal(sertifikat) {
     state.currentSertifikatId = sertifikat.id;
-    
-    document.getElementById('viewSertifikatTitle').textContent = `Sertifikat - ${sertifikat.peserta?.nama || 'Tidak Diketahui'}`;
+    const peserta = sertifikat.peserta
+        || state.pesertaList.find(p => p.id == state.currentPesertaId)
+        || {};
+
+    document.getElementById('viewSertifikatTitle').textContent = `Sertifikat - ${peserta.nama || 'Tidak Diketahui'}`;
     
     document.getElementById('viewSertifikatContent').innerHTML = `
         <div class="detail-section">
             <div class="detail-header">
                 <div class="detail-title">
-                    <div class="detail-avatar">${getInitials(sertifikat.peserta?.nama)}</div>
+                    <div class="detail-avatar">${getInitials(peserta.nama)}</div>
                     <div>
-                        <h4>${sertifikat.peserta?.nama || 'Tidak Diketahui'}</h4>
-                        <p>${sertifikat.peserta?.nim || ''} • ${sertifikat.peserta?.universitas || ''}</p>
+                        <h4></h4>
+                        <p> • </p>
                     </div>
                 </div>
             </div>
@@ -933,20 +916,12 @@ function renderViewSertifikatModal(sertifikat) {
             <div class="detail-card">
                 <div class="sertifikat-grid">
                     <div class="sertifikat-item">
-                        <label>Nama Sertifikat</label>
-                        <span>${sertifikat.nama_sertifikat}</span>
-                    </div>
-                    <div class="sertifikat-item">
                         <label>Nomor Sertifikat</label>
                         <span class="nomor-sertifikat">${sertifikat.nomor_sertifikat}</span>
                     </div>
                     <div class="sertifikat-item">
                         <label>Tanggal Terbit</label>
                         <span>${formatDate(sertifikat.tanggal_terbit)}</span>
-                    </div>
-                    <div class="sertifikat-item">
-                        <label>Diupload Oleh</label>
-                        <span>${sertifikat.uploaded_by?.name || 'Admin'}</span>
                     </div>
                     <div class="sertifikat-item">
                         <label>Tanggal Upload</label>
@@ -956,12 +931,6 @@ function renderViewSertifikatModal(sertifikat) {
                         <label>Status</label>
                         <span class="status-badge status-approved">TERBIT</span>
                     </div>
-                    ${sertifikat.catatan ? `
-                        <div class="sertifikat-item full">
-                            <label>Catatan</label>
-                            <span>${sertifikat.catatan}</span>
-                        </div>
-                    ` : ''}
                 </div>
             </div>
         </div>
@@ -1191,12 +1160,15 @@ function previewFileName(input) {
 
 // Notification function (reuse from other files)
 function showNotification(message, type = 'info') {
-    // Reuse existing notification function
-    if (typeof window.showNotification === 'function') {
-        window.showNotification(message, type);
+    // Avoid infinite recursion if this function is already on window
+    if (window._adminSertifikatNotify && window._adminSertifikatNotify !== showNotification) {
+        window._adminSertifikatNotify(message, type);
         return;
     }
-    
+    if (!window._adminSertifikatNotify) {
+        window._adminSertifikatNotify = showNotification;
+    }
+
     // Simple notification implementation
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
@@ -1230,3 +1202,4 @@ function showNotification(message, type = 'info') {
 }
 </script>
 @endsection
+

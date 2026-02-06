@@ -134,77 +134,82 @@
 </div>
 
 <script>
-// Data status peserta
+const API_CONFIG = {
+    penilaianDetail: '/api/peserta/penilaian',
+    penilaianDownload: '/api/peserta/penilaian/download',
+    sertifikatDetail: '/api/peserta/sertifikat',
+    sertifikatDownload: '/api/peserta/sertifikat/download'
+};
+
 const pesertaData = {
-    id: 1,
-    nama: "John Doe",
-    nim: "1234567890",
-    universitas: "Universitas Sebelas Maret",
-    prodi: "Teknik Informatika",
-    periode: "1 Jan - 30 Mar 2024",
-    statusMagang: "berjalan", // berjalan, selesai, belum
-    progress: 85,
-    hariTersisa: 13,
-    tanggalSelesai: "2024-03-30",
-    
-    // File penilaian dari mentor
     penilaianMentor: {
         tersedia: false,
-        nama: "Penilaian_John_Doe.pdf",
-        ukuran: "2.4 MB",
-        tanggalUpload: "2024-03-28",
-        url: "#"
+        nama: '-',
+        ukuran: '-',
+        tanggalUpload: '-',
+        url: null
     },
-    
-    // File sertifikat dari kepegawaian
     sertifikat: {
         tersedia: false,
-        nama: "Sertifikat_Magang_John_Doe.pdf",
-        ukuran: "1.8 MB",
-        tanggalTerbit: "2024-04-02",
-        nomor: "DINKOM/2024/SERT/00456",
-        url: "#"
+        nama: '-',
+        ukuran: '-',
+        tanggalTerbit: '-',
+        nomor: '-',
+        url: null
     }
 };
 
-// Initialize page
-function initializePage() {
-    updateStatusMagang();
+async function initializePage() {
+    await loadPenilaian();
+    await loadSertifikat();
     updateFileSections();
-    updateProgressSteps();
-    checkAutoUpdate();
 }
 
-// Update status magang
-function updateStatusMagang() {
-    const magangStatus = document.getElementById('magangStatus');
-    const progressBar = document.getElementById('progressBar');
-    const progressText = document.getElementById('progressText');
-    const hariTersisa = document.getElementById('hariTersisa');
-    
-    if (pesertaData.statusMagang === 'berjalan') {
-        magangStatus.innerHTML = '<i class="bx bx-time"></i> Sedang Berjalan';
-        magangStatus.className = 'status-badge status-active';
-        progressBar.style.width = `${pesertaData.progress}%`;
-        progressText.textContent = `${pesertaData.progress}% Selesai`;
-        hariTersisa.textContent = pesertaData.hariTersisa;
-    } else if (pesertaData.statusMagang === 'selesai') {
-        magangStatus.innerHTML = '<i class="bx bx-check-circle"></i> Selesai';
-        magangStatus.className = 'status-badge status-approved';
-        progressBar.style.width = '100%';
-        progressBar.className = 'h-full bg-gradient-to-r from-green-400 to-green-600';
-        progressText.textContent = '100% Selesai';
-        hariTersisa.textContent = '0';
-    } else {
-        magangStatus.innerHTML = '<i class="bx bx-x-circle"></i> Belum Dimulai';
-        magangStatus.className = 'status-badge status-rejected';
-        progressBar.style.width = '0%';
-        progressText.textContent = '0% Selesai';
+async function loadPenilaian() {
+    try {
+        const response = await fetch(API_CONFIG.penilaianDetail, {
+            headers: { 'Accept': 'application/json' }
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data?.data?.tersedia) {
+            pesertaData.penilaianMentor.tersedia = true;
+            pesertaData.penilaianMentor.nama = data.data.nama || '-';
+            pesertaData.penilaianMentor.ukuran = data.data.ukuran || '-';
+            pesertaData.penilaianMentor.tanggalUpload = data.data.tanggal_upload || '-';
+            pesertaData.penilaianMentor.url = data.data.url || API_CONFIG.penilaianDownload;
+        } else {
+            pesertaData.penilaianMentor.tersedia = false;
+        }
+    } catch (error) {
+        console.error('Error loading penilaian:', error);
+        pesertaData.penilaianMentor.tersedia = false;
     }
-    
-    // Update status text
-    document.getElementById('statusPenilaian').textContent = pesertaData.penilaianMentor.tersedia ? 'Tersedia' : 'Menunggu';
-    document.getElementById('statusSertifikat').textContent = pesertaData.sertifikat.tersedia ? 'Tersedia' : 'Belum';
+}
+
+async function loadSertifikat() {
+    try {
+        const response = await fetch(API_CONFIG.sertifikatDetail, {
+            headers: { 'Accept': 'application/json' }
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data?.data?.tersedia) {
+            pesertaData.sertifikat.tersedia = true;
+            pesertaData.sertifikat.nama = data.data.nama || '-';
+            pesertaData.sertifikat.ukuran = data.data.ukuran || '-';
+            pesertaData.sertifikat.tanggalTerbit = data.data.tanggal_terbit || '-';
+            pesertaData.sertifikat.nomor = data.data.nomor_sertifikat || '-';
+            pesertaData.sertifikat.url = data.data.url || API_CONFIG.sertifikatDownload;
+        } else {
+            pesertaData.sertifikat.tersedia = false;
+        }
+    } catch (error) {
+        console.error('Error loading sertifikat:', error);
+        pesertaData.sertifikat.tersedia = false;
+    }
 }
 
 // Update file sections
@@ -252,27 +257,6 @@ function updateFileSections() {
         statusSertifikatBadge.innerHTML = '<i class="bx bx-time"></i> Belum Tersedia';
         statusSertifikatBadge.style.background = '#e2e8f0';
         statusSertifikatBadge.style.color = '#666';
-    }
-}
-
-// Update progress steps
-function updateProgressSteps() {
-    const stepMentor = document.getElementById('stepMentor');
-    const stepAdmin = document.getElementById('stepAdmin');
-    const stepKepegawaian = document.getElementById('stepKepegawaian');
-    
-    if (pesertaData.statusMagang === 'selesai') {
-        stepMentor.className = 'w-3 h-3 bg-green-500 rounded-full mx-auto';
-        if (pesertaData.penilaianMentor.tersedia) {
-            stepAdmin.className = 'w-3 h-3 bg-green-500 rounded-full mx-auto';
-            if (pesertaData.sertifikat.tersedia) {
-                stepKepegawaian.className = 'w-3 h-3 bg-green-500 rounded-full mx-auto';
-            } else {
-                stepKepegawaian.className = 'w-3 h-3 bg-yellow-500 rounded-full mx-auto';
-            }
-        } else {
-            stepAdmin.className = 'w-3 h-3 bg-yellow-500 rounded-full mx-auto';
-        }
     }
 }
 
@@ -345,20 +329,9 @@ function downloadPenilaianFile() {
         showNotification('Info', 'File penilaian belum tersedia.', 'info');
         return;
     }
-    
-    // Simulate download
-    showNotification('Info', `Memulai download ${pesertaData.penilaianMentor.nama}...`, 'info');
-    
-    // Create temporary download link
-    const link = document.createElement('a');
-    link.href = '#';
-    link.download = pesertaData.penilaianMentor.nama;
-    link.click();
-    
-    // Show success message after delay
-    setTimeout(() => {
-        showNotification('Berhasil!', `File ${pesertaData.penilaianMentor.nama} berhasil diunduh.`, 'success');
-    }, 1000);
+
+    const url = pesertaData.penilaianMentor.url || API_CONFIG.penilaianDownload;
+    window.open(url, '_blank');
 }
 
 // View sertifikat
@@ -448,20 +421,9 @@ function downloadSertifikat() {
         showNotification('Info', 'Sertifikat belum tersedia.', 'info');
         return;
     }
-    
-    // Simulate download
-    showNotification('Info', `Memulai download ${pesertaData.sertifikat.nama}...`, 'info');
-    
-    // Create temporary download link
-    const link = document.createElement('a');
-    link.href = '#';
-    link.download = pesertaData.sertifikat.nama;
-    link.click();
-    
-    // Show success message after delay
-    setTimeout(() => {
-        showNotification('Berhasil!', `Sertifikat ${pesertaData.sertifikat.nama} berhasil diunduh.`, 'success');
-    }, 1000);
+
+    const url = pesertaData.sertifikat.url || API_CONFIG.sertifikatDownload;
+    window.open(url, '_blank');
 }
 
 // Print sertifikat
@@ -613,43 +575,6 @@ function printSertifikat() {
 // Close preview modal
 function closePreviewModal() {
     document.getElementById('previewModal').classList.add('hidden');
-}
-
-// Check for auto-update (simulating real-time updates)
-function checkAutoUpdate() {
-    // Simulate checking for new files
-    setInterval(() => {
-        // In a real app, this would make an API call
-        const today = new Date().toISOString().split('T')[0];
-        
-        // Check if magang is finished
-        if (pesertaData.statusMagang === 'berjalan' && today > pesertaData.tanggalSelesai) {
-            pesertaData.statusMagang = 'selesai';
-            pesertaData.progress = 100;
-            pesertaData.hariTersisa = 0;
-            updateStatusMagang();
-            
-            // Simulate mentor upload after 2 days
-            if (!pesertaData.penilaianMentor.tersedia) {
-                setTimeout(() => {
-                    pesertaData.penilaianMentor.tersedia = true;
-                    updateFileSections();
-                    updateProgressSteps();
-                    showNotification('Info', 'File penilaian baru tersedia dari mentor!', 'info');
-                }, 2000);
-            }
-            
-            // Simulate sertifikat after 5 days
-            if (!pesertaData.sertifikat.tersedia) {
-                setTimeout(() => {
-                    pesertaData.sertifikat.tersedia = true;
-                    updateFileSections();
-                    updateProgressSteps();
-                    showNotification('Info', 'Sertifikat magang sudah tersedia!', 'info');
-                }, 5000);
-            }
-        }
-    }, 30000); // Check every 30 seconds
 }
 
 // Show notification

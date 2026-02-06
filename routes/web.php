@@ -8,10 +8,15 @@ use App\Http\Controllers\Admin\VerifikasiBerikasController;
 use App\Http\Controllers\AdminBidang\DashboardController;
 use App\Http\Controllers\Mentor\VerifikasiLogbookController;
 use App\Http\Controllers\Mentor\AbsensiController;
+use App\Http\Controllers\Mentor\PenilaianController;
 use App\Http\Controllers\PesertaController;
 use App\Http\Controllers\PesertaMagang\AbsensiPesertaController;
 use App\Http\Controllers\PesertaMagang\LogbookController;
+use App\Http\Controllers\PesertaMagang\PenilaianPesertaController;
+use App\Http\Controllers\PesertaMagang\SertifikatPesertaController;
+use App\Http\Controllers\MentorBimbinganController;
 use App\Http\Controllers\Admin\ManajemenBidangController;
+use App\Http\Controllers\Admin\SertifikatController;
 
 // Route untuk dashboard utama
 Route::get('/', function () {
@@ -122,14 +127,20 @@ Route::prefix('mentor')->middleware(['auth', 'role:Mentor'])->group(function () 
 
 // API endpoints untuk Mentor - PAKAI CONTROLLER BARU
 Route::prefix('api/mentor')->middleware(['auth'])->group(function () {
-    Route::get('/stats', [\App\Http\Controllers\MentorBimbinganController::class, 'stats']);
-    Route::get('/peserta', [\App\Http\Controllers\MentorBimbinganController::class, 'peserta']);
-    Route::get('/peserta/{id}', [\App\Http\Controllers\MentorBimbinganController::class, 'detailPeserta']);
-    Route::get('/absensi', [\App\Http\Controllers\Mentor\AbsensiController::class, 'index']);
-    Route::get('/absensi/{pesertaId}', [\App\Http\Controllers\Mentor\AbsensiController::class, 'byPeserta']);
+    Route::get('/stats', [MentorBimbinganController::class, 'stats']);
+    Route::get('/peserta', [MentorBimbinganController::class, 'peserta']);
+    Route::get('/peserta/{id}', [MentorBimbinganController::class, 'detailPeserta']);
+    Route::get('/absensi', [AbsensiController::class, 'index']);
+    Route::get('/absensi/{pesertaId}', [AbsensiController::class, 'byPeserta']);
     Route::get('/logbook/{pesertaId}', [VerifikasiLogbookController::class, 'index']);
     Route::get('/logbook', [VerifikasiLogbookController::class, 'index']);
     Route::post('/logbook/verify', [VerifikasiLogbookController::class, 'verify']);
+    Route::get('/penilaian/peserta', [PenilaianController::class, 'peserta']);
+    Route::post('/penilaian/upload', [PenilaianController::class, 'upload']);
+    Route::get('/penilaian/stats', [PenilaianController::class, 'stats']);
+    Route::get('/penilaian/{pesertaId}', [PenilaianController::class, 'show']);
+    Route::delete('/penilaian/{pesertaId}', [PenilaianController::class, 'destroy']);
+    Route::get('/penilaian/download/{id}', [PenilaianController::class, 'download']);
 });
 
 // Routes untuk Admin Bidang
@@ -162,10 +173,16 @@ Route::prefix('api/admin')->middleware(['auth'])->group(function () {
     Route::get('/verifikasi-berkas/list', [VerifikasiBerikasController::class, 'apiList']);
     Route::get('/verifikasi-berkas/detail/{id}', [VerifikasiBerikasController::class, 'detail']);
     Route::post('/verifikasi-berkas/verify', [VerifikasiBerikasController::class, 'verify']);
+    Route::get('/peserta/sertifikat', [SertifikatController::class, 'peserta']);
+    Route::post('/sertifikat/upload', [SertifikatController::class, 'upload']);
+    Route::get('/sertifikat/{pesertaId}', [SertifikatController::class, 'show']);
+    Route::get('/sertifikat/download/{id}', [SertifikatController::class, 'download']);
+    Route::delete('/sertifikat/{pesertaId}', [SertifikatController::class, 'destroy']);
 });
 
 // API endpoints untuk peserta dashboard
 Route::prefix('api/peserta')->middleware(['auth'])->group(function () {
+    Route::get('/pengajuan/status', [PesertaController::class, 'statusPengajuan']);
     // Route dashboard dengan data lengkap
     Route::get('/dashboard-detail', function () {
         $user = \Illuminate\Support\Facades\Auth::user();
@@ -210,4 +227,8 @@ Route::prefix('api/peserta')->middleware(['auth'])->group(function () {
     Route::get('/logbook/status', [LogbookController::class, 'status']);
     Route::get('/logbook', [LogbookController::class, 'index']);
     Route::post('/logbook', [LogbookController::class, 'store']);
+    Route::get('/penilaian', [PenilaianPesertaController::class, 'detail']);
+    Route::get('/penilaian/download', [PenilaianPesertaController::class, 'download']);
+    Route::get('/sertifikat', [SertifikatPesertaController::class, 'detail']);
+    Route::get('/sertifikat/download', [SertifikatPesertaController::class, 'download']);
 });

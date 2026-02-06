@@ -30,4 +30,9 @@ class Pegawai extends Model
     {
         return $this->hasMany(PesertaMagang::class, 'id_pegawai', 'id_pegawai');
     }
+
+    public function penilaian()
+    {
+        return $this->hasMany(Penilaian::class, 'id_pegawai', 'id_pegawai');
+    }
 }
