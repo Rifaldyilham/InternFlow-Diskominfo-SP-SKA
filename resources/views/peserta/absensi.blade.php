@@ -2,172 +2,201 @@
 
 @section('title', 'Absensi Magang')
 
+@section('styles')
+<link rel="stylesheet" href="{{ asset('css/peserta/peserta.css') }}">
+@endsection
+
 @section('content')
 <div class="form-card">
-    <h2 style="color: var(--primary); margin-bottom: 30px; display: flex; align-items: center; gap: 10px;">
-        <i class='bx bx-calendar-check'></i> Absensi Harian Magang
-    </h2>
-
-    @if(isset($infoMessage))
-        <div id="absensiAlert" style="background: #e6f2ff; border: 1px solid #3498db; color: #1f4e79; padding: 12px 16px; border-radius: 10px; margin-bottom: 20px;">
-            {{ $infoMessage }}
-        </div>
-    @else
-        <div id="absensiAlert" style="display: none; background: #e6f2ff; border: 1px solid #3498db; color: #1f4e79; padding: 12px 16px; border-radius: 10px; margin-bottom: 20px;"></div>
-    @endif
-    
-    <!-- Statistik Absensi -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
-        <div style="background: linear-gradient(135deg, rgba(33, 52, 72, 0.1) 0%, rgba(84, 119, 146, 0.1) 100%); padding: 20px; border-radius: 12px;">
-            <div style="font-size: 2.5rem; font-weight: 700; color: var(--primary);">{{ $total }}</div>
-            <div style="color: #666;">Total Hari</div>
-        </div>
-        <div style="background: linear-gradient(135deg, rgba(46, 213, 115, 0.1) 0%, rgba(39, 174, 96, 0.1) 100%); padding: 20px; border-radius: 12px;">
-            <div style="font-size: 2.5rem; font-weight: 700; color: #2ecc71;">{{ $hadir }}</div>
-            <div style="color: #666;">Hadir</div>
-        </div>
-        <div style="background: linear-gradient(135deg, rgba(241, 196, 15, 0.1) 0%, rgba(243, 156, 18, 0.1) 100%); padding: 20px; border-radius: 12px;">
-            <div style="font-size: 2.5rem; font-weight: 700; color: #f1c40f;">{{ $izin }}</div>
-            <div style="color: #666;">Izin</div>
-        </div>
-        <div style="background: linear-gradient(135deg, rgba(231, 76, 60, 0.1) 0%, rgba(192, 57, 43, 0.1) 100%); padding: 20px; border-radius: 12px;">
-            <div style="font-size: 2.5rem; font-weight: 700; color: #e74c3c;">{{ $alpha }}</div>
-            <div style="color: #666;">Alpha</div>
-        </div>
+    <!-- Alert Notification -->
+    <div id="absensiAlert" class="@if(isset($infoMessage)) absensi-info-box success @else hidden @endif">
+        @if(isset($infoMessage))
+            <div class="flex items-center gap-3">
+                <i class='bx bx-check-circle text-success text-xl'></i>
+                <div>
+                    <div class="font-semibold">Absensi Terkirim</div>
+                    <div>{{ $infoMessage }}</div>
+                </div>
+            </div>
+        @endif
     </div>
+    
+<!-- Statistik Absensi -->
+<div class="absensi-stats-grid">
+    <div class="absensi-stat-card border-primary">
+        <div class="absensi-stat-icon primary">
+            <i class='bx bx-calendar'></i>
+        </div>
+        <div class="absensi-stat-value">{{ $total }}</div>
+        <div class="absensi-stat-label">Total Hari</div>
+    </div>
+    <div class="absensi-stat-card border-success">
+        <div class="absensi-stat-icon success">
+            <i class='bx bx-check-circle'></i>
+        </div>
+        <div class="absensi-stat-value">{{ $hadir }}</div>
+        <div class="absensi-stat-label">Hadir</div>
+    </div>
+    <div class="absensi-stat-card border-warning">
+        <div class="absensi-stat-icon warning">
+            <i class='bx bx-alarm-exclamation'></i>
+        </div>
+        <div class="absensi-stat-value">{{ $izin }}</div>
+        <div class="absensi-stat-label">Izin</div>
+    </div>
+    <div class="absensi-stat-card border-danger">
+        <div class="absensi-stat-icon danger">
+            <i class='bx bx-x-circle'></i>
+        </div>
+        <div class="absensi-stat-value">{{ $alpha }}</div>
+        <div class="absensi-stat-label">Alpha</div>
+    </div>
+    <!-- Tambahkan statistik sakit di sini -->
+    <div class="absensi-stat-card border-info">
+        <div class="absensi-stat-icon info">
+            <i class='bx bx-plus-medical'></i>
+        </div>
+        <div class="absensi-stat-value">{{ $sakit ?? 0 }}</div>
+        <div class="absensi-stat-label">Sakit</div>
+    </div>
+</div>
     
     <!-- Form Absensi Hari Ini -->
     @if(!isset($infoMessage))
-    <div id="absensiForm" style="background: #f8fafc; padding: 30px; border-radius: 16px; margin-bottom: 30px; border: 2px solid var(--accent);">
-        <h3 style="color: var(--primary); margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+    <div id="absensiForm" class="absensi-form-container">
+        <h3 class="section-title">
             <i class='bx bx-edit'></i> Absensi Hari Ini
         </h3>
         
-        <div style="background: white; padding: 25px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div class="p-6 bg-white rounded-xl shadow-sm mb-6">
+            <!-- Date and Time Display -->
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
                 <div>
-                    <div style="font-weight: 600; color: var(--primary); font-size: 1.2rem;" id="currentDate">Sabtu, 16 Maret 2024</div>
-                    <div style="color: #666; font-size: 0.9rem;">Hari ke-16 dari 90 hari magang</div>
+                    <div class="font-semibold text-lg text-primary" id="currentDate">Sabtu, 16 Maret 2024</div>
+                    <div class="text-sm text-gray-600">Tanggal absensi hari ini</div>
                 </div>
-                <div id="clock" style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">00:00:00</div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-primary" id="clock">00:00:00</div>
+                    <div class="text-sm text-gray-600">Waktu saat ini (WIB)</div>
+                </div>
             </div>
             
             <!-- Status Absensi -->
-            <div id="absensiStatus" style="margin-bottom: 20px;">
-                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
-                    <button onclick="setAbsensiStatus('hadir')" id="btnHadir" style="flex:1; padding:15px; background:#e6fff3; border:2px solid #2ecc71; color:#2ecc71; border-radius:10px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px;">
+            <div id="absensiStatus" class="mb-8">
+                <label class="block text-sm font-medium text-gray-700 mb-4">Status Kehadiran *</label>
+                <div class="status-btn-group">
+                    <button type="button" onclick="setAbsensiStatus('hadir')" id="btnHadir" class="status-btn hadir">
                         <i class='bx bx-check-circle'></i> Hadir
                     </button>
-                    <button onclick="setAbsensiStatus('izin')" id="btnIzin" style="flex:1; padding:15px; background:#fff9e6; border:2px solid #f1c40f; color:#f1c40f; border-radius:10px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px;">
+                    <button type="button" onclick="setAbsensiStatus('izin')" id="btnIzin" class="status-btn izin">
                         <i class='bx bx-alarm-exclamation'></i> Izin
                     </button>
-                    <button onclick="setAbsensiStatus('sakit')" id="btnSakit" style="flex:1; padding:15px; background:#ffe6e6; border:2px solid #e74c3c; color:#e74c3c; border-radius:10px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px;">
+                    <button type="button" onclick="setAbsensiStatus('sakit')" id="btnSakit" class="status-btn sakit">
                         <i class='bx bx-plus-medical'></i> Sakit
                     </button>
                 </div>
                 
-                <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px;">
-                    <div id="statusText" style="font-weight: 600; color: var(--primary);">Silakan pilih status absensi</div>
+                <div class="text-center mt-4">
+                    <div id="statusText" class="text-lg font-semibold text-primary">Silakan pilih status absensi</div>
                 </div>
             </div>
             
             <!-- GPS Location -->
-            <div id="gpsSection" style="display: none;">
-                <div style="background: #e6f2ff; padding: 20px; border-radius: 12px; margin-bottom: 20px; border-left: 4px solid #3498db;">
+            <div id="gpsSection" class="hidden">
+                <div class="gps-container">
                     <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
                         <i class='bx bx-map' style="font-size: 2rem; color: #3498db;"></i>
                         <div>
                             <div style="font-weight: 600; color: var(--primary);">Lokasi Anda</div>
                             <div id="locationText" style="color: #666;">Mendeteksi lokasi...</div>
                         </div>
-                        <button onclick="getLocation()" style="margin-left: auto; background: #3498db; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-size: 0.9rem; cursor: pointer;">
+                        <button onclick="getLocation()" class="btn btn-primary" style="auto; background: #195075; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-size: 0.9rem; cursor: pointer;">
                             <i class='bx bx-refresh'></i> Refresh
                         </button>
                     </div>
                     
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="display: flex; align-items: center; gap: 5px;">
-                            <div style="width: 12px; height: 12px; background: #2ecc71; border-radius: 50%;"></div>
-                            <span style="font-size: 0.85rem; color: #666;">Lokasi Kantor</span>
+                    <div class="flex items-center gap-4 mb-3">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                            <span class="text-sm text-gray-600">Lokasi Kantor</span>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 5px;">
-                            <div style="width: 12px; height: 12px; background: #3498db; border-radius: 50%;"></div>
-                            <span style="font-size: 0.85rem; color: #666;">Lokasi Anda</span>
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                            <span class="text-sm text-gray-600">Lokasi Anda</span>
                         </div>
                     </div>
                     
                     <!-- Map Container -->
-                    <div id="mapContainer" style="height: 200px; background: #f8f9fa; border-radius: 8px; margin-top: 15px; overflow: hidden; position: relative;">
-                        <!-- Simplified Map Visualization -->
-                        <div style="position: relative; width: 100%; height: 100%; background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
-                            <!-- Office Marker -->
-                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
-                                <div style="width: 40px; height: 40px; background: #2ecc71; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);">
-                                    <i class='bx bx-building'></i>
-                                </div>
-                                <div style="position: absolute; top: 45px; left: 50%; transform: translateX(-50%); white-space: nowrap; background: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                                    Diskominfo SP
-                                </div>
+                    <div class="map-visual">
+                        <!-- Office Marker -->
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+                            <div style="width: 50px; height: 50px; background: #2ecc71; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);">
+                                <i class='bx bx-building'></i>
                             </div>
-                            
-                            <!-- User Marker -->
-                            <div id="userMarker" style="position: absolute; top: 30%; left: 60%; display: none;">
-                                <div style="width: 30px; height: 30px; background: #3498db; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1rem; box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);">
-                                    <i class='bx bx-user'></i>
-                                </div>
-                                <div style="position: absolute; top: 35px; left: 50%; transform: translateX(-50%); white-space: nowrap; background: white; padding: 3px 6px; border-radius: 4px; font-size: 0.7rem; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                                    Anda
-                                </div>
+                            <div style="position: absolute; top: 55px; left: 50%; transform: translateX(-50%); white-space: nowrap; background: white; padding: 5px 10px; border-radius: 6px; font-size: 0.8rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                                Diskominfo SP
                             </div>
-                            
-                            <!-- Distance Line -->
-                            <div id="distanceLine" style="position: absolute; display: none;"></div>
                         </div>
                         
-                        <!-- Distance Info -->
-                        <div id="distanceInfo" style="position: absolute; bottom: 10px; left: 10px; background: rgba(255, 255, 255, 0.9); padding: 8px 15px; border-radius: 20px; font-size: 0.9rem; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                            Jarak: <span id="distanceValue">-</span> meter
+                        <!-- User Marker -->
+                        <div id="userMarker" style="position: absolute; top: 30%; left: 60%; display: none;">
+                            <div style="width: 40px; height: 40px; background: #3498db; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);">
+                                <i class='bx bx-user'></i>
+                            </div>
+                            <div style="position: absolute; top: 45px; left: 50%; transform: translateX(-50%); white-space: nowrap; background: white; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                                Anda
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Distance Info -->
+                    <div id="distanceInfo" class="mt-4 p-3 bg-white rounded-lg border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <span class="font-medium text-gray-700">Jarak dari Kantor:</span>
+                            <span id="distanceValue" class="font-bold text-primary">-</span>
                         </div>
                     </div>
                 </div>
             </div>
             
             <!-- Upload Bukti -->
-            <div id="uploadSection" style="display: none;">
-                <div class="form-group">
-                    <label id="uploadLabel">Upload Bukti *</label>
-                    <div class="upload-area" onclick="document.getElementById('buktiFile').click()" id="uploadZone">
-                        <div class="upload-icon">
+            <div id="uploadSection" class="hidden">
+                <div class="mb-6">
+                    <label id="uploadLabel" class="block text-sm font-medium text-gray-700 mb-3">Upload Bukti *</label>
+                    <div class="upload-area-custom" onclick="document.getElementById('buktiFile').click()" id="uploadZone">
+                        <div class="upload-icon-custom">
                             <i class='bx bx-cloud-upload'></i>
                         </div>
-                        <div style="font-weight: 600; margin-bottom: 5px;">Klik atau drag file ke sini</div>
-                        <small>Format PDF/JPG/PNG, max 2MB. </small>
-                        <input type="file" id="buktiFile" accept=".jpg,.jpeg,.png,.pdf" style="display:none;" onchange="previewBukti(this)">
+                        <div class="font-semibold mb-2">Klik atau drag file ke sini</div>
+                        <div class="text-sm text-gray-500 mb-1">Format: JPG, JPEG, PNG (maks. 2MB)</div>
+                        <div class="text-xs text-gray-400">Ukuran file tidak boleh lebih dari 2MB</div>
+                        <input type="file" id="buktiFile" accept=".jpg,.jpeg,.png" style="display:none;" onchange="previewBukti(this)">
                     </div>
-                    <div id="buktiPreview" style="margin-top: 10px;"></div>
+                    <div id="buktiPreview" class="mt-4"></div>
                 </div>
 
-                <!--izin notes -->
-                <div id="izinNotes" style="display: none;">
-                    <div class="form-group">
-                        <label>Alasan Izin/Sakit *</label>
-                        <textarea id="alasanText" rows="3" placeholder="Jelaskan alasan izin/sakit secara detail..."></textarea>
+                <!-- Izin Notes -->
+                <div id="izinNotes" class="hidden">
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-3">Alasan Izin/Sakit *</label>
+                        <textarea id="alasanText" rows="4" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                  placeholder="Jelaskan alasan izin/sakit secara detail... (minimal 10 karakter)"></textarea>
                     </div>
                 </div>
             </div>
             
             <!-- Submit Button -->
-            <div style="text-align: center; margin-top: 25px;">
-                <button onclick="submitAbsensi()" id="submitBtn" class="btn btn-primary" style="padding: 15px 40px; font-size: 1.1rem;" disabled>
+            <div class="absensi-action-buttons">
+                <button onclick="submitAbsensi()" id="submitBtn" class="btn btn-primary" disabled>
                     <i class='bx bx-send'></i> Submit Absensi
                 </button>
-                <button onclick="resetAbsensi()" class="btn" style="margin-left: 15px; background: #f8fafc; color: #666; padding: 15px 30px;">
-                    Reset
+                <button onclick="resetAbsensi()" class="btn btn-secondary">
+                    <i class='bx bx-reset'></i> Reset Form
                 </button>
             </div>
         </div>
         
-        <!-- Jam Kerja Info -->
+<!-- Jam Kerja Info -->
         <div style="background: #e6fff3; padding: 20px; border-radius: 12px; border-left: 4px solid #2ecc71;">
             <div style="display: flex; align-items: center; gap: 15px;">
                 <i class='bx bx-time-five' style="font-size: 2rem; color: #2ecc71;"></i>
@@ -178,7 +207,7 @@
                         <span style="font-weight: 600;">Jumat:</span> 07:30 - 14:30 WIB<br>
                     </div>
                     <div style="color: #e74c3c; font-size: 0.9rem; margin-top: 10px; font-weight: 600;">
-                        <i class='bx bx-alarm'></i> Absensi diluar jam kerja akan tercatat terlambat
+                        <i class='bx bx-alarm'></i> Absensi diluar jam kerja akan tercatat terlambat dan jika tidak submit absensi dianggap alpha.
                     </div>
                 </div>
             </div>
@@ -186,64 +215,85 @@
     </div>
     @endif
 
+    <!-- Success Notification Modal -->
+    <div id="successModal" class="modal-notification">
+        <div class="modal-notification-content">
+            <div class="mb-6">
+                <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class='bx bx-check-circle text-green-600 text-4xl'></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">Absensi Berhasil!</h3>
+                <p id="successMessage" class="text-gray-600"></p>
+            </div>
+            <button onclick="closeSuccessModal()" class="btn btn-primary w-full">
+                <i class='bx bx-check'></i> OK
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
-    // Global variables
-    let currentAbsensiStatus = null;
-    let userLocation = null;
-    let uploadedFile = null;
-    let isLocationValid = false;
+// ============================
+// JavaScript Functions
+// ============================
+
+// Global variables
+let currentAbsensiStatus = null;
+let userLocation = null;
+let uploadedFile = null;
+let isLocationValid = false;
     
-    // Office coordinates (Diskominfo SP Surakarta)
-    const OFFICE_COORDS = {
-        lat: -7.565962,
-        lng: 110.826141,
-        address: "Jl. Jend. Sudirman No. 2, Kp. Baru, Kec. Ps. Kliwon, Kota Surakarta"
-    };
+// Office coordinates (Diskominfo SP Surakarta)
+const OFFICE_COORDS = {
+    lat: -7.565962,
+    lng: 110.826141,
+    address: "Jl. Jend. Sudirman No. 2, Kp. Baru, Kec. Ps. Kliwon, Kota Surakarta"
+};
     
-    // Update clock
-    function updateClock() {
-        const now = new Date();
-        const timeString = now.toLocaleTimeString('id-ID');
-        document.getElementById('clock').textContent = timeString;
-        
-        // Update date
-        const dateString = now.toLocaleDateString('id-ID', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
-        document.getElementById('currentDate').textContent = dateString;
-    }
+// Update clock
+function updateClock() {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString('id-ID');
+    document.getElementById('clock').textContent = timeString;
+    
+    // Update date
+    const dateString = now.toLocaleDateString('id-ID', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+    document.getElementById('currentDate').textContent = dateString;
+}
     
 // Set absensi status
 function setAbsensiStatus(status) {
     currentAbsensiStatus = status;
     
     // Reset all buttons
-    document.getElementById('btnHadir').style.background = '#e6fff3';
-    document.getElementById('btnHadir').style.borderColor = '#2ecc71';
-    document.getElementById('btnHadir').style.color = '#2ecc71';
-    
-    document.getElementById('btnIzin').style.background = '#fff9e6';
-    document.getElementById('btnIzin').style.borderColor = '#f1c40f';
-    document.getElementById('btnIzin').style.color = '#f1c40f';
-    
-    document.getElementById('btnSakit').style.background = '#ffe6e6';
-    document.getElementById('btnSakit').style.borderColor = '#e74c3c';
-    document.getElementById('btnSakit').style.color = '#e74c3c';
+    document.querySelectorAll('.status-btn').forEach(btn => {
+        btn.classList.remove('active');
+        const statusClass = btn.classList.contains('hadir') ? 'hadir' : 
+                          btn.classList.contains('izin') ? 'izin' : 'sakit';
+        btn.style.background = 'white';
+        btn.style.color = statusClass === 'hadir' ? '#2ecc71' : 
+                         statusClass === 'izin' ? '#f1c40f' : '#e74c3c';
+        btn.style.borderColor = statusClass === 'hadir' ? '#2ecc71' : 
+                               statusClass === 'izin' ? '#f1c40f' : '#e74c3c';
+    });
     
     // Set active button
     if (status === 'hadir') {
+        document.getElementById('btnHadir').classList.add('active');
         document.getElementById('btnHadir').style.background = '#2ecc71';
         document.getElementById('btnHadir').style.color = 'white';
-        document.getElementById('statusText').innerHTML = 'Status: <span style="color:#2ecc71">HADIR</span>';
-        document.getElementById('gpsSection').style.display = 'block';
+        document.getElementById('statusText').innerHTML = '<span class="text-success">Status: HADIR</span>';
+        document.getElementById('gpsSection').classList.remove('hidden');
         
         // Reset location state
         isLocationValid = false;
         userLocation = null;
-        document.getElementById('izinNotes').style.display = 'none';
+        document.getElementById('izinNotes').classList.add('hidden');
         
         // Auto-get location for "hadir"
         setTimeout(() => {
@@ -251,22 +301,24 @@ function setAbsensiStatus(status) {
         }, 500);
         
     } else if (status === 'izin') {
+        document.getElementById('btnIzin').classList.add('active');
         document.getElementById('btnIzin').style.background = '#f1c40f';
         document.getElementById('btnIzin').style.color = 'white';
-        document.getElementById('statusText').innerHTML = 'Status: <span style="color:#f1c40f">IZIN</span>';
-        document.getElementById('gpsSection').style.display = 'none';
-        document.getElementById('izinNotes').style.display = 'block';
+        document.getElementById('statusText').innerHTML = '<span class="text-warning">Status: IZIN</span>';
+        document.getElementById('gpsSection').classList.add('hidden');
+        document.getElementById('izinNotes').classList.remove('hidden');
         isLocationValid = true; // Skip location validation for izin/sakit
     } else {
+        document.getElementById('btnSakit').classList.add('active');
         document.getElementById('btnSakit').style.background = '#e74c3c';
         document.getElementById('btnSakit').style.color = 'white';
-        document.getElementById('statusText').innerHTML = 'Status: <span style="color:#e74c3c">SAKIT</span>';
-        document.getElementById('gpsSection').style.display = 'none';
-        document.getElementById('izinNotes').style.display = 'block';
+        document.getElementById('statusText').innerHTML = '<span class="text-danger">Status: SAKIT</span>';
+        document.getElementById('gpsSection').classList.add('hidden');
+        document.getElementById('izinNotes').classList.remove('hidden');
         isLocationValid = true; // Skip location validation for izin/sakit
     }
     
-    document.getElementById('uploadSection').style.display = 'block';
+    document.getElementById('uploadSection').classList.remove('hidden');
     
     // Update upload label based on status
     const uploadLabel = document.getElementById('uploadLabel');
@@ -305,56 +357,20 @@ function getLocation() {
             // Update location text
             document.getElementById('locationText').innerHTML = `
                 <div>Jarak: <strong>${Math.round(distance)} meter</strong> dari Diskominfo</div>
-                <div style="font-size:0.9rem; color:#666;">
+                <div class="text-xs text-gray-500">
                     Koordinat: ${userLocation.lat.toFixed(6)}, ${userLocation.lng.toFixed(6)}
-                </div>
-                <div style="font-size:0.8rem; color:#999;">
-                    Akurasi: ${position.coords.accuracy.toFixed(1)} meter
                 </div>
             `;
             
             // Update distance display
-            document.getElementById('distanceValue').textContent = Math.round(distance);
+            document.getElementById('distanceValue').textContent = Math.round(distance) + ' meter';
             
             // Show user marker on map
             const userMarker = document.getElementById('userMarker');
             userMarker.style.display = 'block';
             
-            // Position user marker
-            const userX = 60 + (userLocation.lng - OFFICE_COORDS.lng) * 100;
-            const userY = 30 + (userLocation.lat - OFFICE_COORDS.lat) * 100;
-            userMarker.style.left = `${Math.min(Math.max(userX, 10), 90)}%`;
-            userMarker.style.top = `${Math.min(Math.max(userY, 10), 90)}%`;
-            
-            // Show distance line
-            const line = document.getElementById('distanceLine');
-            line.style.display = 'block';
-            line.style.position = 'absolute';
-            line.style.top = '50%';
-            line.style.left = '50%';
-            line.style.width = `${Math.abs(userX - 50)}%`;
-            line.style.height = '2px';
-            line.style.background = '#3498db';
-            line.style.transformOrigin = '0 0';
-            
             // SELALU valid untuk testing
             isLocationValid = true;
-            
-            // Update distance info
-            document.getElementById('distanceInfo').innerHTML = 
-                `Jarak: <span id="distanceValue">${Math.round(distance)}</span> meter`;
-            
-            if (distance <= 500) {
-                document.getElementById('distanceInfo').style.background = 'rgba(46, 204, 113, 0.9)';
-                document.getElementById('distanceInfo').style.color = 'white';
-                document.getElementById('distanceInfo').innerHTML += 
-                    ' <i class="bx bx-check" style="color:white;"></i>';
-            } else {
-                document.getElementById('distanceInfo').style.background = 'rgba(52, 152, 219, 0.9)';
-                document.getElementById('distanceInfo').style.color = 'white';
-                document.getElementById('distanceInfo').innerHTML += 
-                    ' <i class="bx bx-current-location" style="color:white;"></i>';
-            }
             
             // Check eligibility
             checkSubmitEligibility();
@@ -387,7 +403,7 @@ function getLocation() {
     );
 }
     
-    // Calculate distance between two coordinates in meters
+// Calculate distance between two coordinates in meters
 function calculateDistance(lat1, lon1, lat2, lon2) {
     const R = 6371e3; // Earth radius in meters
     const phi1 = lat1 * Math.PI / 180;
@@ -403,82 +419,72 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
     return R * c;
 }
     
-    // Preview uploaded file
-    function previewBukti(input) {
-        const preview = document.getElementById('buktiPreview');
-        const uploadZone = document.getElementById('uploadZone');
+// Preview uploaded file
+function previewBukti(input) {
+    const preview = document.getElementById('buktiPreview');
+    const uploadZone = document.getElementById('uploadZone');
+    
+    if (input.files && input.files[0]) {
+        uploadedFile = input.files[0];
+        const fileName = uploadedFile.name;
+        const fileSize = (uploadedFile.size / 1024 / 1024).toFixed(2);
         
-        if (input.files && input.files[0]) {
-            uploadedFile = input.files[0];
-            const fileName = uploadedFile.name;
-            const fileSize = (uploadedFile.size / 1024 / 1024).toFixed(2);
-            
-            if (fileSize > 2) {
-                alert('File terlalu besar! Maksimal 2MB.');
-                input.value = '';
-                preview.innerHTML = '';
-                uploadedFile = null;
-                checkSubmitEligibility();
-                return;
-            }
-            
-            // Check file type
-            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
-            if (!validTypes.includes(uploadedFile.type)) {
-                alert('Format file tidak valid! Hanya JPG/PNG/PDF yang diperbolehkan.');
-                input.value = '';
-                preview.innerHTML = '';
-                uploadedFile = null;
-                checkSubmitEligibility();
-                return;
-            }
-            
-            // Update preview
-            preview.innerHTML = `
-                <div style="background: #e6fff3; padding: 15px; border-radius: 12px; border: 2px solid #2ecc71;">
-                    <div style="display: flex; align-items: center; gap: 15px;">
-                        <i class='bx bx-image' style="font-size: 2rem; color: #2ecc71;"></i>
-                        <div style="flex: 1;">
-                            <div style="font-weight: 600; color: var(--primary);">${fileName}</div>
-                            <div style="font-size: 0.9rem; color: #666;">${fileSize} MB - ${uploadedFile.type}</div>
-                        </div>
-                        <button onclick="removeFile()" style="background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 1.2rem;">
-                            <i class='bx bx-trash'></i>
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            if (uploadedFile.type !== 'application/pdf') {
-                // Preview image
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    preview.innerHTML += `
-                        <div style="margin-top: 15px; text-align: center;">
-                            <img src="${e.target.result}" style="max-width: 200px; max-height: 200px; border-radius: 8px; border: 2px solid #e2e8f0;">
-                        </div>
-                    `;
-                };
-                reader.readAsDataURL(uploadedFile);
-            }
-            
-            // Update upload zone
-            uploadZone.style.background = 'rgba(46, 204, 113, 0.1)';
-            uploadZone.style.borderColor = '#2ecc71';
+        if (fileSize > 2) {
+            showAlert('File terlalu besar! Maksimal 2MB.', 'danger');
+            input.value = '';
+            preview.innerHTML = '';
+            uploadedFile = null;
+            checkSubmitEligibility();
+            return;
         }
         
-        checkSubmitEligibility();
+        // Check file type
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+        if (!validTypes.includes(uploadedFile.type)) {
+            showAlert('Format file tidak valid! Hanya JPG/PNG/JPEG yang diperbolehkan.', 'danger');
+            input.value = '';
+            preview.innerHTML = '';
+            uploadedFile = null;
+            checkSubmitEligibility();
+            return;
+        }
+        
+        // Update preview
+        preview.innerHTML = `
+            <div class="p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <i class='bx bx-image text-green-600 text-xl'></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-semibold text-gray-800">${fileName}</div>
+                        <div class="text-sm text-gray-600">${fileSize} MB • ${uploadedFile.type}</div>
+                    </div>
+                    <button onclick="removeFile()" class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center text-red-600 hover:bg-red-200 transition-colors">
+                        <i class='bx bx-trash'></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        // Update upload zone
+        uploadZone.style.background = 'rgba(46, 204, 113, 0.1)';
+        uploadZone.style.borderColor = '#2ecc71';
     }
     
-    // Remove uploaded file
-    function removeFile() {
-        document.getElementById('buktiFile').value = '';
-        document.getElementById('buktiPreview').innerHTML = '';
-        uploadedFile = null;
-        document.getElementById('uploadZone').style.background = 'rgba(148, 180, 193, 0.05)';
-        document.getElementById('uploadZone').style.borderColor = 'var(--accent)';
-        checkSubmitEligibility();
-    }
+    checkSubmitEligibility();
+}
+    
+// Remove uploaded file
+function removeFile() {
+    document.getElementById('buktiFile').value = '';
+    document.getElementById('buktiPreview').innerHTML = '';
+    uploadedFile = null;
+    const uploadZone = document.getElementById('uploadZone');
+    uploadZone.style.background = '';
+    uploadZone.style.borderColor = '';
+    checkSubmitEligibility();
+}
     
 // Check if submit is eligible
 function checkSubmitEligibility() {
@@ -495,7 +501,6 @@ function checkSubmitEligibility() {
     
     if (currentAbsensiStatus === 'hadir') {
         // For hadir: need location AND file upload
-        // TIDAK PERLU validasi jarak (isLocationValid), hanya perlu lokasi terdeteksi
         const hasLocation = userLocation !== null;
         
         if (hasLocation && uploadedFile) {
@@ -528,12 +533,11 @@ function checkSubmitEligibility() {
         }
     }
 }
-
     
 // Submit absensi
 function submitAbsensi() {
     if (!currentAbsensiStatus) {
-        alert('Pilih status absensi dulu');
+        showAlert('Pilih status absensi dulu', 'warning');
         return;
     }
 
@@ -548,7 +552,7 @@ function submitAbsensi() {
     // HADIR -> butuh lokasi dan bukti
     if (currentAbsensiStatus === 'hadir') {
         if (!uploadedFile) {
-            alert('Upload bukti wajib untuk absensi hadir');
+            showAlert('Upload bukti wajib untuk absensi hadir', 'warning');
             submitBtn.innerHTML = originalText;
             submitBtn.disabled = false;
             return;
@@ -556,7 +560,7 @@ function submitAbsensi() {
 
         // Wajib ada lokasi (tapi tidak perlu validasi jarak)
         if (!userLocation) {
-            alert('Lokasi belum terdeteksi. Klik "Refresh" untuk mengambil lokasi');
+            showAlert('Lokasi belum terdeteksi. Klik "Refresh" untuk mengambil lokasi', 'warning');
             submitBtn.innerHTML = originalText;
             submitBtn.disabled = false;
             return;
@@ -570,14 +574,14 @@ function submitAbsensi() {
     if (currentAbsensiStatus === 'izin' || currentAbsensiStatus === 'sakit') {
         const alasan = document.getElementById('alasanText').value;
         if (alasan.trim().length < 10) {
-            alert('Alasan minimal 10 karakter');
+            showAlert('Alasan minimal 10 karakter', 'warning');
             submitBtn.innerHTML = originalText;
             submitBtn.disabled = false;
             return;
         }
 
         if (!uploadedFile) {
-            alert('Upload surat izin / sakit wajib');
+            showAlert('Upload surat izin / sakit wajib', 'warning');
             submitBtn.innerHTML = originalText;
             submitBtn.disabled = false;
             return;
@@ -608,11 +612,20 @@ function submitAbsensi() {
             if (res.status === 409 || res.status === 422) {
                 const alertBox = document.getElementById('absensiAlert');
                 if (alertBox) {
-                    alertBox.textContent = message;
-                    alertBox.style.display = 'block';
+                    alertBox.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <i class='bx bx-error-circle text-danger text-xl'></i>
+                            <div>
+                                <div class="font-semibold">Perhatian</div>
+                                <div>${message}</div>
+                            </div>
+                        </div>
+                    `;
+                    alertBox.classList.remove('hidden');
+                    alertBox.classList.add('absensi-info-box', 'danger');
                 }
             } else {
-                alert(message);
+                showAlert(message, 'danger');
             }
             throw new Error(message);
         }
@@ -620,8 +633,13 @@ function submitAbsensi() {
         return payload;
     })
     .then(data => {
-        alert(data?.message || 'Absen berhasil');
-        window.location.reload();
+        // Show success modal
+        showSuccessModal(data?.message || 'Absen berhasil');
+        
+        // Auto reload after 3 seconds
+        setTimeout(() => {
+            window.location.reload();
+        }, 3000);
     })
     .catch(err => {
         console.error(err);
@@ -629,45 +647,85 @@ function submitAbsensi() {
         submitBtn.disabled = false;
     });
 }
+    
+// Reset absensi form
+function resetAbsensi() {
+    currentAbsensiStatus = null;
+    userLocation = null;
+    uploadedFile = null;
+    isLocationValid = false;
+    
+    document.getElementById('gpsSection').classList.add('hidden');
+    document.getElementById('uploadSection').classList.add('hidden');
+    document.getElementById('izinNotes').classList.add('hidden');
+    document.getElementById('buktiPreview').innerHTML = '';
+    document.getElementById('alasanText').value = '';
+    document.getElementById('submitBtn').disabled = true;
+    
+    document.getElementById('statusText').innerHTML = 'Silakan pilih status absensi';
+    
+    // Reset buttons
+    document.querySelectorAll('.status-btn').forEach(btn => {
+        btn.classList.remove('active');
+        const statusClass = btn.classList.contains('hadir') ? 'hadir' : 
+                          btn.classList.contains('izin') ? 'izin' : 'sakit';
+        btn.style.background = 'white';
+        btn.style.color = statusClass === 'hadir' ? '#2ecc71' : 
+                         statusClass === 'izin' ? '#f1c40f' : '#e74c3c';
+        btn.style.borderColor = statusClass === 'hadir' ? '#2ecc71' : 
+                               statusClass === 'izin' ? '#f1c40f' : '#e74c3c';
+    });
+}
+    
+// Show success modal
+function showSuccessModal(message) {
+    document.getElementById('successMessage').textContent = message;
+    document.getElementById('successModal').style.display = 'flex';
+}
 
+// Close success modal
+function closeSuccessModal() {
+    document.getElementById('successModal').style.display = 'none';
+    window.location.reload();
+}
+
+// Show alert notification
+function showAlert(message, type = 'info') {
+    const alertBox = document.getElementById('absensiAlert');
+    if (!alertBox) return;
     
-    // Reset absensi form
-    function resetAbsensi() {
-        currentAbsensiStatus = null;
-        userLocation = null;
-        uploadedFile = null;
-        isLocationValid = false;
-        
-        document.getElementById('gpsSection').style.display = 'none';
-        document.getElementById('uploadSection').style.display = 'none';
-        document.getElementById('izinNotes').style.display = 'none';
-        document.getElementById('buktiPreview').innerHTML = '';
-        document.getElementById('alasanText').value = '';
-        document.getElementById('submitBtn').disabled = true;
-        
-        document.getElementById('statusText').innerHTML = 'Silakan pilih status absensi';
-        
-        // Reset buttons
-        setAbsensiStatus(null);
-    }
+    const icons = {
+        'success': 'bx-check-circle',
+        'warning': 'bx-error-circle',
+        'danger': 'bx-error-circle',
+        'info': 'bx-info-circle'
+    };
     
-    // Export absensi
-    function exportAbsensi() {
-        alert('Fitur export PDF akan membuka halaman download...\n\nDalam implementasi nyata, ini akan generate PDF dengan:\n• Logo Diskominfo\n• Data absensi lengkap\n• Tanda tangan digital\n• QR code verifikasi');
-    }
+    const colors = {
+        'success': 'success',
+        'warning': 'warning',
+        'danger': 'danger',
+        'info': ''
+    };
     
-    // Navigation functions
-    function prevMonth() {
-        alert('Bulan sebelumnya');
-    }
+    alertBox.innerHTML = `
+        <div class="flex items-center gap-3">
+            <i class='bx ${icons[type] || 'bx-info-circle'} text-${colors[type] || 'primary'} text-xl'></i>
+            <div>
+                <div class="font-semibold">${type === 'success' ? 'Sukses' : type === 'warning' ? 'Perhatian' : type === 'danger' ? 'Error' : 'Info'}</div>
+                <div>${message}</div>
+            </div>
+        </div>
+    `;
     
-    function nextMonth() {
-        alert('Bulan berikutnya');
-    }
+    alertBox.className = `absensi-info-box ${colors[type]}`;
+    alertBox.classList.remove('hidden');
     
-    function loadMoreRiwayat() {
-        alert('Memuat data absensi lebih banyak...');
-    }
+    // Auto hide after 5 seconds
+    setTimeout(() => {
+        alertBox.classList.add('hidden');
+    }, 5000);
+}
     
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
@@ -677,47 +735,45 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Setup drag and drop for file upload
     const uploadZone = document.getElementById('uploadZone');
-    uploadZone.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        this.style.background = 'rgba(46, 204, 113, 0.2)';
-        this.style.borderColor = '#2ecc71';
-    });
-    
-    uploadZone.addEventListener('dragleave', function(e) {
-        e.preventDefault();
-        if (!uploadedFile) {
-            this.style.background = 'rgba(148, 180, 193, 0.05)';
-            this.style.borderColor = 'var(--accent)';
-        }
-    });
-    
-    uploadZone.addEventListener('drop', function(e) {
-        e.preventDefault();
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-            document.getElementById('buktiFile').files = files;
-            previewBukti(document.getElementById('buktiFile'));
-        }
-    });
+    if (uploadZone) {
+        uploadZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.style.background = 'rgba(46, 204, 113, 0.2)';
+            this.style.borderColor = '#2ecc71';
+        });
+        
+        uploadZone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            if (!uploadedFile) {
+                this.style.background = '';
+                this.style.borderColor = '';
+            }
+        });
+        
+        uploadZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                document.getElementById('buktiFile').files = files;
+                previewBukti(document.getElementById('buktiFile'));
+            }
+        });
+    }
     
     // Listen for reason text changes
-    document.getElementById('alasanText').addEventListener('input', checkSubmitEligibility);
+    const alasanText = document.getElementById('alasanText');
+    if (alasanText) {
+        alasanText.addEventListener('input', checkSubmitEligibility);
+    }
     
     // Listen for file input changes
-    document.getElementById('buktiFile').addEventListener('change', function() {
-        previewBukti(this);
-        checkSubmitEligibility();
-    });
-});
-
-</script>
-
-<style>
-    /* Drag and drop styles */
-    #uploadZone.drag-over {
-        background: rgba(46, 204, 113, 0.2) !important;
-        border-color: #2ecc71 !important;
-        transform: scale(1.02);
+    const buktiFile = document.getElementById('buktiFile');
+    if (buktiFile) {
+        buktiFile.addEventListener('change', function() {
+            previewBukti(this);
+            checkSubmitEligibility();
+        });
     }
-</style>
+});
+</script>
 @endsection
