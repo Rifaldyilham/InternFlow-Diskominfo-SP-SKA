@@ -176,7 +176,7 @@
         function confirmLogout() {
     Swal.fire({
         title: 'Logout?',
-        text: "Anda akan keluar dari sistem Mentor.",
+        text: "Yakin akan keluar?",
         icon: 'question',
         showCancelButton: true,
         confirmButtonColor: '#213448',
