@@ -24,69 +24,97 @@ class AbsensiController extends Controller
         
         $pegawaiId = $pegawai->id_pegawai;
 
-        // tanggal yang dipilih mentor
-        $tanggal = $request->tanggal 
+        // tanggal yang dipilih mentor (opsional)
+        $tanggal = $request->tanggal
             ? Carbon::parse($request->tanggal)->toDateString()
-            : now()->toDateString();
+            : null;
 
         // ambil semua peserta bimbingan mentor
         $pesertaList = Pesertamagang::where('id_pegawai', $pegawaiId)->get();
 
         $pesertaIds = $pesertaList->pluck('id_pesertamagang');
-        $absenMap = collect();
-
-        if ($pesertaIds->isNotEmpty()) {
-            $absenMap = Absensi::whereIn('id_pesertamagang', $pesertaIds)
-                ->whereDate('waktu_absen', $tanggal)
-                ->get()
-                ->keyBy('id_pesertamagang');
-        }
-
         $result = [];
 
-        foreach ($pesertaList as $peserta) {
-            if ($peserta->tanggal_mulai) {
-                $mulai = Carbon::parse($peserta->tanggal_mulai)->toDateString();
-                if ($tanggal < $mulai) {
-                    continue;
-                }
-            }
-            if ($peserta->tanggal_selesai) {
-                $selesai = Carbon::parse($peserta->tanggal_selesai)->toDateString();
-                if ($tanggal > $selesai) {
-                    continue;
-                }
+        if ($tanggal) {
+            $absenMap = collect();
+
+            if ($pesertaIds->isNotEmpty()) {
+                $absenMap = Absensi::whereIn('id_pesertamagang', $pesertaIds)
+                    ->whereDate('waktu_absen', $tanggal)
+                    ->get()
+                    ->keyBy('id_pesertamagang');
             }
 
-            $absen = $absenMap->get($peserta->id_pesertamagang);
+            foreach ($pesertaList as $peserta) {
+                if ($peserta->tanggal_mulai) {
+                    $mulai = Carbon::parse($peserta->tanggal_mulai)->toDateString();
+                    if ($tanggal < $mulai) {
+                        continue;
+                    }
+                }
+                if ($peserta->tanggal_selesai) {
+                    $selesai = Carbon::parse($peserta->tanggal_selesai)->toDateString();
+                    if ($tanggal > $selesai) {
+                        continue;
+                    }
+                }
 
-            if ($absen) {
-                $waktuAbsen = $absen->waktu_absen instanceof \Carbon\Carbon
-                    ? $absen->waktu_absen
-                    : Carbon::parse($absen->waktu_absen);
-               
-                $result[] = [
-                    'id'           => $absen->id_absensi,
-                    'nama'         => $peserta->nama,
-                    'tanggal'      => $waktuAbsen ? $waktuAbsen->toDateString() : $tanggal,
-                    'waktu_submit' => $waktuAbsen ? $waktuAbsen->format('H:i') : null,
-                    'status'       => $absen->status,
-                    'lokasi'       => $absen->lokasi,
-                    'bukti'        => $absen->bukti_kegiatan,
-                    'created_at'   => $absen->created_at,
-                ];
-            } else {
-                // TIDAK ADA ABSENSI = ALPHA
-                $result[] = [
-                    'id'           => null,
-                    'nama'         => $peserta->nama,
-                    'tanggal'      => $tanggal,
-                    'waktu_submit' => null,
-                    'status'       => 'alpha',
-                    'lokasi'       => null,
-                    'bukti'        => null,
-                    'created_at'   => null,
-                ];
+                $absen = $absenMap->get($peserta->id_pesertamagang);
+
+                if ($absen) {
+                    $waktuAbsen = $absen->waktu_absen instanceof \Carbon\Carbon
+                        ? $absen->waktu_absen
+                        : Carbon::parse($absen->waktu_absen);
+                   
+                    $result[] = [
+                        'id'           => $absen->id_absensi,
+                        'nama'         => $peserta->nama,
+                        'tanggal'      => $waktuAbsen ? $waktuAbsen->toDateString() : $tanggal,
+                        'waktu_submit' => $waktuAbsen ? $waktuAbsen->format('H:i') : null,
+                        'status'       => $absen->status,
+                        'lokasi'       => $absen->lokasi,
+                        'bukti'        => $absen->bukti_kegiatan,
+                        'created_at'   => $absen->created_at,
+                    ];
+                } else {
+                    // TIDAK ADA ABSENSI = ALPHA (hanya untuk tanggal yang dipilih)
+                    $result[] = [
+                        'id'           => null,
+                        'nama'         => $peserta->nama,
+                        'tanggal'      => $tanggal,
+                        'waktu_submit' => null,
+                        'status'       => 'alpha',
+                        'lokasi'       => null,
+                        'bukti'        => null,
+                        'created_at'   => null,
+                    ];
+                }
+            }
+        } else {
+            // Jika tidak ada filter tanggal, tampilkan semua absensi peserta (tanpa alpha)
+            if ($pesertaIds->isNotEmpty()) {
+                $absensi = Absensi::whereIn('id_pesertamagang', $pesertaIds)
+                    ->orderBy('waktu_absen', 'desc')
+                    ->get();
+
+                foreach ($absensi as $absen) {
+                    $waktuAbsen = $absen->waktu_absen instanceof \Carbon\Carbon
+                        ? $absen->waktu_absen
+                        : Carbon::parse($absen->waktu_absen);
+
+                    $peserta = $pesertaList->firstWhere('id_pesertamagang', $absen->id_pesertamagang);
+
+                    $result[] = [
+                        'id'           => $absen->id_absensi,
+                        'nama'         => $peserta?->nama,
+                        'tanggal'      => $waktuAbsen ? $waktuAbsen->toDateString() : null,
+                        'waktu_submit' => $waktuAbsen ? $waktuAbsen->format('H:i') : null,
+                        'status'       => $absen->status,
+                        'lokasi'       => $absen->lokasi,
+                        'bukti'        => $absen->bukti_kegiatan,
+                        'created_at'   => $absen->created_at,
+                    ];
+                }
             }
         }
 
