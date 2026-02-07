@@ -51,7 +51,6 @@
         <div class="absensi-stat-value">{{ $alpha }}</div>
         <div class="absensi-stat-label">Alpha</div>
     </div>
-    <!-- Tambahkan statistik sakit di sini -->
     <div class="absensi-stat-card border-info">
         <div class="absensi-stat-icon info">
             <i class='bx bx-plus-medical'></i>
@@ -103,14 +102,14 @@
             
             <!-- GPS Location -->
             <div id="gpsSection" class="hidden">
-                <div class="gps-container">
+                <div style="background: #e6f2ff; padding: 20px; border-radius: 12px; margin-bottom: 20px; border-left: 4px solid #3498db;">
                     <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
                         <i class='bx bx-map' style="font-size: 2rem; color: #3498db;"></i>
                         <div>
                             <div style="font-weight: 600; color: var(--primary);">Lokasi Anda</div>
                             <div id="locationText" style="color: #666;">Mendeteksi lokasi...</div>
                         </div>
-                        <button onclick="getLocation()" class="btn btn-primary" style="auto; background: #195075; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-size: 0.9rem; cursor: pointer;">
+                        <button onclick="getLocation()" style="margin-left: auto; background: #3498db; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-size: 0.9rem; cursor: pointer;">
                             <i class='bx bx-refresh'></i> Refresh
                         </button>
                     </div>

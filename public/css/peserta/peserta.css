@@ -1,5 +1,5 @@
 /* ============================================
-   PESERTA STYLES - GLOBAL
+   PESERTA STYLES - UPDATED TO MATCH ADMIN STYLES
    ============================================ */
 
 :root {
@@ -7,10 +7,10 @@
     --secondary: #547792;
     --accent: #94B4C1;
     --background: #EAE0CF;
-    --success: #2ecc71;
-    --warning: #f39c12;
-    --danger: #e74c3c;
-    --info: #3498db;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #3b82f6;
     --gray-50: #f8fafc;
     --gray-100: #f1f5f9;
     --gray-200: #e2e8f0;
@@ -24,16 +24,15 @@
 }
 
 /* ============================================
-   LAYOUT STYLES
+   BASE LAYOUT STYLES
    ============================================ */
 
-/* Form Card */
 .form-card {
     background: white;
     border-radius: 16px;
     padding: 30px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-    margin-bottom: 25px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    margin-bottom: 30px;
     animation: fadeIn 0.3s ease;
 }
 
@@ -48,19 +47,6 @@
     }
 }
 
-/* Form Sections */
-.form-section {
-    margin-bottom: 30px;
-    padding-bottom: 30px;
-    border-bottom: 1px solid var(--gray-200);
-}
-
-.form-section:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-    padding-bottom: 0;
-}
-
 /* ============================================
    TYPOGRAPHY
    ============================================ */
@@ -70,7 +56,7 @@
     margin-bottom: 30px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     font-size: 1.5rem;
     font-weight: 600;
 }
@@ -86,8 +72,226 @@
 }
 
 /* ============================================
+   STATISTICS CARDS (SERASI DENGAN ADMIN)
+   ============================================ */
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    border-top: 5px solid;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Border colors for stat cards */
+.border-blue {
+    border-color: var(--primary);
+}
+
+.border-green {
+    border-color: var(--success);
+}
+
+.border-orange {
+    border-color: var(--warning);
+}
+
+.border-red {
+    border-color: var(--danger);
+}
+
+.border-purple {
+    border-color: #8b5cf6;
+}
+
+.border-info {
+    border-color: var(--info);
+}
+
+.stat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.stat-icon.blue {
+    background: rgba(33, 52, 72, 0.1);
+    color: var(--primary);
+}
+
+.stat-icon.green {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+}
+
+.stat-icon.orange {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--warning);
+}
+
+.stat-icon.red {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+}
+
+.stat-icon.purple {
+    background: rgba(139, 92, 246, 0.1);
+    color: #8b5cf6;
+}
+
+.stat-icon.info {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--info);
+}
+
+.stat-value {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--primary);
+    line-height: 1;
+}
+
+.stat-label {
+    color: #666;
+    font-size: 0.95rem;
+    margin-top: 8px;
+}
+
+/* ============================================
+   ABSENSI SPECIFIC STATS
+   ============================================ */
+
+.absensi-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.absensi-stat-card {
+    background: white;
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    border-top: 5px solid;
+    transition: transform 0.3s, box-shadow 0.3s;
+    text-align: center;
+}
+
+.absensi-stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.absensi-stat-card.border-primary {
+    border-color: var(--primary);
+}
+
+.absensi-stat-card.border-success {
+    border-color: var(--success);
+}
+
+.absensi-stat-card.border-warning {
+    border-color: var(--warning);
+}
+
+.absensi-stat-card.border-danger {
+    border-color: var(--danger);
+}
+
+.absensi-stat-card.border-info {
+    border-color: var(--info);
+}
+
+.absensi-stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin: 0 auto 15px;
+}
+
+.absensi-stat-icon.primary {
+    background: rgba(33, 52, 72, 0.1);
+    color: var(--primary);
+}
+
+.absensi-stat-icon.success {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+}
+
+.absensi-stat-icon.warning {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--warning);
+}
+
+.absensi-stat-icon.danger {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--danger);
+}
+
+.absensi-stat-icon.info {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--info);
+}
+
+.absensi-stat-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary);
+    line-height: 1;
+    margin-bottom: 10px;
+}
+
+.absensi-stat-label {
+    color: #666;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+/* ============================================
    FORM ELEMENTS
    ============================================ */
+
+.form-section {
+    margin-bottom: 30px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.form-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
 
 .form-group {
     margin-bottom: 20px;
@@ -142,7 +346,7 @@
 }
 
 /* ============================================
-   BUTTONS
+   BUTTONS (SERASI DENGAN ADMIN)
    ============================================ */
 
 .btn {
@@ -178,23 +382,13 @@
 }
 
 .btn-secondary {
-    background: var(--gray-100);
-    color: var(--gray-700);
-    border: 1px solid var(--gray-300);
+    background: #f8f9fa;
+    color: #495057;
+    border: 1px solid #dee2e6;
 }
 
 .btn-secondary:hover:not(:disabled) {
-    background: var(--gray-200);
-    transform: translateY(-2px);
-}
-
-.btn-danger {
-    background: var(--danger);
-    color: white;
-}
-
-.btn-danger:hover:not(:disabled) {
-    background: #c0392b;
+    background: #e9ecef;
     transform: translateY(-2px);
 }
 
@@ -204,7 +398,17 @@
 }
 
 .btn-success:hover:not(:disabled) {
-    background: #27ae60;
+    background: #059669;
+    transform: translateY(-2px);
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+    background: #dc2626;
     transform: translateY(-2px);
 }
 
@@ -214,7 +418,7 @@
 }
 
 .btn-warning:hover:not(:disabled) {
-    background: #e67e22;
+    background: #d97706;
     transform: translateY(-2px);
 }
 
@@ -273,8 +477,220 @@
 }
 
 /* ============================================
+   ABSENSI SPECIFIC STYLES
+   ============================================ */
+
+.absensi-form-container {
+    background: white;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    margin-bottom: 30px;
+    border: 2px solid var(--accent);
+}
+
+/* Status Button Group */
+.status-btn-group {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.status-btn {
+    padding: 15px;
+    border: 2px solid;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    background: white;
+    font-size: 0.95rem;
+}
+
+.status-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.status-btn.active {
+    color: white;
+}
+
+.status-btn.hadir {
+    border-color: var(--success);
+    color: var(--success);
+}
+
+.status-btn.hadir.active {
+    background: var(--success);
+}
+
+.status-btn.izin {
+    border-color: var(--warning);
+    color: var(--warning);
+}
+
+.status-btn.izin.active {
+    background: var(--warning);
+}
+
+.status-btn.sakit {
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+.status-btn.sakit.active {
+    background: var(--danger);
+}
+
+/* GPS Container */
+.gps-container {
+    background: #e6f2ff;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 25px;
+    border-left: 4px solid var(--info);
+}
+
+/* Map Visualization */
+.map-visual {
+    height: 200px;
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+    margin-top: 15px;
+}
+
+/* Upload Area */
+.upload-area-custom {
+    border: 2px dashed var(--gray-300);
+    border-radius: 12px;
+    padding: 30px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: var(--gray-50);
+}
+
+.upload-area-custom:hover {
+    border-color: var(--primary);
+    background: #e3f2fd;
+}
+
+.upload-icon-custom {
+    font-size: 3rem;
+    color: var(--primary);
+    margin-bottom: 15px;
+}
+
+/* Absensi Action Buttons */
+.absensi-action-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+/* ============================================
+   LOGBOOK SPECIFIC STYLES
+   ============================================ */
+
+/* Calendar Quick Select */
+.calendar-quick-select {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.quick-date-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.quick-date-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Logbook Items */
+.logbook-item {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+
+.logbook-item:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px rgba(33, 52, 72, 0.1);
+}
+
+/* Filter Select */
+.filter-select {
+    padding: 10px 15px;
+    border: 1px solid var(--gray-300);
+    border-radius: 8px;
+    background: white;
+    color: var(--gray-700);
+    font-size: 0.9rem;
+    cursor: pointer;
+    min-width: 150px;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-start;
+    margin-top: 30px;
+}
+
+/* ============================================
    ALERTS & NOTIFICATIONS
    ============================================ */
+
+.absensi-info-box {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 12px;
+    border-left: 4px solid var(--info);
+    margin-bottom: 25px;
+}
+
+.absensi-info-box.success {
+    background: #d4edda;
+    border-left: 4px solid var(--success);
+}
+
+.absensi-info-box.warning {
+    background: #fff3cd;
+    border-left: 4px solid var(--warning);
+}
+
+.absensi-info-box.danger {
+    background: #f8d7da;
+    border-left: 4px solid var(--danger);
+}
 
 .info-alert {
     background: #d1ecf1;
@@ -321,248 +737,31 @@
 }
 
 /* ============================================
-   UPLOAD AREA
+   MODAL STYLES
    ============================================ */
 
-.upload-area {
-    border: 2px dashed var(--gray-300);
-    border-radius: 12px;
-    padding: 30px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s;
-    background: var(--gray-50);
-    position: relative;
-}
-
-.upload-area:hover {
-    border-color: var(--primary);
-    background: #e3f2fd;
-}
-
-.upload-area.dragover {
-    border-color: var(--primary);
-    background: rgba(52, 152, 219, 0.1);
-}
-
-.upload-icon {
-    font-size: 3rem;
-    color: var(--primary);
-    margin-bottom: 15px;
-}
-
-.file-input {
-    position: absolute;
+.modal-notification {
+    display: none;
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    opacity: 0;
-    cursor: pointer;
-}
-
-/* ============================================
-   DASHBOARD COMPONENTS
-   ============================================ */
-
-.dashboard-stat-card {
-    background: white;
-    border: 1px solid var(--gray-200);
-    border-radius: 12px;
-    padding: 20px;
-    transition: all 0.3s ease;
-}
-
-.dashboard-stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.stat-icon-box {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    display: flex;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
     align-items: center;
     justify-content: center;
-    font-size: 1.2rem;
 }
 
-/* ============================================
-   PROGRESS STEPS
-   ============================================ */
-
-.progress-step {
+.modal-notification-content {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 400px;
+    padding: 30px;
     text-align: center;
+    animation: modalSlideIn 0.3s ease;
 }
-
-.step-circle {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--gray-200);
-    color: var(--gray-600);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    margin: 0 auto 10px;
-    transition: all 0.3s ease;
-}
-
-.step-circle.step-completed {
-    background: var(--success);
-    color: white;
-}
-
-.step-circle.step-active {
-    background: var(--primary);
-    color: white;
-    box-shadow: 0 0 0 4px rgba(33, 52, 72, 0.2);
-}
-
-.step-label {
-    font-weight: 600;
-    color: var(--primary);
-    margin-bottom: 5px;
-}
-
-.step-description {
-    font-size: 0.85rem;
-    color: var(--gray-600);
-}
-
-/* ============================================
-   QUICK ACTIONS
-   ============================================ */
-
-.quick-action-card {
-    background: white;
-    border: 1px solid var(--gray-200);
-    border-radius: 12px;
-    padding: 20px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-
-.quick-action-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border-color: var(--primary);
-}
-
-.quick-action-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-}
-
-/* ============================================
-   LOGBOOK SPECIFIC
-   ============================================ */
-
-/* Calendar Quick Select */
-.calendar-quick-select {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 10px;
-}
-
-.quick-date-btn {
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    border: 1px solid var(--gray-300);
-    background: white;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.quick-date-btn:hover {
-    background: var(--gray-100);
-}
-
-/* Logbook Status Cards */
-.logbook-item {
-    background: white;
-    border: 1px solid var(--gray-200);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 15px;
-    transition: all 0.3s ease;
-}
-
-.logbook-item:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-/* ============================================
-   ABSENSI SPECIFIC
-   ============================================ */
-
-/* GPS Section */
-.gps-section {
-    background: #e6f2ff;
-    border-radius: 12px;
-    padding: 20px;
-    border-left: 4px solid #3498db;
-}
-
-/* Map Container */
-.map-container {
-    height: 200px;
-    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-    border-radius: 8px;
-    position: relative;
-    overflow: hidden;
-}
-
-/* ============================================
-   UTILITY CLASSES
-   ============================================ */
-
-.hidden {
-    display: none !important;
-}
-
-.text-center {
-    text-align: center;
-}
-
-.text-muted {
-    color: var(--gray-600);
-}
-
-.mb-3 { margin-bottom: 1rem; }
-.mt-3 { margin-top: 1rem; }
-.ml-auto { margin-left: auto; }
-
-/* ============================================
-   LOADING & SKELETON
-   ============================================ */
-
-.loading-skeleton {
-    animation: skeleton-loading 1.5s infinite ease-in-out;
-    background: linear-gradient(90deg, var(--gray-200) 25%, var(--gray-300) 50%, var(--gray-200) 75%);
-    background-size: 200% 100%;
-}
-
-@keyframes skeleton-loading {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-}
-
-/* ============================================
-   MODAL STYLES
-   ============================================ */
 
 .modal-overlay {
     position: fixed;
@@ -600,64 +799,67 @@
 }
 
 /* ============================================
-   RESPONSIVE DESIGN
+   UTILITY CLASSES
    ============================================ */
 
-@media (max-width: 768px) {
-    .form-card {
-        padding: 20px;
-        border-radius: 12px;
-    }
-    
-    .form-row {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
-    
-    .status-badge {
-        min-width: 100px;
-        font-size: 0.8rem;
-        padding: 5px 10px;
-    }
-    
-    .btn {
-        padding: 10px 20px;
-        font-size: 0.9rem;
-    }
-    
-    .upload-area {
-        padding: 20px;
-    }
-    
-    .dashboard-stat-card {
-        padding: 15px;
-    }
-    
-    .quick-action-card {
-        padding: 15px;
-    }
+.hidden {
+    display: none !important;
 }
 
-@media (max-width: 480px) {
-    .form-card {
-        padding: 15px;
-    }
-    
-    .form-section {
-        padding-bottom: 20px;
-        margin-bottom: 20px;
-    }
-    
-    .btn {
-        width: 100%;
-        justify-content: center;
-    }
-    
-    .status-badge {
-        min-width: auto;
-        padding: 4px 8px;
-        font-size: 0.75rem;
-    }
+.text-center {
+    text-align: center;
+}
+
+.text-muted {
+    color: var(--gray-600);
+}
+
+.mb-3 { margin-bottom: 1rem; }
+.mt-3 { margin-top: 1rem; }
+.ml-auto { margin-left: auto; }
+
+/* ============================================
+   LOADING STATES
+   ============================================ */
+
+.loading-skeleton {
+    animation: skeleton-loading 1.5s infinite ease-in-out;
+    background: linear-gradient(90deg, var(--gray-200) 25%, var(--gray-300) 50%, var(--gray-200) 75%);
+    background-size: 200% 100%;
+}
+
+@keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    display: inline-block;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* ============================================
+   EMPTY STATES
+   ============================================ */
+
+.empty-state {
+    text-align: center;
+    padding: 50px 20px;
+    background: var(--gray-50);
+    border-radius: 12px;
+    border: 2px dashed var(--gray-300);
+}
+
+.empty-state-icon {
+    font-size: 4rem;
+    color: var(--gray-400);
+    margin-bottom: 20px;
 }
 
 /* ============================================
@@ -684,662 +886,16 @@
 }
 
 /* ============================================
-   LOGBOOK SPECIFIC STYLES
+   ACTION BUTTONS
    ============================================ */
 
-
-
-.stat-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-}
-
-.stat-card.border-blue {
-    border-color: #3498db;
-}
-
-.stat-card.border-green {
-    border-color: #2ecc71;
-}
-
-.stat-card.border-orange {
-    border-color: #f39c12;
-}
-
-.stat-card.border-purple {
-    border-color: #9b59b6;
-}
-
-.stat-header {
+.action-buttons {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 10px;
+    gap: 8px;
+    justify-content: flex-start;
 }
 
-.stat-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-}
-
-.stat-icon.blue {
-    background: rgba(52, 152, 219, 0.1);
-    color: #3498db;
-}
-
-.stat-icon.green {
-    background: rgba(46, 204, 113, 0.1);
-    color: #2ecc71;
-}
-
-.stat-icon.orange {
-    background: rgba(243, 156, 18, 0.1);
-    color: #f39c12;
-}
-
-.stat-icon.purple {
-    background: rgba(155, 89, 182, 0.1);
-    color: #9b59b6;
-}
-
-.stat-value {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--primary);
-}
-
-.stat-label {
-    color: var(--gray-600);
-    font-size: 0.9rem;
-}
-
-/* Calendar Quick Select */
-.calendar-quick-select {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.quick-date-btn {
-    padding: 8px 16px;
-    border-radius: 8px;
-    border: none;
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-family: inherit;
-}
-
-.quick-date-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* Logbook Items */
-.logbook-item {
-    background: white;
-    border: 1px solid var(--gray-200);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 15px;
-    transition: all 0.3s ease;
-}
-
-.logbook-item:hover {
-    border-color: var(--primary);
-    box-shadow: 0 4px 12px rgba(33, 52, 72, 0.1);
-}
-
-/* Action Buttons */
 .action-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    border: none;
-    font-size: 1.1rem;
-    transition: all 0.2s;
-    background: var(--gray-100);
-    color: var(--gray-700);
-}
-
-.action-btn:hover {
-    transform: translateY(-2px);
-}
-
-.action-btn.edit {
-    background: rgba(52, 152, 219, 0.1);
-    color: #3498db;
-}
-
-.action-btn.edit:hover {
-    background: rgba(52, 152, 219, 0.2);
-}
-
-.action-btn.delete {
-    background: rgba(231, 76, 60, 0.1);
-    color: #e74c3c;
-}
-
-.action-btn.delete:hover {
-    background: rgba(231, 76, 60, 0.2);
-}
-
-/* Filter Select */
-.filter-select {
-    padding: 10px 15px;
-    border: 1px solid var(--gray-300);
-    border-radius: 8px;
-    background: white;
-    color: var(--gray-700);
-    font-size: 0.9rem;
-    cursor: pointer;
-    min-width: 150px;
-}
-
-.filter-select:focus {
-    outline: none;
-    border-color: var(--primary);
-}
-
-/* Form Actions */
-.form-actions {
-    display: flex;
-    gap: 15px;
-    justify-content: flex-start;
-    margin-top: 30px;
-}
-
-/* Loading Spinner */
-.loading-spinner {
-    display: inline-block;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-/* Empty State */
-.empty-state {
-    text-align: center;
-    padding: 50px 20px;
-    background: var(--gray-50);
-    border-radius: 12px;
-    border: 2px dashed var(--gray-300);
-}
-
-.empty-state-icon {
-    font-size: 4rem;
-    color: var(--gray-400);
-    margin-bottom: 20px;
-}
-
-/* Logbook Status Info */
-#logbookStatusInfo {
-    background: var(--gray-50);
-    border-left: 4px solid var(--primary);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 15px;
-    }
-    
-    .stat-value {
-        font-size: 1.5rem;
-    }
-    
-    .form-actions {
-        flex-direction: column;
-    }
-    
-    .form-actions .btn {
-        width: 100%;
-    }
-}
-
-@media (max-width: 480px) {
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .form-row {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* status-badge variations */
-.status-badge {
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.status-pending {
-    background: rgba(241, 196, 15, 0.1);
-    color: #f1c40f;
-    border: 1px solid rgba(241, 196, 15, 0.3);
-}
-
-.status-approved {
-    background: rgba(46, 204, 113, 0.1);
-    color: #2ecc71;
-    border: 1px solid rgba(46, 204, 113, 0.3);
-}
-
-.status-rejected {
-    background: rgba(231, 76, 60, 0.1);
-    color: #e74c3c;
-    border: 1px solid rgba(231, 76, 60, 0.3);
-}
-
-.status-review {
-    background: rgba(52, 152, 219, 0.1);
-    color: #2980b9;
-    border: 1px solid rgba(52, 152, 219, 0.3);
-}
-
-/* ============================
-   PESERTA ABSENSI - UPDATED STYLES
-   ============================ */
-
-/* Stats Cards - Updated to match admin-bidang */
-.stats-grid-absensi {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
-}
-
-.stat-card-absensi {
-    background: white;
-    border-radius: 16px;
-    padding: 25px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-    border-top: 5px solid;
-    transition: transform 0.3s, box-shadow 0.3s;
-    text-align: center;
-}
-
-.stat-card-absensi:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-}
-
-.stat-card-absensi.border-primary {
-    border-color: var(--primary);
-}
-
-.stat-card-absensi.border-green {
-    border-color: #2ecc71;
-}
-
-.stat-card-absensi.border-orange {
-    border-color: #f39c12;
-}
-
-.stat-card-absensi.border-red {
-    border-color: #e74c3c;
-}
-
-.stat-card-absensi.border-blue {
-    border-color: #3498db;
-}
-
-.stat-value-absensi {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: var(--primary);
-    line-height: 1;
-    margin-bottom: 10px;
-}
-
-.stat-label-absensi {
-    color: #666;
-    font-size: 0.95rem;
-    font-weight: 500;
-}
-
-/* Form Container for Absensi */
-.absensi-form-container {
-    background: white;
-    border-radius: 16px;
-    padding: 30px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-    margin-bottom: 30px;
-    border: 2px solid var(--accent);
-}
-
-.absensi-form-title {
-    color: var(--primary);
-    margin-bottom: 25px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 1.4rem;
-    font-weight: 600;
-}
-
-.absensi-form-content {
-    background: #f8fafc;
-    padding: 25px;
-    border-radius: 12px;
-    margin-bottom: 25px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-}
-
-/* Table Styles for Absensi History (if any) */
-.absensi-table-container {
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-    overflow: hidden;
-    margin-top: 30px;
-}
-
-.absensi-table-header {
-    padding: 20px 25px;
-    border-bottom: 1px solid #eee;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 15px;
-}
-
-.absensi-table-header h3 {
-    color: var(--primary);
-    font-size: 1.3rem;
-    margin: 0;
-    font-weight: 600;
-}
-
-.absensi-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.absensi-table thead {
-    background: #f8f9fa;
-    border-bottom: 2px solid #eee;
-}
-
-.absensi-table th {
-    padding: 16px 20px;
-    text-align: left;
-    font-weight: 600;
-    color: #495057;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-bottom: 2px solid #dee2e6;
-}
-
-.absensi-table tbody tr {
-    border-bottom: 1px solid #eee;
-    transition: all 0.2s ease;
-}
-
-.absensi-table tbody tr:hover {
-    background-color: #f8f9fa;
-}
-
-.absensi-table td {
-    padding: 18px 20px;
-    color: #495057;
-    font-size: 0.95rem;
-    vertical-align: middle;
-}
-
-/* Status badges for table */
-.absensi-status-badge {
-    display: grid;
-    padding: 6px 14px;
-    border-radius: 16px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    display: inline-block;
-    text-align: center;
-}
-
-.status-hadir {
-    background: rgba(46, 204, 113, 0.1);
-    color: #27ae60;
-    border: 1px solid rgba(46, 204, 113, 0.2);
-}
-
-.status-izin {
-    background: rgba(241, 196, 15, 0.1);
-    color: #f39c12;
-    border: 1px solid rgba(241, 196, 15, 0.2);
-}
-
-.status-sakit {
-    background: rgba(231, 76, 60, 0.1);
-    color: #c0392b;
-    border: 1px solid rgba(231, 76, 60, 0.2);
-}
-
-.status-alpha {
-    background: rgba(149, 165, 166, 0.1);
-    color: #7f8c8d;
-    border: 1px solid rgba(149, 165, 166, 0.2);
-}
-
-/* Tambahkan di file peserta.css */
-.absensi-stat-card.border-info {
-    border-color: #17a2b8 !important;
-}
-
-.absensi-stat-icon.info {
-    background-color: #17a3b844 !important;
-}
-
-/* Button Styles Updated */
-.btn {
-    padding: 12px 24px;
-    border-radius: 10px;
-    border: none;
-    font-weight: 600;
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    text-decoration: none;
-}
-
-.btn-primary {
-    background: var(--primary);
-    color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-    background: #1a2938;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(33, 52, 72, 0.2);
-}
-
-.btn-secondary {
-    background: #f8f9fa;
-    color: #495057;
-    border: 1px solid #dee2e6;
-}
-
-.btn-secondary:hover:not(:disabled) {
-    background: #e9ecef;
-    transform: translateY(-2px);
-}
-
-/* Alert/Notification Styling */
-.alert-box {
-    background: #e6f2ff;
-    border: 1px solid #3498db;
-    color: #1f4e79;
-    padding: 15px 20px;
-    border-radius: 12px;
-    margin-bottom: 25px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    animation: slideIn 0.3s ease;
-}
-
-.alert-box.success {
-    background: #d4edda;
-    border-color: #c3e6cb;
-    color: #155724;
-}
-
-.alert-box.warning {
-    background: #fff3cd;
-    border-color: #ffeaa7;
-    color: #856404;
-}
-
-.alert-box.error {
-    background: #f8d7da;
-    border-color: #f5c6cb;
-    color: #721c24;
-}
-
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* GPS Section Styling */
-.gps-section-absensi {
-    background: #e6f2ff;
-    border-radius: 12px;
-    padding: 20px;
-    border-left: 4px solid #3498db;
-    margin-bottom: 20px;
-}
-
-.gps-header {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 15px;
-}
-
-.gps-icon {
-    font-size: 1.5rem;
-    color: #3498db;
-}
-
-.gps-info h4 {
-    font-weight: 600;
-    color: var(--primary);
-    margin: 0 0 5px 0;
-}
-
-.gps-info p {
-    color: #666;
-    margin: 0;
-    font-size: 0.95rem;
-}
-
-/* Map Container */
-.map-container-absensi {
-    height: 200px;
-    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-    border-radius: 8px;
-    margin-top: 15px;
-    position: relative;
-    overflow: hidden;
-}
-
-/* Upload Zone Styling */
-.upload-zone-absensi {
-    border: 2px dashed var(--gray-300);
-    border-radius: 12px;
-    padding: 30px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s;
-    background: var(--gray-50);
-    position: relative;
-}
-
-.upload-zone-absensi:hover {
-    border-color: var(--primary);
-    background: rgba(52, 152, 219, 0.05);
-}
-
-.upload-zone-absensi.dragover {
-    border-color: var(--primary);
-    background: rgba(52, 152, 219, 0.1);
-}
-
-/* Form Group Styling */
-.form-group-absensi {
-    margin-bottom: 20px;
-}
-
-.form-group-absensi label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: #333;
-    font-size: 0.9rem;
-}
-
-.form-group-absensi input,
-.form-group-absensi select,
-.form-group-absensi textarea {
-    width: 100%;
-    padding: 12px 15px;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    font-size: 0.95rem;
-    transition: border-color 0.3s;
-    background: white;
-}
-
-.form-group-absensi input:focus,
-.form-group-absensi select:focus,
-.form-group-absensi textarea:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(33, 52, 72, 0.1);
-}
-
-/* Action Buttons in Table */
-.action-buttons-absensi {
-    display: flex;
-    gap: 8px;
-    justify-content: flex-start;
-}
-
-.action-btn-absensi {
     width: 36px;
     height: 36px;
     border-radius: 8px;
@@ -1352,483 +908,57 @@
     transition: all 0.2s ease;
 }
 
-.action-btn-absensi.view {
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.action-btn.view {
+    background: rgba(155, 89, 182, 0.1);
+    color: #9b59b6;
+}
+
+.action-btn.view:hover {
+    background: #9b59b6;
+    color: white;
+}
+
+.action-btn.edit {
     background: rgba(52, 152, 219, 0.1);
     color: #3498db;
 }
 
-.action-btn-absensi.view:hover {
+.action-btn.edit:hover {
     background: #3498db;
     color: white;
 }
 
-.action-btn-absensi.download {
-    background: rgba(46, 204, 113, 0.1);
-    color: #27ae60;
-}
-
-.action-btn-absensi.download:hover {
-    background: #27ae60;
-    color: white;
-}
-
-/* Loading Spinner */
-.loading-spinner-absensi {
-    display: inline-block;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-/* Pagination for Absensi Table */
-.pagination-absensi {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 25px;
-    border-top: 1px solid #eee;
-}
-
-.pagination-info-absensi {
-    font-size: 0.9rem;
-    color: #666;
-}
-
-.pagination-controls-absensi {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.pagination-btn-absensi {
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-    background: white;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    transition: all 0.3s;
-}
-
-.pagination-btn-absensi:hover:not(:disabled) {
-    background: #f5f5f5;
-}
-
-.pagination-btn-absensi:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-/* Modal for Success Notification */
-.modal-absensi {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-    align-items: center;
-    justify-content: center;
-}
-
-.modal-content-absensi {
-    background: white;
-    border-radius: 16px;
-    width: 95%;
-    max-width: 500px;
-    animation: modalSlideIn 0.3s ease;
-}
-
-.modal-header-absensi {
-    padding: 25px;
-    border-bottom: 1px solid #eee;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.modal-header-absensi h3 {
-    color: var(--primary);
-    font-size: 1.3rem;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.modal-close-absensi {
-    background: none;
-    border: none;
-    font-size: 1.8rem;
-    color: #888;
-    cursor: pointer;
-    padding: 0;
-    line-height: 1;
-}
-
-.modal-body-absensi {
-    padding: 25px;
-    text-align: center;
-}
-
-.modal-footer-absensi {
-    padding: 20px 25px;
-    border-top: 1px solid #eee;
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-}
-
-@keyframes modalSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .stats-grid-absensi {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .absensi-form-container {
-        padding: 20px;
-    }
-    
-    .absensi-form-content {
-        padding: 20px;
-    }
-    
-    .absensi-table-header {
-        flex-direction: column;
-        align-items: stretch;
-        padding: 20px;
-    }
-    
-    .absensi-table-header h3 {
-        text-align: center;
-    }
-    
-    .absensi-table th,
-    .absensi-table td {
-        padding: 14px 16px;
-        font-size: 0.9rem;
-    }
-    
-    .pagination-absensi {
-        flex-direction: column;
-        gap: 15px;
-        align-items: stretch;
-    }
-    
-    .pagination-controls-absensi {
-        justify-content: center;
-    }
-}
-
-@media (max-width: 480px) {
-    .stats-grid-absensi {
-        grid-template-columns: 1fr;
-    }
-    
-    .absensi-table {
-        font-size: 0.85rem;
-    }
-    
-    .absensi-table th,
-    .absensi-table td {
-        padding: 12px;
-    }
-    
-    .action-buttons-absensi {
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .action-btn-absensi {
-        width: 100%;
-        margin-bottom: 5px;
-    }
-}
-/* ============================
-   ABSENSI CUSTOM STYLES
-   ============================ */
-
-/* Stat Cards dengan style seperti admin-bidang */
-.absensi-stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
-}
-
-.absensi-stat-card {
-    background: white;
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-    border-top: 5px solid;
-    transition: transform 0.3s, box-shadow 0.3s;
-}
-
-.absensi-stat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-}
-
-.absensi-stat-card.border-primary {
-    border-color: var(--primary);
-}
-
-.absensi-stat-card.border-success {
-    border-color: #2ecc71;
-}
-
-.absensi-stat-card.border-warning {
-    border-color: #f1c40f;
-}
-
-.absensi-stat-card.border-danger {
-    border-color: #e74c3c;
-}
-
-.absensi-stat-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    margin-bottom: 15px;
-}
-
-.absensi-stat-icon.primary {
-    background: rgba(33, 52, 72, 0.1);
-    color: var(--primary);
-}
-
-.absensi-stat-icon.success {
-    background: rgba(46, 204, 113, 0.1);
-    color: #2ecc71;
-}
-
-.absensi-stat-icon.warning {
-    background: rgba(241, 196, 15, 0.1);
-    color: #f1c40f;
-}
-
-.absensi-stat-icon.danger {
+.action-btn.delete {
     background: rgba(231, 76, 60, 0.1);
     color: #e74c3c;
 }
 
-.absensi-stat-value {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--primary);
-    line-height: 1;
-}
-
-.absensi-stat-label {
-    color: var(--gray-600);
-    font-size: 0.9rem;
-    margin-top: 8px;
-}
-
-/* Form Container */
-.absensi-form-container {
-    background: white;
-    border-radius: 16px;
-    padding: 25px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-    margin-bottom: 30px;
-    border: 2px solid var(--accent);
-}
-
-/* Info Box */
-.absensi-info-box {
-    background: #f8f9fa;
-    padding: 20px;
-    border-radius: 12px;
-    border-left: 4px solid #3498db;
-    margin-bottom: 25px;
-}
-
-.absensi-info-box.success {
-    background: #d4edda;
-    border-left: 4px solid #28a745;
-}
-
-.absensi-info-box.warning {
-    background: #fff3cd;
-    border-left: 4px solid #ffc107;
-}
-
-.absensi-info-box.danger {
-    background: #f8d7da;
-    border-left: 4px solid #dc3545;
-}
-
-/* Status Button Group */
-.status-btn-group {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.status-btn {
-    padding: 15px;
-    border: 2px solid;
-    border-radius: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    transition: all 0.3s ease;
-    background: white;
-    font-size: 0.95rem;
-}
-
-.status-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.status-btn.active {
+.action-btn.delete:hover {
+    background: #e74c3c;
     color: white;
 }
 
-.status-btn.hadir {
-    border-color: #2ecc71;
-    color: #2ecc71;
-}
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
 
-.status-btn.hadir.active {
-    background: #2ecc71;
-}
-
-.status-btn.izin {
-    border-color: #f1c40f;
-    color: #f1c40f;
-}
-
-.status-btn.izin.active {
-    background: #f1c40f;
-}
-
-.status-btn.sakit {
-    border-color: #e74c3c;
-    color: #e74c3c;
-}
-
-.status-btn.sakit.active {
-    background: #e74c3c;
-}
-
-/* GPS Section */
-.gps-container {
-    background: #e6f2ff;
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 25px;
-    border-left: 4px solid #3498db;
-}
-
-/* Map Visualization */
-.map-visual {
-    height: 200px;
-    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-    border-radius: 8px;
-    position: relative;
-    overflow: hidden;
-    margin-top: 15px;
-}
-
-/* Upload Area */
-.upload-area-custom {
-    border: 2px dashed var(--gray-300);
-    border-radius: 12px;
-    padding: 30px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s;
-    background: var(--gray-50);
-}
-
-.upload-area-custom:hover {
-    border-color: var(--primary);
-    background: #e3f2fd;
-}
-
-.upload-icon-custom {
-    font-size: 3rem;
-    color: var(--primary);
-    margin-bottom: 15px;
-}
-
-/* Action Buttons */
-.absensi-action-buttons {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    margin-top: 30px;
-}
-
-/* Modal Notification */
-.modal-notification {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-    align-items: center;
-    justify-content: center;
-}
-
-.modal-notification-content {
-    background: white;
-    border-radius: 16px;
-    width: 90%;
-    max-width: 400px;
-    padding: 30px;
-    text-align: center;
-    animation: modalSlideIn 0.3s ease;
-}
-
-@keyframes modalSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Responsive */
 @media (max-width: 768px) {
+    .form-card {
+        padding: 20px;
+        border-radius: 12px;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .stats-grid,
     .absensi-stats-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 15px;
@@ -1838,22 +968,59 @@
         grid-template-columns: 1fr;
     }
     
-    .absensi-action-buttons {
+    .absensi-action-buttons,
+    .form-actions {
         flex-direction: column;
     }
     
-    .absensi-action-buttons .btn {
+    .absensi-action-buttons .btn,
+    .form-actions .btn {
         width: 100%;
+    }
+    
+    .status-badge {
+        min-width: 100px;
+        font-size: 0.8rem;
+        padding: 5px 10px;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+    
+    .upload-area-custom {
+        padding: 20px;
     }
 }
 
 @media (max-width: 480px) {
+    .form-card {
+        padding: 15px;
+    }
+    
+    .form-section {
+        padding-bottom: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .stats-grid,
     .absensi-stats-grid {
         grid-template-columns: 1fr;
     }
     
-    .absensi-form-container {
-        padding: 15px;
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .status-badge {
+        min-width: auto;
+        padding: 4px 8px;
+        font-size: 0.75rem;
+    }
+    
+    .filter-select {
+        min-width: 100%;
     }
 }
-
