@@ -131,10 +131,13 @@ class AbsensiController extends Controller
             ->orderBy('waktu_absen', 'desc')
             ->get()
             ->map(function ($a) {
+                $waktu = $a->waktu_absen instanceof \Carbon\Carbon
+                    ? $a->waktu_absen
+                    : ($a->waktu_absen ? Carbon::parse($a->waktu_absen) : null);
                 return [
                     'id'           => $a->id_absensi,
-                    'tanggal'      => $a->waktu_absen->toDateString(),
-                    'waktu_submit' => $a->waktu_absen->format('H:i'),
+                    'tanggal'      => $waktu ? $waktu->toDateString() : null,
+                    'waktu_submit' => $waktu ? $waktu->format('H:i') : null,
                     'status'       => $a->status,
                     'lokasi'       => $a->lokasi,
                     'bukti'        => $a->bukti_kegiatan,

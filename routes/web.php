@@ -134,7 +134,9 @@ Route::prefix('api/mentor')->middleware(['auth'])->group(function () {
     Route::get('/absensi/{pesertaId}', [AbsensiController::class, 'byPeserta']);
     Route::get('/logbook/{pesertaId}', [VerifikasiLogbookController::class, 'index']);
     Route::get('/logbook', [VerifikasiLogbookController::class, 'index']);
+    Route::get('/logbook/{pesertaId}/{logbookId}', [VerifikasiLogbookController::class, 'detail']);
     Route::post('/logbook/verify', [VerifikasiLogbookController::class, 'verify']);
+    Route::get('/verifikasi/stats/{pesertaId}', [VerifikasiLogbookController::class, 'stats']);
     Route::get('/penilaian/peserta', [PenilaianController::class, 'peserta']);
     Route::post('/penilaian/upload', [PenilaianController::class, 'upload']);
     Route::get('/penilaian/stats', [PenilaianController::class, 'stats']);
@@ -186,7 +188,7 @@ Route::prefix('api/peserta')->middleware(['auth'])->group(function () {
     // Route dashboard dengan data lengkap
     Route::get('/dashboard-detail', function () {
         $user = \Illuminate\Support\Facades\Auth::user();
-        $peserta = \App\Models\PesertaMagang::with(['bidang', 'pegawai'])
+        $peserta = \App\Models\PesertaMagang::with(['bidang', 'pegawai', 'bidangPilihan', 'sertifikat'])
             ->where('id_user', $user->id_user)
             ->orderByDesc('created_at')
             ->first();
@@ -217,6 +219,10 @@ Route::prefix('api/peserta')->middleware(['auth'])->group(function () {
                 'bidang_pilihan' => $peserta->bidangPilihan ? [
                     'id' => $peserta->bidangPilihan->id_bidang,
                     'nama' => $peserta->bidangPilihan->nama_bidang
+                ] : null,
+                'sertifikat' => $peserta->sertifikat ? [
+                    'id' => $peserta->sertifikat->id_sertifikat,
+                    'tanggal_terbit' => $peserta->sertifikat->tanggal_terbit,
                 ] : null
             ]
         ];

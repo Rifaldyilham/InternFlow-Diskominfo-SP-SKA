@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\PesertaMagang;
 
 use App\Http\Controllers\Controller;
+use App\Models\Absensi;
 use App\Models\Logbook;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
@@ -98,6 +99,17 @@ class LogbookController extends Controller
         if ($peserta->tanggal_selesai && $request->tanggal > $peserta->tanggal_selesai) {
             return response()->json([
                 'message' => 'Tanggal logbook sudah melewati masa magang.'
+            ], 422);
+        }
+
+        // Cegah logbook jika absensi izin/sakit pada tanggal yang sama
+        $absensiIzinSakit = Absensi::where('id_pesertamagang', $peserta->id_pesertamagang)
+            ->whereDate('waktu_absen', $request->tanggal)
+            ->whereIn('status', ['izin', 'sakit'])
+            ->exists();
+        if ($absensiIzinSakit) {
+            return response()->json([
+                'message' => 'Tidak bisa mengisi logbook pada tanggal izin/sakit.'
             ], 422);
         }
 

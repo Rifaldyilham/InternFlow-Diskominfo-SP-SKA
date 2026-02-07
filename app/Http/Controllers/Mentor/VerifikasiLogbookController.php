@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Mentor;
 
 use App\Http\Controllers\Controller;
+use App\Models\Absensi;
 use App\Models\Logbook;
 use App\Models\Pesertamagang;
 use Illuminate\Http\Request;
@@ -47,6 +48,73 @@ class VerifikasiLogbookController extends Controller
         return response()->json(['data' => $data]);
     }
 
+    public function detail($pesertaId, $logbookId)
+    {
+        $mentor = auth()->user()->pegawai;
+        if (!$mentor) {
+            return response()->json(['message' => 'Mentor tidak ditemukan'], 404);
+        }
+
+        $peserta = PesertaMagang::where('id_pesertamagang', $pesertaId)
+            ->where('id_pegawai', $mentor->id_pegawai)
+            ->first();
+        if (!$peserta) {
+            return response()->json(['message' => 'Peserta tidak valid'], 403);
+        }
+
+        $logbook = Logbook::where('id_logbook', $logbookId)
+            ->where('id_pesertamagang', $pesertaId)
+            ->first();
+        if (!$logbook) {
+            return response()->json(['message' => 'Logbook tidak ditemukan'], 404);
+        }
+
+        return response()->json([
+            'data' => [
+                'id' => $logbook->id_logbook,
+                'tanggal' => $logbook->tanggal,
+                'kegiatan' => $logbook->nama_kegiatan,
+                'deskripsi' => $logbook->deskripsi,
+                'status' => $logbook->status,
+                'bukti' => $logbook->bukti_kegiatan,
+                'catatan_mentor' => $logbook->catatan_mentor,
+                'waktu_mulai' => $logbook->waktu_mulai ?? null,
+                'waktu_selesai' => $logbook->waktu_selesai ?? null,
+                'created_at' => $logbook->created_at,
+                'updated_at' => $logbook->updated_at,
+            ]
+        ]);
+    }
+
+    public function stats($pesertaId)
+    {
+        $mentor = auth()->user()->pegawai;
+        if (!$mentor) {
+            return response()->json(['message' => 'Mentor tidak ditemukan'], 404);
+        }
+
+        $peserta = PesertaMagang::where('id_pesertamagang', $pesertaId)
+            ->where('id_pegawai', $mentor->id_pegawai)
+            ->first();
+        if (!$peserta) {
+            return response()->json(['message' => 'Peserta tidak valid'], 403);
+        }
+
+        $logbookTotal = Logbook::where('id_pesertamagang', $pesertaId)->count();
+        $logbookPending = Logbook::where('id_pesertamagang', $pesertaId)
+            ->where('status', 'belum diverifikasi')
+            ->count();
+
+        $absensiTotal = Absensi::where('id_pesertamagang', $pesertaId)->count();
+
+        return response()->json([
+            'data' => [
+                'logbook_total' => $logbookTotal,
+                'logbook_pending' => $logbookPending,
+                'absensi_total' => $absensiTotal,
+            ]
+        ]);
+    }
 
     // Verifikasi logbook
     public function verify(Request $request)
@@ -78,7 +146,7 @@ class VerifikasiLogbookController extends Controller
         $statusDb = $request->status === 'approved' ? 'diverifikasi' : 'ditolak';
 
         $logbook->status = $statusDb;
-        $logbook->catatan_mentor = $request->catatan;
+        $logbook->catatan_mentor = $request->catatan ?? '';
         $logbook->save();
 
         return response()->json(['message' => 'Logbook berhasil diverifikasi']);

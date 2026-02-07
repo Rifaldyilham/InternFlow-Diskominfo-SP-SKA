@@ -84,13 +84,10 @@
             </div>
             <div class="flex gap-3">
                 <button onclick="viewSertifikat()" class="px-4 py-2 bg-white border border-green-500 text-green-500 rounded-lg hover:bg-green-50 transition">
-                    <i class='bx bx-show mr-2'></i> Lihat
+                    <i class='bx bx-show mr-2'></i> Preview
                 </button>
                 <button onclick="downloadSertifikat()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
                     <i class='bx bx-download mr-2'></i> Unduh Sertifikat
-                </button>
-                <button onclick="printSertifikat()" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-800 transition">
-                    <i class='bx bx-printer mr-2'></i> Print
                 </button>
             </div>
         </div>
@@ -158,6 +155,11 @@ const pesertaData = {
         url: null
     }
 };
+
+function formatDateOnly(value) {
+    if (!value) return '-';
+    return String(value).split(' ')[0].split('T')[0];
+}
 
 async function initializePage() {
     await loadPenilaian();
@@ -250,7 +252,7 @@ function updateFileSections() {
         
         document.getElementById('sertifikatFileName').textContent = pesertaData.sertifikat.nama;
         document.getElementById('sertifikatFileInfo').textContent = 
-            `${pesertaData.sertifikat.ukuran} • Diterbitkan: ${pesertaData.sertifikat.tanggalTerbit}`;
+            `${pesertaData.sertifikat.ukuran} • Diterbitkan: ${formatDateOnly(pesertaData.sertifikat.tanggalTerbit)}`;
     } else {
         sertifikatFileSection.classList.add('hidden');
         sertifikatEmptyState.classList.remove('hidden');
@@ -309,8 +311,8 @@ function previewPenilaianFile() {
             </div>
             
             <div class="flex gap-3 pt-4 border-t">
-                <button onclick="downloadPenilaianFile()" class="flex-1 bg-primary text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition">
-                    <i class='bx bx-download'></i> DOWNLOAD FILE
+                <button onclick="downloadPenilaianFile()" class="flex-1 bg-primary text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition" aria-label="Download" title="Download">
+                    <i class='bx bx-download'></i>
                 </button>
                 <button onclick="closePreviewModal()" class="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition">
                     Tutup
@@ -341,76 +343,57 @@ function viewSertifikat() {
         return;
     }
     
+    document.getElementById('previewTitle').textContent = `Preview: ${pesertaData.sertifikat.nama}`;
+    
     const previewContent = `
-        <div class="bg-gradient-to-br from-gray-50 to-gray-100 p-8 rounded-xl relative overflow-hidden border border-gray-300">
-            <!-- Watermark -->
-            <div class="absolute inset-0 flex items-center justify-center opacity-5">
-                <div class="text-8xl font-black text-primary whitespace-nowrap">INTERNFLOW</div>
+        <div class="space-y-6">
+            <div class="bg-gray-50 p-4 rounded-xl">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class='bx bx-file-pdf text-3xl text-green-600'></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-primary text-lg">${pesertaData.sertifikat.nama}</div>
+                            <div class="text-sm text-gray-600">
+                                ${pesertaData.sertifikat.ukuran} • Terbit: ${formatDateOnly(pesertaData.sertifikat.tanggalTerbit)}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="downloadSertifikat()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                            <i class='bx bx-download mr-2'></i> Download
+                        </button>
+                    </div>
+                </div>
             </div>
             
-            <!-- Certificate Content -->
-            <div class="relative z-10 text-center">
-                <div class="mb-8">
-                    <div class="text-sm text-primary font-bold mb-2">
-                        PEMERINTAH KOTA SURAKARTA<br>
-                        DINAS KOMUNIKASI DAN INFORMATIKA
+            <div class="border rounded-xl p-4">
+                <div class="text-center">
+                    <div class="text-gray-500 mb-4">
+                        <i class='bx bx-file-pdf text-6xl mb-4"></i>
+                        <div class="font-medium">File PDF tidak dapat dipreview secara langsung</div>
+                        <div class="text-sm">Silakan download file untuk melihat isi sertifikat</div>
                     </div>
-                </div>
-                
-                <div class="mb-8">
-                    <div class="text-4xl font-black text-primary mb-2 tracking-wider">SERTIFIKAT</div>
-                    <div class="text-lg text-gray-600 font-bold">Magang & Pelatihan Kerja</div>
-                    <div class="h-1 w-20 bg-accent mx-auto my-4"></div>
-                </div>
-                
-                <div class="mb-8">
-                    <div class="text-3xl font-bold text-primary mb-2">${pesertaData.nama}</div>
-                    <div class="text-gray-600">
-                        ${pesertaData.universitas}<br>
-                        Program Studi: ${pesertaData.prodi}
+                    <div class="text-sm text-gray-600">
+                        File: ${pesertaData.sertifikat.nama}<br>
+                        Ukuran: ${pesertaData.sertifikat.ukuran}<br>
+                        Diterbitkan: ${formatDateOnly(pesertaData.sertifikat.tanggalTerbit)}<br>
+                        Nomor: ${pesertaData.sertifikat.nomor || '-'}
                     </div>
-                </div>
-                
-                <div class="mb-8 max-w-2xl mx-auto">
-                    <div class="text-gray-600 leading-relaxed">
-                        Dengan ini dinyatakan telah menyelesaikan program Magang di<br>
-                        <span class="font-bold text-primary">Dinas Komunikasi dan Informatika Kota Surakarta</span><br>
-                        pada Bidang Informatika, selama periode<br>
-                        <span class="font-bold text-primary">${pesertaData.periode}</span>
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-12 mt-12">
-                    <div>
-                        <div class="h-px bg-gray-600 mb-4"></div>
-                        <div class="font-bold text-primary">Dr. Ahmad Fauzi, M.Kom.</div>
-                        <div class="text-gray-600 text-sm">Mentor Pembimbing</div>
-                    </div>
-                    <div>
-                        <div class="h-px bg-gray-600 mb-4"></div>
-                        <div class="font-bold text-primary">Kepala Diskominfo SP Surakarta</div>
-                        <div class="text-gray-600 text-sm">Bagian Kepegawaian</div>
-                    </div>
-                </div>
-                
-                <!-- Certificate Number -->
-                <div class="mt-8 text-xs text-gray-600">
-                    No: ${pesertaData.sertifikat.nomor}
                 </div>
             </div>
-        </div>
-        
-        <div class="flex gap-3 mt-6">
-            <button onclick="downloadSertifikat()" class="flex-1 bg-primary text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition">
-                <i class='bx bx-download'></i> UNDUH SERTIFIKAT
-            </button>
-            <button onclick="closePreviewModal()" class="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition">
-                Tutup
-            </button>
+            
+            <div class="flex gap-3 pt-4 border-t">
+                <button onclick="downloadSertifikat()" class="flex-1 bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition" aria-label="Download sertifikat" title="Download sertifikat">
+                    <i class='bx bx-download'></i>
+                </button>
+                <button onclick="closePreviewModal()" class="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition">
+                    Tutup
+                </button>
+            </div>
         </div>
     `;
-    
-    document.getElementById('previewTitle').textContent = 'Preview Sertifikat';
     document.getElementById('previewContent').innerHTML = previewContent;
     document.getElementById('previewModal').classList.remove('hidden');
 }
@@ -426,151 +409,6 @@ function downloadSertifikat() {
     window.open(url, '_blank');
 }
 
-// Print sertifikat
-function printSertifikat() {
-    if (!pesertaData.sertifikat.tersedia) {
-        showNotification('Info', 'Sertifikat belum tersedia.', 'info');
-        return;
-    }
-    
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
-        <html>
-            <head>
-                <title>Sertifikat ${pesertaData.nama}</title>
-                <style>
-                    @page { margin: 0.5in; }
-                    body { 
-                        font-family: 'Times New Roman', Times, serif;
-                        text-align: center;
-                    }
-                    .certificate-container {
-                        padding: 50px;
-                        position: relative;
-                    }
-                    .watermark {
-                        position: absolute;
-                        top: 50%;
-                        left: 50%;
-                        transform: translate(-50%, -50%);
-                        font-size: 120px;
-                        opacity: 0.05;
-                        color: #213448;
-                        font-weight: 900;
-                        white-space: nowrap;
-                    }
-                    .header {
-                        margin-bottom: 30px;
-                    }
-                    .title {
-                        font-size: 40px;
-                        font-weight: 900;
-                        color: #213448;
-                        margin: 20px 0;
-                        letter-spacing: 4px;
-                    }
-                    .subtitle {
-                        font-size: 18px;
-                        color: #666;
-                        font-weight: bold;
-                        margin-bottom: 30px;
-                    }
-                    .name {
-                        font-size: 36px;
-                        font-weight: bold;
-                        color: #213448;
-                        margin: 20px 0;
-                    }
-                    .info {
-                        font-size: 16px;
-                        color: #666;
-                        line-height: 1.6;
-                        margin: 20px 0;
-                    }
-                    .separator {
-                        width: 100px;
-                        height: 2px;
-                        background: #94B4C1;
-                        margin: 20px auto;
-                    }
-                    .signature {
-                        display: flex;
-                        justify-content: space-between;
-                        margin-top: 80px;
-                        padding: 0 50px;
-                    }
-                    .signature-item {
-                        text-align: center;
-                    }
-                    .signature-line {
-                        width: 200px;
-                        height: 1px;
-                        background: #333;
-                        margin: 0 auto 10px;
-                    }
-                    .certificate-number {
-                        margin-top: 30px;
-                        font-size: 12px;
-                        color: #666;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="certificate-container">
-                    <div class="watermark">INTERNFLOW</div>
-                    
-                    <div class="header">
-                        <div style="font-size: 14px; font-weight: bold; color: #213448;">
-                            PEMERINTAH KOTA SURAKARTA<br>
-                            DINAS KOMUNIKASI DAN INFORMATIKA
-                        </div>
-                    </div>
-                    
-                    <div class="title">SERTIFIKAT</div>
-                    <div class="subtitle">Magang & Pelatihan Kerja</div>
-                    <div class="separator"></div>
-                    
-                    <div class="name">${pesertaData.nama}</div>
-                    <div style="color: #666;">
-                        ${pesertaData.universitas}<br>
-                        Program Studi: ${pesertaData.prodi}
-                    </div>
-                    
-                    <div class="info" style="max-width: 600px; margin: 30px auto;">
-                        Dengan ini dinyatakan telah menyelesaikan program Magang di<br>
-                        <b>Dinas Komunikasi dan Informatika Kota Surakarta</b><br>
-                        pada Bidang Informatika, selama periode<br>
-                        <b>${pesertaData.periode}</b>
-                    </div>
-                    
-                    <div class="signature">
-                        <div class="signature-item">
-                            <div class="signature-line"></div>
-                            <div style="font-weight: bold; color: #213448;">Dr. Ahmad Fauzi, M.Kom.</div>
-                            <div style="color: #666; font-size: 14px;">Mentor Pembimbing</div>
-                        </div>
-                        <div class="signature-item">
-                            <div class="signature-line"></div>
-                            <div style="font-weight: bold; color: #213448;">Kepala Diskominfo SP Surakarta</div>
-                            <div style="color: #666; font-size: 14px;">Bagian Kepegawaian</div>
-                        </div>
-                    </div>
-                    
-                    <div class="certificate-number">
-                        No: ${pesertaData.sertifikat.nomor}
-                    </div>
-                </div>
-                
-                <script>
-                    window.onload = function() {
-                        window.print();
-                    };
-                <\/script>
-            </body>
-        </html>
-    `);
-    printWindow.document.close();
-}
 
 // Close preview modal
 function closePreviewModal() {
@@ -638,35 +476,5 @@ document.addEventListener('DOMContentLoaded', function() {
     animation: modalSlideIn 0.3s ease;
 }
 
-/* Print styles for certificate */
-@media print {
-    .sidebar, .header, .menu-toggle, button, .form-card:not(:last-child) {
-        display: none !important;
-    }
-    
-    .main-content {
-        margin-left: 0 !important;
-    }
-    
-    .content-wrapper {
-        padding: 0 !important;
-    }
-    
-    #previewModal {
-        position: static !important;
-        background: transparent !important;
-        display: block !important;
-        width: 100% !important;
-        height: auto !important;
-        max-width: none !important;
-        max-height: none !important;
-    }
-    
-    #previewModal > div {
-        box-shadow: none !important;
-        animation: none !important;
-        margin: 0 !important;
-    }
-}
 </style>
 @endsection

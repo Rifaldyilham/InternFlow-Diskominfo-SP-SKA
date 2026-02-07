@@ -37,11 +37,9 @@
     <div class="tabs-mentor mb-6">
         <button id="tab-logbook" class="tab-mentor active" onclick="switchTab('logbook')">
             <i class='bx bx-book mr-2'></i> Logbook
-            <span class="tab-badge" id="logbookBadge">0</span>
         </button>
         <button id="tab-absensi" class="tab-mentor" onclick="switchTab('absensi')">
             <i class='bx bx-calendar-check mr-2'></i> Absensi
-            <span class="tab-badge" id="absensiBadge">0</span>
         </button>
     </div>
 
@@ -488,7 +486,7 @@ async function loadInitialData() {
     
     try {
         // Load statistik
-        await loadStats();
+        // stats badges removed
         
         // Load data berdasarkan tab aktif
         if (state.currentTab === 'logbook') {
@@ -507,30 +505,7 @@ async function loadInitialData() {
 // FUNGSI API (Backend-ready)
 // ============================
 
-async function loadStats() {
-    if (!state.selectedPeserta) return;
-    
-    try {
-        // **API BACKEND:** GET /api/mentor/verifikasi/stats/{pesertaId}
-        const response = await fetch(`${API_CONFIG.endpoints.statsVerifikasi}/${state.selectedPeserta.id}`, {
-            headers: {
-                'Accept': 'application/json'
-            },
-            credentials: 'same-origin'
-        });
-        
-        if (!response.ok) throw new Error('Gagal mengambil statistik');
-        
-        const data = await response.json();
-        state.stats = data.data || data;
-        
-        // Update UI stats
-        updateStatsUI();
-        
-    } catch (error) {
-        console.error('Error loading stats:', error);
-    }
-}
+// loadStats removed (badges removed)
 
 async function loadLogbookData() {
     try {
@@ -731,6 +706,7 @@ function filterLogbookData() {
     state.logbookFilters.search = searchQuery;
     state.logbookFilters.date = dateFilter;
     state.logbookFilters.status = statusFilter;
+    state.logbookCurrentPage = 1;
     
     state.filteredLogbook = state.logbookList.filter(logbook => {
         // Filter berdasarkan pencarian
@@ -750,7 +726,7 @@ function filterLogbookData() {
         
         // Filter berdasarkan status
         if (statusFilter !== 'all') {
-            if (logbook.status !== statusFilter) {
+            if (normalizeLogbookStatus(logbook.status) !== statusFilter) {
                 return false;
             }
         }
@@ -767,6 +743,7 @@ function renderLogbookTable() {
     
     if (!state.filteredLogbook || state.filteredLogbook.length === 0) {
         renderEmptyLogbookTable('Tidak ada data logbook yang sesuai dengan filter');
+        updateLogbookPagination();
         return;
     }
     
@@ -775,8 +752,9 @@ function renderLogbookTable() {
       const pageData = state.filteredLogbook.slice(start, end);
       
       tbody.innerHTML = pageData.map(logbook => {
-          const statusClass = getLogbookStatusClass(logbook.status);
-          const statusText = getLogbookStatusText(logbook.status);
+          const normalizedStatus = normalizeLogbookStatus(logbook.status);
+          const statusClass = getLogbookStatusClass(normalizedStatus);
+          const statusText = getLogbookStatusText(normalizedStatus);
           // Gunakan format waktu dari backend (contoh: "08:00 - 16:00")
           const waktuDisplay = logbook.waktu || `${logbook.waktu_mulai || '08:00'} - ${logbook.waktu_selesai || '16:00'}`;
           const pesertaNama = logbook.peserta?.nama || '-';
@@ -806,7 +784,7 @@ function renderLogbookTable() {
                                 title="Lihat Detail">
                             <i class='bx bx-show'></i>
                         </button>
-                        ${logbook.status === 'pending' ? `
+                        ${normalizedStatus === 'pending' ? `
                             <button class="mentor-action-btn primary"
                                     onclick="openVerificationModal('${logbook.id}')"
                                     title="Verifikasi">
@@ -851,6 +829,7 @@ function filterAbsensiData() {
     state.absensiFilters.search = searchQuery;
     state.absensiFilters.date = dateFilter;
     state.absensiFilters.status = statusFilter;
+    state.absensiCurrentPage = 1;
     
     state.filteredAbsensi = state.absensiList.filter(absensi => {
         // Filter berdasarkan pencarian
@@ -887,6 +866,7 @@ function renderAbsensiTable() {
     
     if (!state.filteredAbsensi || state.filteredAbsensi.length === 0) {
         renderEmptyAbsensiTable('Tidak ada data absensi yang sesuai dengan filter');
+        updateAbsensiPagination();
         return;
     }
     
@@ -959,10 +939,17 @@ function renderEmptyAbsensiTable(message) {
 
 async function viewLogbookDetail(logbookId) {
     try {
+        const selected = state.selectedPeserta?.id
+            ? state.selectedPeserta
+            : state.logbookList.find(l => l.id == logbookId)?.peserta;
+        if (!selected || !selected.id) {
+            showNotification('Peserta tidak ditemukan untuk logbook ini. Silakan refresh.', 'error');
+            return;
+        }
         showModalLoading('logbook', true);
         
         // **API BACKEND:** GET /api/mentor/logbook/{pesertaId}/{logbookId}
-        const response = await fetch(`${API_CONFIG.endpoints.logbookPeserta}/${state.selectedPeserta.id}/${logbookId}`, {
+        const response = await fetch(`${API_CONFIG.endpoints.logbookPeserta}/${selected.id}/${logbookId}`, {
             headers: {
                 'Accept': 'application/json'
             },
@@ -988,13 +975,14 @@ async function viewLogbookDetail(logbookId) {
 
 function renderLogbookDetailModal(logbook) {
     const waktuDisplay = logbook.waktu || `${logbook.waktu_mulai || '08:00'} - ${logbook.waktu_selesai || '16:00'}`;
-    const statusClass = getLogbookStatusClass(logbook.status);
-    const statusText = getLogbookStatusText(logbook.status);
+    const normalizedStatus = normalizeLogbookStatus(logbook.status);
+    const statusClass = getLogbookStatusClass(normalizedStatus);
+    const statusText = getLogbookStatusText(normalizedStatus);
     
     document.getElementById('logbookModalTitle').textContent = `Logbook - ${formatDate(logbook.tanggal)}`;
     
     const verifyBtn = document.getElementById('verifyBtn');
-    if (logbook.status === 'pending') {
+    if (normalizedStatus === 'pending') {
         verifyBtn.style.display = 'inline-flex';
         verifyBtn.onclick = () => openVerificationModal(logbook.id);
     } else {
@@ -1068,10 +1056,18 @@ function openVerificationModal(logbookId = null) {
         state.logbookList.find(l => l.id == logbookId) : 
         state.currentLogbook;
     
-    if (!logbook) return;
+    if (!logbook) {
+        showNotification('Logbook tidak ditemukan. Silakan refresh data.', 'error');
+        return;
+    }
+    const pesertaNama = state.selectedPeserta?.nama || logbook.peserta?.nama;
+    if (!pesertaNama) {
+        showNotification('Peserta tidak ditemukan untuk logbook ini. Silakan refresh.', 'error');
+        return;
+    }
     
     document.getElementById('logbookId').value = logbook.id;
-    document.getElementById('verificationPesertaName').textContent = state.selectedPeserta.nama;
+    document.getElementById('verificationPesertaName').textContent = pesertaNama;
     document.getElementById('verificationLogbookInfo').innerHTML = `
         ${formatDate(logbook.tanggal)} • ${logbook.kegiatan}
     `;
@@ -1113,7 +1109,7 @@ document.getElementById('verificationForm').addEventListener('submit', async fun
         showNotification('Logbook berhasil diverifikasi', 'success');
         closeVerificationModal();
         loadLogbookData();
-        loadStats();
+        // stats badges removed
         
     } catch (error) {
         console.error('Error:', error);
@@ -1299,7 +1295,7 @@ function getLogbookStatusText(status) {
         case 'approved': return 'Disetujui';
         case 'rejected': return 'Ditolak';
         case 'pending': return 'Menunggu';
-        default: return 'Unknown';
+        default: return 'Menunggu';
     }
 }
 
@@ -1322,6 +1318,17 @@ function getAbsensiStatusText(status) {
         default: return 'Unknown';
     }
 }
+
+function normalizeLogbookStatus(status) {
+    if (!status) return 'pending';
+    const value = String(status).toLowerCase();
+    if (['pending', 'belum diverifikasi', 'belum_diverifikasi', 'menunggu', 'waiting'].includes(value)) return 'pending';
+    if (['approved', 'diverifikasi', 'verified', 'disetujui'].includes(value)) return 'approved';
+    if (['rejected', 'ditolak'].includes(value)) return 'rejected';
+    return value;
+}
+
+// setBadgeCount removed
 
 function setupEventListeners() {
     // Logbook filter event listeners
@@ -1383,18 +1390,24 @@ function debounce(func, wait) {
     };
 }
 
-// ============================
-// PAGINATION FUNCTIONS
-// ============================
-
 // Logbook pagination
 function updateLogbookCount() {
+    const count = state.filteredLogbook.length;
     document.getElementById('logbookCount').textContent = 
-        `${state.filteredLogbook.length} logbook`;
+        count === 0 ? 'Tidak ada logbook' : `${count} logbook`;
 }
 
 function updateLogbookPagination() {
     const totalPages = Math.ceil(state.filteredLogbook.length / state.logbookItemsPerPage);
+    if (totalPages === 0) {
+        document.getElementById('logbookPageInfo').textContent = 'Menampilkan 0 - 0 dari 0 logbook';
+        document.getElementById('logbookPrevPage').disabled = true;
+        document.getElementById('logbookNextPage').disabled = true;
+        return;
+    }
+    if (state.logbookCurrentPage > totalPages) {
+        state.logbookCurrentPage = 1;
+    }
     const start = ((state.logbookCurrentPage - 1) * state.logbookItemsPerPage) + 1;
     const end = Math.min(state.logbookCurrentPage * state.logbookItemsPerPage, state.filteredLogbook.length);
     
@@ -1424,12 +1437,22 @@ function logbookNextPage() {
 
 // Absensi pagination
 function updateAbsensiCount() {
+    const count = state.filteredAbsensi.length;
     document.getElementById('absensiCount').textContent = 
-        `${state.filteredAbsensi.length} absensi`;
+        count === 0 ? 'Tidak ada absensi' : `${count} absensi`;
 }
 
 function updateAbsensiPagination() {
     const totalPages = Math.ceil(state.filteredAbsensi.length / state.absensiItemsPerPage);
+    if (totalPages === 0) {
+        document.getElementById('absensiPageInfo').textContent = 'Menampilkan 0 - 0 dari 0 absensi';
+        document.getElementById('absensiPrevPage').disabled = true;
+        document.getElementById('absensiNextPage').disabled = true;
+        return;
+    }
+    if (state.absensiCurrentPage > totalPages) {
+        state.absensiCurrentPage = 1;
+    }
     const start = ((state.absensiCurrentPage - 1) * state.absensiItemsPerPage) + 1;
     const end = Math.min(state.absensiCurrentPage * state.absensiItemsPerPage, state.filteredAbsensi.length);
     

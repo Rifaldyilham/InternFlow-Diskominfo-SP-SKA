@@ -39,6 +39,17 @@
             </div>
         </div>
     </div>
+
+    <!-- Not Started State -->
+    <div id="notStartedState" class="hidden">
+        <div class="info-alert">
+            <i class='bx bx-info-circle'></i>
+            <div>
+                <strong>Magang Belum Dimulai</strong>
+                <p>Logbook baru bisa diisi setelah tanggal mulai magang.</p>
+            </div>
+        </div>
+    </div>
     
     <!-- Active Magang State -->
     <div id="activeState" class="hidden">
@@ -110,22 +121,6 @@
                             <i class='bx bx-calendar absolute left-3 top-3 text-gray-400'></i>
                         </div>
                         <div class="text-xs text-gray-500 mt-1">Pilih tanggal untuk mengisi logbook</div>
-                        
-                        <!-- Calendar Quick Select -->
-                        <div class="mt-4">
-                            <div class="text-sm text-gray-600 mb-2">Pilih cepat:</div>
-                            <div class="calendar-quick-select">
-                                <button type="button" onclick="setTanggal('today')" class="quick-date-btn bg-blue-100 text-blue-700">
-                                    Hari Ini
-                                </button>
-                                <button type="button" onclick="setTanggal('yesterday')" class="quick-date-btn bg-gray-100 text-gray-700">
-                                    Kemarin
-                                </button>
-                                <button type="button" onclick="setTanggal('tomorrow')" class="quick-date-btn bg-purple-100 text-purple-700">
-                                    Besok
-                                </button>
-                            </div>
-                        </div>
                     </div>
                     
                     <div class="form-group">
@@ -133,9 +128,7 @@
                         <div id="tanggalInfo" class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
                             <div class="font-semibold text-primary text-lg" id="selectedDateText">Pilih tanggal terlebih dahulu</div>
                             <div class="text-sm text-gray-600 mt-1" id="dayInfo">-</div>
-                            <div class="text-xs text-gray-500 mt-2" id="dateStatus">
-                                <i class='bx bx-info-circle'></i> Pilih tanggal untuk melihat status
-                            </div>
+                            <div class="text-xs text-gray-500 mt-2" id="dateStatus"></div>
                             
                             <!-- Status Logbook untuk tanggal terpilih -->
                             <div id="logbookStatusInfo" class="mt-3 p-3 rounded-lg hidden">
@@ -259,6 +252,20 @@
         </div>
     </div>
 </div>
+
+<!-- Notification Modal -->
+<div id="notificationModal" class="modal-overlay hidden">
+    <div class="modal-content">
+        <div class="p-6 text-center">
+            <div id="notificationIcon" class="text-5xl mb-4"></div>
+            <h3 id="notificationTitle" class="text-xl font-bold text-primary mb-2">Info</h3>
+            <p id="notificationMessage" class="text-gray-600 mb-6">-</p>
+            <button onclick="closeNotification()" class="btn btn-primary">
+                OK
+            </button>
+        </div>
+    </div>
+</div>
 @endsection
 
 @section('scripts')
@@ -322,8 +329,22 @@ async function checkMagangStatus() {
             return;
         }
 
-        if (data.status_magang === 'nonaktif') {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const endDate = data.magang?.tanggal_selesai ? new Date(data.magang.tanggal_selesai) : null;
+        if (endDate) endDate.setHours(0, 0, 0, 0);
+        const isFinishedByDate = endDate && today > endDate;
+
+        if (data.status_magang === 'nonaktif' || isFinishedByDate) {
             document.getElementById('finishedState').classList.remove('hidden');
+            return;
+        }
+
+        const startDate = data.magang?.tanggal_mulai ? new Date(data.magang.tanggal_mulai) : null;
+        if (startDate) startDate.setHours(0, 0, 0, 0);
+        const isNotStarted = startDate && today < startDate;
+        if (isNotStarted) {
+            document.getElementById('notStartedState').classList.remove('hidden');
             return;
         }
 
@@ -474,7 +495,7 @@ function showLoading() {
 }
 
 function hideAllStates() {
-    ['notVerifiedState', 'finishedState', 'activeState'].forEach(id => {
+    ['notVerifiedState', 'finishedState', 'notStartedState', 'activeState'].forEach(id => {
         document.getElementById(id).classList.add('hidden');
     });
 }
@@ -570,26 +591,8 @@ function updateTanggalInfo() {
         const startDate = new Date(state.magangData.tanggal_mulai);
         const diffTime = Math.abs(dateObj - startDate);
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-        
         document.getElementById('dayInfo').textContent = `Hari ke-${diffDays} dari ${state.magangData.total_hari} hari magang`;
     }
-    
-    // Check if date is in the past or future
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const selected = new Date(state.selectedDate);
-    selected.setHours(0, 0, 0, 0);
-    
-    let statusInfo = '';
-    if (selected > today) {
-        statusInfo = '<span class="text-blue-600"><i class="bx bx-calendar-plus"></i> Tanggal di masa depan</span>';
-    } else if (selected < today) {
-        statusInfo = '<span class="text-green-600"><i class="bx bx-calendar-check"></i> Tanggal di masa lalu</span>';
-    } else {
-        statusInfo = '<span class="text-primary"><i class="bx bx-calendar-star"></i> Hari ini</span>';
-    }
-    
-    document.getElementById('dateStatus').innerHTML = statusInfo;
 }
 
 
@@ -640,32 +643,31 @@ function closeSuccessModal() {
 }
 
 function showNotification(type, message) {
-    const notification = document.createElement('div');
-    notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 max-w-sm ${
-        type === 'success' ? 'bg-green-100 border-l-4 border-green-500 text-green-700' :
-        type === 'error' ? 'bg-red-100 border-l-4 border-red-500 text-red-700' :
-        'bg-blue-100 border-l-4 border-blue-500 text-blue-700'
-    }`;
-    
-    notification.innerHTML = `
-        <div class="flex items-center">
-            <i class='bx ${
-                type === 'success' ? 'bx-check-circle text-xl' :
-                type === 'error' ? 'bx-x-circle text-xl' :
-                'bx-info-circle text-xl'
-            } mr-3'></i>
-            <div>
-                <div class="font-bold">${type === 'success' ? 'Sukses!' : type === 'error' ? 'Error!' : 'Info'}</div>
-                <div class="text-sm">${message}</div>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.remove();
-    }, 5000);
+    const icon = document.getElementById('notificationIcon');
+    const title = document.getElementById('notificationTitle');
+    const msg = document.getElementById('notificationMessage');
+    const modal = document.getElementById('notificationModal');
+
+    if (type === 'success') {
+        icon.className = 'text-5xl mb-4 text-green-500';
+        icon.innerHTML = "<i class='bx bx-check-circle'></i>";
+        title.textContent = 'Sukses!';
+    } else if (type === 'error') {
+        icon.className = 'text-5xl mb-4 text-red-500';
+        icon.innerHTML = "<i class='bx bx-x-circle'></i>";
+        title.textContent = 'Error!';
+    } else {
+        icon.className = 'text-5xl mb-4 text-blue-500';
+        icon.innerHTML = "<i class='bx bx-info-circle'></i>";
+        title.textContent = 'Info';
+    }
+
+    msg.textContent = message || '-';
+    modal.classList.remove('hidden');
+}
+
+function closeNotification() {
+    document.getElementById('notificationModal').classList.add('hidden');
 }
 
 function renderLogbookList() {

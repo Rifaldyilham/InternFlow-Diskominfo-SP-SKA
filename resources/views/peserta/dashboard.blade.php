@@ -98,42 +98,7 @@
     </div>
 </div>
 
-<!-- Progress Sertifikat -->
-<div id="sertifikatProgressSection" class="form-card hidden">
-    <h2 style="color: var(--primary); margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-        <i class='bx bx-time'></i> Progress Sertifikat
-    </h2>
-    
-    <div style="background: #f8fafc; padding: 25px; border-radius: 12px;">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
-            <div>
-                <div style="font-weight: 600; color: var(--primary); margin-bottom: 5px;">Proses Penerbitan Sertifikat</div>
-                <div style="color: #666; font-size: 0.9rem;" id="sertifikatProgressText">-</div>
-            </div>
-            <div id="sertifikatStepBadge" class="status-badge">-</div>
-        </div>
-        
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
-            <div class="progress-step" id="step1">
-                <div class="step-circle">1</div>
-                <div class="step-label">Verifikasi Mentor</div>
-                <div class="step-description">Penilaian mentor</div>
-            </div>
-            
-            <div class="progress-step" id="step2">
-                <div class="step-circle">2</div>
-                <div class="step-label">Admin Bidang</div>
-                <div class="step-description">Konfirmasi berkas</div>
-            </div>
-            
-            <div class="progress-step" id="step3">
-                <div class="step-circle">3</div>
-                <div class="step-label">Kepegawaian</div>
-                <div class="step-description">Terbit sertifikat</div>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- Progress Sertifikat (dihapus) -->
 
 <!-- Quick Actions -->
 <div id="quickActionsSection" class="form-card hidden">
@@ -272,6 +237,16 @@ function renderDashboardData(pengajuan) {
     const verifikasiConfig = getVerifikasiStatusConfig(pengajuan.status_verifikasi);
     pengajuanStatusBadge.textContent = verifikasiConfig.text;
     pengajuanStatusBadge.className = `status-badge ${verifikasiConfig.class}`;
+
+    // Update sertifikat status badge
+    const sertifikatStatusBadge = document.getElementById('sertifikatStatusBadge');
+    if (pengajuan.sertifikat) {
+        sertifikatStatusBadge.textContent = 'TERSEDIA';
+        sertifikatStatusBadge.className = 'status-badge status-approved';
+    } else {
+        sertifikatStatusBadge.textContent = 'BELUM TERSEDIA';
+        sertifikatStatusBadge.className = 'status-badge status-pending';
+    }
     
     // Update progress dan hari tersisa (simulasi)
     updateProgressInfo(pengajuan);
@@ -279,15 +254,7 @@ function renderDashboardData(pengajuan) {
     // Show quick actions hanya jika sudah terverifikasi
     if (pengajuan.status_verifikasi === 'terverifikasi') {
         document.getElementById('quickActionsSection').classList.remove('hidden');
-        // Optionally show sertifikat progress section
-        if (pengajuan.tanggal_selesai) {
-            const endDate = new Date(pengajuan.tanggal_selesai);
-            const today = new Date();
-            if (today >= endDate) {
-                document.getElementById('sertifikatProgressSection').classList.remove('hidden');
-                updateSertifikatProgress(pengajuan);
-            }
-        }
+        // Progress sertifikat dihapus dari dashboard
     }
 }
 
@@ -331,45 +298,6 @@ function updateProgressInfo(pengajuan) {
     }
 }
 
-// Update sertifikat progress
-function updateSertifikatProgress(pengajuan) {
-    // Simulasi progress sertifikat berdasarkan status
-    const steps = ['step1', 'step2', 'step3'];
-    const stepTexts = [
-        'Menunggu penilaian mentor',
-        'Proses di admin bidang',
-        'Penerbitan oleh kepegawaian'
-    ];
-    
-    let currentStep = 0;
-    
-    // Logic untuk menentukan step berdasarkan kondisi
-    if (pengajuan.status_verifikasi === 'terverifikasi') {
-        currentStep = pengajuan.mentor ? 1 : 0;
-    }
-    
-    // Update step badges
-    steps.forEach((stepId, index) => {
-        const stepCircle = document.querySelector(`#${stepId} .step-circle`);
-        if (index < currentStep) {
-            stepCircle.classList.add('step-completed');
-            stepCircle.classList.remove('step-active');
-        } else if (index === currentStep) {
-            stepCircle.classList.add('step-active');
-            stepCircle.classList.remove('step-completed');
-        } else {
-            stepCircle.classList.remove('step-active', 'step-completed');
-        }
-    });
-    
-    // Update progress text
-    document.getElementById('sertifikatProgressText').textContent = stepTexts[currentStep];
-    
-    // Update step badge
-    const stepBadge = document.getElementById('sertifikatStepBadge');
-    stepBadge.textContent = `Step ${currentStep + 1}/3`;
-    stepBadge.className = `status-badge ${currentStep === 2 ? 'status-approved' : 'status-pending'}`;
-}
 
 // Get status configuration for verification
 function getVerifikasiStatusConfig(status) {
