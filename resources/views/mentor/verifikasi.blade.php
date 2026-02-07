@@ -99,13 +99,14 @@
                         <th>Kegiatan</th>
                         <th>Waktu</th>
                         <th>Status</th>
+                        <th>Bukti</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody id="logbookTableBody">
                     <!-- Data akan diisi oleh JavaScript -->
                     <tr id="loadingRow">
-                        <td colspan="6" class="text-center py-12">
+                        <td colspan="7" class="text-center py-12">
                             <div class="loading-skeleton-mentor flex flex-col items-center gap-5">
                                 <i class='bx bx-loader-circle bx-spin text-4xl text-primary'></i>
                                 <div class="text-center text-gray-600">
@@ -778,6 +779,9 @@ function renderLogbookTable() {
                     <span class="status-badge-mentor ${statusClass}">${statusText}</span>
                 </td>
                 <td>
+                    ${logbook.bukti ? 'Ada' : '-'}
+                </td>
+                <td>
                     <div class="mentor-action-buttons">
                         <button class="mentor-action-btn view" 
                                 onclick="viewLogbookDetail('${logbook.id}')"
@@ -800,12 +804,12 @@ function renderLogbookTable() {
 
 function renderEmptyLogbookTable(message) {
       const tbody = document.getElementById('logbookTableBody');
-      tbody.innerHTML = `
-          <tr>
-              <td colspan="6">
-                  <div class="empty-state-mentor">
-                      <i class='bx bx-notepad'></i>
-                      <h4>${message}</h4>
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7">
+                    <div class="empty-state-mentor">
+                        <i class='bx bx-notepad'></i>
+                        <h4>${message}</h4>
                     ${state.logbookFilters.search || state.logbookFilters.date || state.logbookFilters.status !== 'all' ? `
                         <button onclick="resetLogbookFilter()" class="btn btn-primary mt-4">
                             Reset Filter
@@ -978,6 +982,11 @@ function renderLogbookDetailModal(logbook) {
     const normalizedStatus = normalizeLogbookStatus(logbook.status);
     const statusClass = getLogbookStatusClass(normalizedStatus);
     const statusText = getLogbookStatusText(normalizedStatus);
+    const buktiPath = logbook.bukti || '';
+    const buktiName = buktiPath ? buktiPath.split('/').pop() : '';
+    const buktiExt = buktiName ? buktiName.split('.').pop().toLowerCase() : '';
+    const buktiIsImage = ['jpg', 'jpeg', 'png', 'gif'].includes(buktiExt);
+    const buktiIsPdf = buktiExt === 'pdf';
     
     document.getElementById('logbookModalTitle').textContent = `Logbook - ${formatDate(logbook.tanggal)}`;
     
@@ -1019,6 +1028,46 @@ function renderLogbookDetailModal(logbook) {
                     ${logbook.deskripsi || 'Tidak ada deskripsi'}
                 </div>
             </div>
+
+            ${buktiPath ? `
+                <div>
+                    <label class="text-sm text-gray-500 mb-2">Bukti Kegiatan</label>
+                    ${buktiIsImage ? `
+                        <div class="border rounded-lg p-4 text-center">
+                            <img src="/storage/${buktiPath}" 
+                                 alt="Bukti Kegiatan" 
+                                 class="max-w-full h-auto rounded-lg mx-auto max-h-96">
+                            <div class="mt-3 text-sm text-gray-600">Bukti kegiatan</div>
+                        </div>
+                    ` : buktiIsPdf ? `
+                        <div class="border rounded-lg overflow-hidden">
+                            <iframe src="/storage/${buktiPath}" class="w-full" style="height: 520px;" title="Preview Bukti PDF"></iframe>
+                        </div>
+                        <div class="mt-3 flex items-center gap-3">
+                            <i class='bx bx-file text-2xl text-gray-400'></i>
+                            <div class="text-sm text-gray-600 truncate">${buktiName}</div>
+                            <button onclick="previewLogbookBukti('${buktiPath}')" 
+                                    class="ml-auto px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-800">
+                                <i class='bx bx-show'></i> Preview
+                            </button>
+                        </div>
+                    ` : `
+                        <div class="border rounded-lg p-4">
+                            <div class="flex items-center gap-3">
+                                <i class='bx bx-file text-3xl text-gray-400'></i>
+                                <div>
+                                    <div class="font-medium">${buktiName}</div>
+                                    <div class="text-sm text-gray-500">File bukti kegiatan</div>
+                                </div>
+                                <button onclick="previewLogbookBukti('${buktiPath}')" 
+                                        class="ml-auto px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-800">
+                                    <i class='bx bx-show'></i> Preview
+                                </button>
+                            </div>
+                        </div>
+                    `}
+                </div>
+            ` : ''}
             
             ${logbook.hasil ? `
                 <div>
@@ -1252,6 +1301,11 @@ function renderAbsensiDetailModal(absensi) {
 function downloadBukti(filename) {
     // Redirect ke endpoint download
     window.open(`/api/mentor/absensi/download/${filename}`, '_blank');
+}
+
+function previewLogbookBukti(path) {
+    if (!path) return;
+    window.open(`/storage/${path}`, '_blank');
 }
 
 // ============================

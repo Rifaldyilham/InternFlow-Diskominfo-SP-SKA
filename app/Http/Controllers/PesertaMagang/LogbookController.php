@@ -192,6 +192,7 @@ class LogbookController extends Controller
                 'deskripsi' => $item->deskripsi,
                 'status' => $item->status,
                 'bukti' => $item->bukti_kegiatan,
+                'catatan_mentor' => $item->catatan_mentor,
                 'created_at' => $item->created_at,
             ];
         });

@@ -692,6 +692,12 @@ function renderLogbookList() {
         const statusText = getLogbookStatusText(item.status);
         const statusClass = getLogbookStatusClass(item.status);
         const tanggal = formatDate(item.tanggal);
+        const catatanHtml = (item.status === 'ditolak' && item.catatan_mentor) ? `
+            <div class="mt-3 p-3 rounded-lg border border-red-200 bg-red-50 text-sm">
+                <div class="font-semibold text-red-600 mb-1">Catatan Mentor</div>
+                <div>${item.catatan_mentor}</div>
+            </div>
+        ` : '';
 
         return `
             <div class="logbook-item">
@@ -705,6 +711,7 @@ function renderLogbookList() {
                 <div class="text-gray-700 text-sm">
                     ${item.deskripsi || '-'}
                 </div>
+                ${catatanHtml}
             </div>
         `;
     }).join('');

@@ -17,7 +17,11 @@ class SertifikatController extends Controller
         $perPage = (int) $request->get('per_page', 10);
         $page = (int) $request->get('page', 1);
 
+        $today = Carbon::today();
+
         $peserta = PesertaMagang::with('sertifikat')
+            ->where('status_verifikasi', 'terverifikasi')
+            ->whereDate('tanggal_mulai', '<=', $today)
             ->orderBy('nama')
             ->paginate($perPage, ['*'], 'page', $page);
 
@@ -27,10 +31,18 @@ class SertifikatController extends Controller
 
             return [
                 'id' => $item->id_pesertamagang,
+                'email' => $item->email,
                 'nama' => $item->nama,
                 'nim' => $item->nim,
                 'universitas' => $item->asal_univ,
                 'program_studi' => $item->program_studi,
+                'jurusan' => $item->program_studi,
+                'no_telp' => $item->no_telp,
+                'id_bidang' => $item->id_bidang,
+                'bidang' => $item->bidang ? [
+                    'id' => $item->bidang->id_bidang,
+                    'nama_bidang' => $item->bidang->nama_bidang,
+                ] : null,
                 'status_magang' => $item->status,
                 'tanggal_mulai' => $item->tanggal_mulai,
                 'tanggal_selesai' => $item->tanggal_selesai,
