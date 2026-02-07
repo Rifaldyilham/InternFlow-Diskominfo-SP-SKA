@@ -216,161 +216,192 @@
         document.getElementById('currentDate').textContent = dateString;
     }
     
-    // Set absensi status
-    function setAbsensiStatus(status) {
-        currentAbsensiStatus = status;
+// Set absensi status
+function setAbsensiStatus(status) {
+    currentAbsensiStatus = status;
+    
+    // Reset all buttons
+    document.getElementById('btnHadir').style.background = '#e6fff3';
+    document.getElementById('btnHadir').style.borderColor = '#2ecc71';
+    document.getElementById('btnHadir').style.color = '#2ecc71';
+    
+    document.getElementById('btnIzin').style.background = '#fff9e6';
+    document.getElementById('btnIzin').style.borderColor = '#f1c40f';
+    document.getElementById('btnIzin').style.color = '#f1c40f';
+    
+    document.getElementById('btnSakit').style.background = '#ffe6e6';
+    document.getElementById('btnSakit').style.borderColor = '#e74c3c';
+    document.getElementById('btnSakit').style.color = '#e74c3c';
+    
+    // Set active button
+    if (status === 'hadir') {
+        document.getElementById('btnHadir').style.background = '#2ecc71';
+        document.getElementById('btnHadir').style.color = 'white';
+        document.getElementById('statusText').innerHTML = 'Status: <span style="color:#2ecc71">HADIR</span>';
+        document.getElementById('gpsSection').style.display = 'block';
         
-        // Reset all buttons
-        document.getElementById('btnHadir').style.background = '#e6fff3';
-        document.getElementById('btnHadir').style.borderColor = '#2ecc71';
-        document.getElementById('btnHadir').style.color = '#2ecc71';
+        // Reset location state
+        isLocationValid = false;
+        userLocation = null;
+        document.getElementById('izinNotes').style.display = 'none';
         
-        document.getElementById('btnIzin').style.background = '#fff9e6';
-        document.getElementById('btnIzin').style.borderColor = '#f1c40f';
-        document.getElementById('btnIzin').style.color = '#f1c40f';
+        // Auto-get location for "hadir"
+        setTimeout(() => {
+            getLocation();
+        }, 500);
         
-        document.getElementById('btnSakit').style.background = '#ffe6e6';
-        document.getElementById('btnSakit').style.borderColor = '#e74c3c';
-        document.getElementById('btnSakit').style.color = '#e74c3c';
-        
-        // Set active button
-        if (status === 'hadir') {
-            document.getElementById('btnHadir').style.background = '#2ecc71';
-            document.getElementById('btnHadir').style.color = 'white';
-            document.getElementById('statusText').innerHTML = 'Status: <span style="color:#2ecc71">HADIR</span>';
-            document.getElementById('gpsSection').style.display = 'block';
-            isLocationValid = false;
-            document.getElementById('izinNotes').style.display = 'none';
-        } else if (status === 'izin') {
-            document.getElementById('btnIzin').style.background = '#f1c40f';
-            document.getElementById('btnIzin').style.color = 'white';
-            document.getElementById('statusText').innerHTML = 'Status: <span style="color:#f1c40f">IZIN</span>';
-            document.getElementById('gpsSection').style.display = 'none';
-            document.getElementById('izinNotes').style.display = 'block';
-            isLocationValid = true; // Skip location validation for izin/sakit
-        } else {
-            document.getElementById('btnSakit').style.background = '#e74c3c';
-            document.getElementById('btnSakit').style.color = 'white';
-            document.getElementById('statusText').innerHTML = 'Status: <span style="color:#e74c3c">SAKIT</span>';
-            document.getElementById('gpsSection').style.display = 'none';
-            document.getElementById('izinNotes').style.display = 'block';
-            isLocationValid = true; // Skip location validation for izin/sakit
-        }
-        
-        document.getElementById('uploadSection').style.display = 'block';
-        checkSubmitEligibility();
+    } else if (status === 'izin') {
+        document.getElementById('btnIzin').style.background = '#f1c40f';
+        document.getElementById('btnIzin').style.color = 'white';
+        document.getElementById('statusText').innerHTML = 'Status: <span style="color:#f1c40f">IZIN</span>';
+        document.getElementById('gpsSection').style.display = 'none';
+        document.getElementById('izinNotes').style.display = 'block';
+        isLocationValid = true; // Skip location validation for izin/sakit
+    } else {
+        document.getElementById('btnSakit').style.background = '#e74c3c';
+        document.getElementById('btnSakit').style.color = 'white';
+        document.getElementById('statusText').innerHTML = 'Status: <span style="color:#e74c3c">SAKIT</span>';
+        document.getElementById('gpsSection').style.display = 'none';
+        document.getElementById('izinNotes').style.display = 'block';
+        isLocationValid = true; // Skip location validation for izin/sakit
     }
     
-    // Get user location
-    function getLocation() {
-        if (!navigator.geolocation) {
-            document.getElementById('locationText').innerHTML = 'Geolocation tidak didukung browser';
-            return;
-        }
-        
-        document.getElementById('locationText').innerHTML = 'Mendeteksi lokasi...';
-        
-        navigator.geolocation.getCurrentPosition(
-            function(position) {
-                userLocation = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                };
-                
-                // Calculate distance from office
-                const distance = calculateDistance(
-                    userLocation.lat,
-                    userLocation.lng,
-                    OFFICE_COORDS.lat,
-                    OFFICE_COORDS.lng
-                );
-                
-                // Update location text
-                document.getElementById('locationText').innerHTML = `
-                    <div>Lat: ${userLocation.lat.toFixed(6)}, Lng: ${userLocation.lng.toFixed(6)}</div>
-                    <div style="font-size:0.9rem; color:#666;">Akurasi: ${position.coords.accuracy.toFixed(1)} meter</div>
-                `;
-                
-                // Update distance
-                document.getElementById('distanceValue').textContent = distance.toFixed(0);
-                
-                // Show user marker on map
-                const userMarker = document.getElementById('userMarker');
-                userMarker.style.display = 'block';
-                
-                // Position user marker (simplified)
-                const userX = 60 + (userLocation.lng - OFFICE_COORDS.lng) * 100;
-                const userY = 30 + (userLocation.lat - OFFICE_COORDS.lat) * 100;
-                userMarker.style.left = `${Math.min(Math.max(userX, 10), 90)}%`;
-                userMarker.style.top = `${Math.min(Math.max(userY, 10), 90)}%`;
-                
-                // Show distance line
-                const line = document.getElementById('distanceLine');
-                line.style.display = 'block';
-                line.style.position = 'absolute';
-                line.style.top = '50%';
-                line.style.left = '50%';
-                line.style.width = `${Math.abs(userX - 50)}%`;
-                line.style.height = '2px';
-                line.style.background = '#3498db';
-                line.style.transformOrigin = '0 0';
-                
-                // Check if location is valid (within 500 meters)
-                isLocationValid = distance <= 500;
-                
-                if (isLocationValid) {
-                    document.getElementById('distanceInfo').style.background = 'rgba(46, 204, 113, 0.9)';
-                    document.getElementById('distanceInfo').style.color = 'white';
-                } else {
-                    document.getElementById('distanceInfo').style.background = 'rgba(231, 76, 60, 0.9)';
-                    document.getElementById('distanceInfo').style.color = 'white';
-                    document.getElementById('distanceInfo').innerHTML += ' <i class="bx bx-error" style="color:white;"></i>';
-                }
-                
-                checkSubmitEligibility();
-            },
-            function(error) {
-                let errorMessage = '';
-                switch(error.code) {
-                    case error.PERMISSION_DENIED:
-                        errorMessage = 'Izin lokasi ditolak. Silakan aktifkan GPS.';
-                        break;
-                    case error.POSITION_UNAVAILABLE:
-                        errorMessage = 'Informasi lokasi tidak tersedia.';
-                        break;
-                    case error.TIMEOUT:
-                        errorMessage = 'Permintaan lokasi timeout.';
-                        break;
-                    default:
-                        errorMessage = 'Error tidak diketahui.';
-                }
-                document.getElementById('locationText').innerHTML = errorMessage;
-                isLocationValid = false;
-                checkSubmitEligibility();
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 0
-            }
-        );
+    document.getElementById('uploadSection').style.display = 'block';
+    
+    // Update upload label based on status
+    const uploadLabel = document.getElementById('uploadLabel');
+    if (status === 'hadir') {
+        uploadLabel.textContent = 'Upload Foto Bukti Kehadiran *';
+    } else {
+        uploadLabel.textContent = 'Upload Surat Izin/Sakit *';
     }
+    
+    checkSubmitEligibility();
+}
+    
+function getLocation() {
+    if (!navigator.geolocation) {
+        document.getElementById('locationText').innerHTML = 'Geolocation tidak didukung browser';
+        return;
+    }
+    
+    document.getElementById('locationText').innerHTML = 'Mendeteksi lokasi...';
+    
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+            userLocation = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+            };
+            
+            // Hitung jarak
+            const distance = calculateDistance(
+                userLocation.lat,
+                userLocation.lng,
+                OFFICE_COORDS.lat,
+                OFFICE_COORDS.lng
+            );
+            
+            // Update location text
+            document.getElementById('locationText').innerHTML = `
+                <div>Jarak: <strong>${Math.round(distance)} meter</strong> dari Diskominfo</div>
+                <div style="font-size:0.9rem; color:#666;">
+                    Koordinat: ${userLocation.lat.toFixed(6)}, ${userLocation.lng.toFixed(6)}
+                </div>
+                <div style="font-size:0.8rem; color:#999;">
+                    Akurasi: ${position.coords.accuracy.toFixed(1)} meter
+                </div>
+            `;
+            
+            // Update distance display
+            document.getElementById('distanceValue').textContent = Math.round(distance);
+            
+            // Show user marker on map
+            const userMarker = document.getElementById('userMarker');
+            userMarker.style.display = 'block';
+            
+            // Position user marker
+            const userX = 60 + (userLocation.lng - OFFICE_COORDS.lng) * 100;
+            const userY = 30 + (userLocation.lat - OFFICE_COORDS.lat) * 100;
+            userMarker.style.left = `${Math.min(Math.max(userX, 10), 90)}%`;
+            userMarker.style.top = `${Math.min(Math.max(userY, 10), 90)}%`;
+            
+            // Show distance line
+            const line = document.getElementById('distanceLine');
+            line.style.display = 'block';
+            line.style.position = 'absolute';
+            line.style.top = '50%';
+            line.style.left = '50%';
+            line.style.width = `${Math.abs(userX - 50)}%`;
+            line.style.height = '2px';
+            line.style.background = '#3498db';
+            line.style.transformOrigin = '0 0';
+            
+            // SELALU valid untuk testing
+            isLocationValid = true;
+            
+            // Update distance info
+            document.getElementById('distanceInfo').innerHTML = 
+                `Jarak: <span id="distanceValue">${Math.round(distance)}</span> meter`;
+            
+            if (distance <= 500) {
+                document.getElementById('distanceInfo').style.background = 'rgba(46, 204, 113, 0.9)';
+                document.getElementById('distanceInfo').style.color = 'white';
+                document.getElementById('distanceInfo').innerHTML += 
+                    ' <i class="bx bx-check" style="color:white;"></i>';
+            } else {
+                document.getElementById('distanceInfo').style.background = 'rgba(52, 152, 219, 0.9)';
+                document.getElementById('distanceInfo').style.color = 'white';
+                document.getElementById('distanceInfo').innerHTML += 
+                    ' <i class="bx bx-current-location" style="color:white;"></i>';
+            }
+            
+            // Check eligibility
+            checkSubmitEligibility();
+        },
+        function(error) {
+            let errorMessage = '';
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    errorMessage = 'Izin lokasi ditolak. Silakan aktifkan GPS.';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    errorMessage = 'Informasi lokasi tidak tersedia.';
+                    break;
+                case error.TIMEOUT:
+                    errorMessage = 'Permintaan lokasi timeout.';
+                    break;
+                default:
+                    errorMessage = 'Error tidak diketahui.';
+            }
+            document.getElementById('locationText').innerHTML = errorMessage;
+            isLocationValid = false;
+            userLocation = null;
+            checkSubmitEligibility();
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+        }
+    );
+}
     
     // Calculate distance between two coordinates in meters
-    function calculateDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371e3; // Earth radius in meters
-        const phi1 = lat1 * Math.PI / 180;
-        const phi2 = lat2 * Math.PI / 180;
-        const deltaPhi = (lat2 - lat1) * Math.PI / 180;
-        const deltaLambda = (lon2 - lon1) * Math.PI / 180;
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371e3; // Earth radius in meters
+    const phi1 = lat1 * Math.PI / 180;
+    const phi2 = lat2 * Math.PI / 180;
+    const deltaPhi = (lat2 - lat1) * Math.PI / 180;
+    const deltaLambda = (lon2 - lon1) * Math.PI / 180;
 
-        const a = Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
-                 Math.cos(phi1) * Math.cos(phi2) *
-                 Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const a = Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
+             Math.cos(phi1) * Math.cos(phi2) *
+             Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-        return R * c;
-    }
+    return R * c;
+}
     
     // Preview uploaded file
     function previewBukti(input) {
@@ -449,35 +480,58 @@
         checkSubmitEligibility();
     }
     
-    // Check if submit is eligible
-    function checkSubmitEligibility() {
-        const submitBtn = document.getElementById('submitBtn');
+// Check if submit is eligible
+function checkSubmitEligibility() {
+    const submitBtn = document.getElementById('submitBtn');
+    
+    if (!currentAbsensiStatus) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="bx bx-send"></i> Submit Absensi';
+        return;
+    }
+    
+    // Reset button text first
+    submitBtn.innerHTML = '<i class="bx bx-send"></i> Submit Absensi';
+    
+    if (currentAbsensiStatus === 'hadir') {
+        // For hadir: need location AND file upload
+        // TIDAK PERLU validasi jarak (isLocationValid), hanya perlu lokasi terdeteksi
+        const hasLocation = userLocation !== null;
         
-        if (!currentAbsensiStatus) {
-            submitBtn.disabled = true;
-            return;
-        }
-        
-        if (currentAbsensiStatus === 'hadir') {
-            // For hadir: need location validation and file upload
-            if (isLocationValid && uploadedFile) {
-                submitBtn.disabled = false;
-            } else {
-                submitBtn.disabled = true;
-            }
+        if (hasLocation && uploadedFile) {
+            submitBtn.disabled = false;
         } else {
-            // For izin/sakit: need reason and optional file
-            const alasan = document.getElementById('alasanText').value;
-            if (alasan.trim().length > 10) {
-                submitBtn.disabled = false;
-            } else {
-                submitBtn.disabled = true;
+            submitBtn.disabled = true;
+            
+            // Show helpful message
+            if (!hasLocation) {
+                submitBtn.innerHTML = '<i class="bx bx-map"></i> Ambil Lokasi Dulu';
+            } else if (!uploadedFile) {
+                submitBtn.innerHTML = '<i class="bx bx-cloud-upload"></i> Upload Bukti';
+            }
+        }
+    } else {
+        // For izin/sakit: need reason AND file upload
+        const alasan = document.getElementById('alasanText').value;
+        
+        if (alasan.trim().length > 10 && uploadedFile) {
+            submitBtn.disabled = false;
+        } else {
+            submitBtn.disabled = true;
+            
+            // Show helpful message
+            if (alasan.trim().length <= 10) {
+                submitBtn.innerHTML = '<i class="bx bx-edit"></i> Isi Alasan (min. 10 karakter)';
+            } else if (!uploadedFile) {
+                submitBtn.innerHTML = '<i class="bx bx-cloud-upload"></i> Upload Surat Izin/Sakit';
             }
         }
     }
+}
+
     
-    // Submit absensi
-    function submitAbsensi() {
+// Submit absensi
+function submitAbsensi() {
     if (!currentAbsensiStatus) {
         alert('Pilih status absensi dulu');
         return;
@@ -491,10 +545,18 @@
     const formData = new FormData();
     formData.append('status', currentAbsensiStatus);
 
-    // HADIR -> wajib lokasi + bukti
+    // HADIR -> butuh lokasi dan bukti
     if (currentAbsensiStatus === 'hadir') {
         if (!uploadedFile) {
-            alert('Upload bukti wajib');
+            alert('Upload bukti wajib untuk absensi hadir');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            return;
+        }
+
+        // Wajib ada lokasi (tapi tidak perlu validasi jarak)
+        if (!userLocation) {
+            alert('Lokasi belum terdeteksi. Klik "Refresh" untuk mengambil lokasi');
             submitBtn.innerHTML = originalText;
             submitBtn.disabled = false;
             return;
@@ -504,7 +566,7 @@
         formData.append('lokasi', JSON.stringify(userLocation));
     }
 
-    // IZIN / SAKIT -> wajib alasan + bukti surat
+    // IZIN / SAKIT -> butuh alasan dan bukti
     if (currentAbsensiStatus === 'izin' || currentAbsensiStatus === 'sakit') {
         const alasan = document.getElementById('alasanText').value;
         if (alasan.trim().length < 10) {
@@ -567,6 +629,7 @@
         submitBtn.disabled = false;
     });
 }
+
     
     // Reset absensi form
     function resetAbsensi() {
@@ -606,40 +669,47 @@
         alert('Memuat data absensi lebih banyak...');
     }
     
-    // Initialize
-    document.addEventListener('DOMContentLoaded', function() {
-        // Start clock
-        updateClock();
-        setInterval(updateClock, 1000);
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    // Start clock
+    updateClock();
+    setInterval(updateClock, 1000);
 
-        // Setup drag and drop for file upload
-        const uploadZone = document.getElementById('uploadZone');
-        uploadZone.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            this.style.background = 'rgba(46, 204, 113, 0.2)';
-            this.style.borderColor = '#2ecc71';
-        });
-        
-        uploadZone.addEventListener('dragleave', function(e) {
-            e.preventDefault();
-            if (!uploadedFile) {
-                this.style.background = 'rgba(148, 180, 193, 0.05)';
-                this.style.borderColor = 'var(--accent)';
-            }
-        });
-        
-        uploadZone.addEventListener('drop', function(e) {
-            e.preventDefault();
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                document.getElementById('buktiFile').files = files;
-                previewBukti(document.getElementById('buktiFile'));
-            }
-        });
-        
-        // Listen for reason text changes
-        document.getElementById('alasanText').addEventListener('input', checkSubmitEligibility);
+    // Setup drag and drop for file upload
+    const uploadZone = document.getElementById('uploadZone');
+    uploadZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.style.background = 'rgba(46, 204, 113, 0.2)';
+        this.style.borderColor = '#2ecc71';
     });
+    
+    uploadZone.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        if (!uploadedFile) {
+            this.style.background = 'rgba(148, 180, 193, 0.05)';
+            this.style.borderColor = 'var(--accent)';
+        }
+    });
+    
+    uploadZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            document.getElementById('buktiFile').files = files;
+            previewBukti(document.getElementById('buktiFile'));
+        }
+    });
+    
+    // Listen for reason text changes
+    document.getElementById('alasanText').addEventListener('input', checkSubmitEligibility);
+    
+    // Listen for file input changes
+    document.getElementById('buktiFile').addEventListener('change', function() {
+        previewBukti(this);
+        checkSubmitEligibility();
+    });
+});
+
 </script>
 
 <style>

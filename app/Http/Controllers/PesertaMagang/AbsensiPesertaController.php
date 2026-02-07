@@ -6,10 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\Absensi;
 use App\Models\PesertaMagang;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class AbsensiPesertaController extends Controller
 {
-    public function index () 
+    // Koordinat Diskominfo SP Surakarta
+    const OFFICE_LAT = -7.565962;
+    const OFFICE_LNG = 110.826141;
+    
+    public function index() 
     {
         $user = auth()->user();
 
@@ -52,14 +57,21 @@ class AbsensiPesertaController extends Controller
 
         $alpha = max(0, $total - ($hadir + $izin + $sakit));
 
-
+        // Cek apakah sudah absen hari ini (dengan timezone Jakarta)
+        $todayJakarta = Carbon::now('Asia/Jakarta')->toDateString();
+        
         $alreadyAbsen = Absensi::where('id_pesertamagang', $pesertaId)
-            ->whereDate('waktu_absen', now()->toDateString())
+            ->whereDate('waktu_absen', $todayJakarta)
             ->exists();
 
         $infoMessage = null;
         if ($alreadyAbsen) {
-            $infoMessage = 'Anda sudah absen hari ini.';
+            $absensiToday = Absensi::where('id_pesertamagang', $pesertaId)
+                ->whereDate('waktu_absen', $todayJakarta)
+                ->first();
+            
+            $infoMessage = 'Anda sudah absen hari ini pada pukul ' . 
+                Carbon::parse($absensiToday->waktu_absen)->format('H:i') . ' WIB';
         }
 
         return view('peserta.absensi', compact(
@@ -70,19 +82,15 @@ class AbsensiPesertaController extends Controller
             'alpha',
             'infoMessage'
         ));
-
     }
 
     public function store(Request $request)
     {
         $request->validate([
             'status' => 'required|in:hadir,izin,sakit',
-
             'bukti_kegiatan' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
-
             'alasan' => 'required_if:status,izin,sakit|string|min:10',
-
-            'lokasi' => 'nullable|string',
+            'lokasi' => 'nullable|string', // JSON string dengan lat, lng
         ]);
 
         $user = auth()->user();
@@ -109,45 +117,94 @@ class AbsensiPesertaController extends Controller
             ], 422);
         }
 
-        $today = \Carbon\Carbon::today();
-        $start = \Carbon\Carbon::parse($peserta->tanggal_mulai);
-        $end = $peserta->tanggal_selesai ? \Carbon\Carbon::parse($peserta->tanggal_selesai) : null;
+        // Gunakan timezone Jakarta
+        $todayJakarta = Carbon::now('Asia/Jakarta');
+        $start = Carbon::parse($peserta->tanggal_mulai, 'Asia/Jakarta');
+        $end = $peserta->tanggal_selesai ? 
+            Carbon::parse($peserta->tanggal_selesai, 'Asia/Jakarta') : null;
 
-        if ($today->lt($start)) {
+        if ($todayJakarta->lt($start)) {
             return response()->json([
-                'message' => 'Belum waktunya absen. Absensi dimulai tanggal ' . \Carbon\Carbon::parse($peserta->tanggal_mulai)->format('d M Y')
+                'message' => 'Belum waktunya absen. Absensi dimulai tanggal ' . 
+                    $start->format('d M Y')
             ], 422);
         }
 
-        if ($end && $today->gt($end)) {
+        if ($end && $todayJakarta->gt($end)) {
             return response()->json([
                 'message' => 'Masa magang sudah selesai. Anda tidak bisa absen lagi.'
             ], 422);
         }
 
-        $path = $request->file('bukti_kegiatan')
-            ->store('bukti-absensi', 'public');
-
-        $pesertaId = $peserta->id_pesertamagang;
-
-        $alreadyAbsen = Absensi::where('id_pesertamagang', $pesertaId)
-            ->whereDate('waktu_absen', now()->toDateString())
+        // Cek apakah sudah absen hari ini
+        $alreadyAbsen = Absensi::where('id_pesertamagang', $peserta->id_pesertamagang)
+            ->whereDate('waktu_absen', $todayJakarta->toDateString())
             ->exists();
 
         if ($alreadyAbsen) {
             return response()->json(['message' => 'Anda sudah absen hari ini'], 409);
         }
 
+        // Upload file
+        $path = $request->file('bukti_kegiatan')
+            ->store('bukti-absensi', 'public');
+
+        // Parse lokasi dan hitung jarak
+        $jarakMeter = null;
+        $lokasiText = null;
+        
+        if ($request->lokasi && $request->status === 'hadir') {
+            $lokasiData = json_decode($request->lokasi, true);
+            if ($lokasiData && isset($lokasiData['lat']) && isset($lokasiData['lng'])) {
+                // Hitung jarak dari koordinat Diskominfo
+                $jarakMeter = $this->calculateDistance(
+                    $lokasiData['lat'],
+                    $lokasiData['lng'],
+                    self::OFFICE_LAT,
+                    self::OFFICE_LNG
+                );
+                
+                $lokasiText = "Jarak: " . round($jarakMeter) . " meter dari Diskominfo";
+            }
+        }
+
+        // Simpan dengan waktu realtime Jakarta
         Absensi::create([
             'id_pesertamagang' => $peserta->id_pesertamagang,
-            'waktu_absen'      => now(),
+            'waktu_absen'      => $todayJakarta, // Waktu realtime WIB
             'status'           => $request->status,
-            'lokasi'           => $request->lokasi,
+            'lokasi'           => $lokasiText, // Hanya jarak dalam meter
             'bukti_kegiatan'   => $path,
             'alasan'           => $request->alasan,
         ]);
 
-        return response()->json(['message' => 'Absen berhasil']);
+        return response()->json([
+            'message' => 'Absen berhasil pada ' . $todayJakarta->format('H:i:s') . ' WIB'
+        ]);
     }
 
+    /**
+     * Calculate distance between two coordinates in meters
+     * menggunakan Haversine formula
+     */
+    private function calculateDistance($lat1, $lon1, $lat2, $lon2)
+    {
+        $earthRadius = 6371000; // Earth radius in meters
+        
+        $latFrom = deg2rad($lat1);
+        $lonFrom = deg2rad($lon1);
+        $latTo = deg2rad($lat2);
+        $lonTo = deg2rad($lon2);
+        
+        $latDelta = $latTo - $latFrom;
+        $lonDelta = $lonTo - $lonFrom;
+        
+        $angle = 2 * asin(sqrt(
+            pow(sin($latDelta / 2), 2) +
+            cos($latFrom) * cos($latTo) * 
+            pow(sin($lonDelta / 2), 2)
+        ));
+        
+        return $angle * $earthRadius;
+    }
 }
