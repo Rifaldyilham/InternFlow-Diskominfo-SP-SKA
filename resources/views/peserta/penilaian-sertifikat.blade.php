@@ -30,11 +30,8 @@
                 </div>
             </div>
             <div class="flex gap-3">
-                <button onclick="previewPenilaianFile()" class="px-4 py-2 bg-white border border-blue-500 text-blue-500 rounded-lg hover:bg-blue-50 transition">
-                    <i class='bx bx-show mr-2'></i> Preview
-                </button>
                 <button onclick="downloadPenilaianFile()" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-800 transition">
-                    <i class='bx bx-download mr-2'></i> Unduh
+                    <i class='bx bx-download mr-2'></i> Unduh Penilaian
                 </button>
             </div>
         </div>
@@ -83,9 +80,6 @@
                 </div>
             </div>
             <div class="flex gap-3">
-                <button onclick="viewSertifikat()" class="px-4 py-2 bg-white border border-green-500 text-green-500 rounded-lg hover:bg-green-50 transition">
-                    <i class='bx bx-show mr-2'></i> Preview
-                </button>
                 <button onclick="downloadSertifikat()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
                     <i class='bx bx-download mr-2'></i> Unduh Sertifikat
                 </button>
@@ -107,24 +101,6 @@
                     <li>Verifikasi oleh admin Diskominfo</li>
                     <li>Penerbitan oleh bagian kepegawaian</li>
                 </ol>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Preview File -->
-<div id="previewModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 hidden">
-    <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        <div class="p-6">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold text-primary" id="previewTitle">Preview File</h3>
-                <button onclick="closePreviewModal()" class="text-gray-400 hover:text-gray-600">
-                    <i class='bx bx-x text-2xl'></i>
-                </button>
-            </div>
-            
-            <div id="previewContent" class="text-center">
-                <!-- Preview file akan di-load di sini -->
             </div>
         </div>
     </div>
@@ -262,69 +238,6 @@ function updateFileSections() {
     }
 }
 
-// Preview penilaian file
-function previewPenilaianFile() {
-    if (!pesertaData.penilaianMentor.tersedia) {
-        showNotification('Info', 'File penilaian belum tersedia.', 'info');
-        return;
-    }
-    
-    document.getElementById('previewTitle').textContent = `Preview: ${pesertaData.penilaianMentor.nama}`;
-    
-    const previewContent = `
-        <div class="space-y-6">
-            <div class="bg-gray-50 p-4 rounded-xl">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <i class='bx bx-file-pdf text-3xl text-blue-600'></i>
-                        </div>
-                        <div>
-                            <div class="font-bold text-primary text-lg">${pesertaData.penilaianMentor.nama}</div>
-                            <div class="text-sm text-gray-600">
-                                ${pesertaData.penilaianMentor.ukuran} • Upload: ${pesertaData.penilaianMentor.tanggalUpload}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="downloadPenilaianFile()" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-800 transition">
-                            <i class='bx bx-download mr-2'></i> Download
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="border rounded-xl p-4">
-                <div class="text-center">
-                    <div class="text-gray-500 mb-4">
-                        <i class='bx bx-file-pdf text-6xl mb-4"></i>
-                        <div class="font-medium">File PDF tidak dapat dipreview secara langsung</div>
-                        <div class="text-sm">Silakan download file untuk melihat isi penilaian</div>
-                    </div>
-                    <div class="text-sm text-gray-600">
-                        File: ${pesertaData.penilaianMentor.nama}<br>
-                        Ukuran: ${pesertaData.penilaianMentor.ukuran}<br>
-                        Diupload: ${pesertaData.penilaianMentor.tanggalUpload}<br>
-                        Oleh: Mentor Pembimbing
-                    </div>
-                </div>
-            </div>
-            
-            <div class="flex gap-3 pt-4 border-t">
-                <button onclick="downloadPenilaianFile()" class="flex-1 bg-primary text-white py-3 rounded-lg font-bold hover:bg-blue-800 transition" aria-label="Download" title="Download">
-                    <i class='bx bx-download'></i>
-                </button>
-                <button onclick="closePreviewModal()" class="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition">
-                    Tutup
-                </button>
-            </div>
-        </div>
-    `;
-    
-    document.getElementById('previewContent').innerHTML = previewContent;
-    document.getElementById('previewModal').classList.remove('hidden');
-}
-
 // Download penilaian file
 function downloadPenilaianFile() {
     if (!pesertaData.penilaianMentor.tersedia) {
@@ -334,68 +247,6 @@ function downloadPenilaianFile() {
 
     const url = pesertaData.penilaianMentor.url || API_CONFIG.penilaianDownload;
     window.open(url, '_blank');
-}
-
-// View sertifikat
-function viewSertifikat() {
-    if (!pesertaData.sertifikat.tersedia) {
-        showNotification('Info', 'Sertifikat belum tersedia.', 'info');
-        return;
-    }
-    
-    document.getElementById('previewTitle').textContent = `Preview: ${pesertaData.sertifikat.nama}`;
-    
-    const previewContent = `
-        <div class="space-y-6">
-            <div class="bg-gray-50 p-4 rounded-xl">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center">
-                            <i class='bx bx-file-pdf text-3xl text-green-600'></i>
-                        </div>
-                        <div>
-                            <div class="font-bold text-primary text-lg">${pesertaData.sertifikat.nama}</div>
-                            <div class="text-sm text-gray-600">
-                                ${pesertaData.sertifikat.ukuran} • Terbit: ${formatDateOnly(pesertaData.sertifikat.tanggalTerbit)}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="downloadSertifikat()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
-                            <i class='bx bx-download mr-2'></i> Download
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="border rounded-xl p-4">
-                <div class="text-center">
-                    <div class="text-gray-500 mb-4">
-                        <i class='bx bx-file-pdf text-6xl mb-4"></i>
-                        <div class="font-medium">File PDF tidak dapat dipreview secara langsung</div>
-                        <div class="text-sm">Silakan download file untuk melihat isi sertifikat</div>
-                    </div>
-                    <div class="text-sm text-gray-600">
-                        File: ${pesertaData.sertifikat.nama}<br>
-                        Ukuran: ${pesertaData.sertifikat.ukuran}<br>
-                        Diterbitkan: ${formatDateOnly(pesertaData.sertifikat.tanggalTerbit)}<br>
-                        Nomor: ${pesertaData.sertifikat.nomor || '-'}
-                    </div>
-                </div>
-            </div>
-            
-            <div class="flex gap-3 pt-4 border-t">
-                <button onclick="downloadSertifikat()" class="flex-1 bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition" aria-label="Download sertifikat" title="Download sertifikat">
-                    <i class='bx bx-download'></i>
-                </button>
-                <button onclick="closePreviewModal()" class="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition">
-                    Tutup
-                </button>
-            </div>
-        </div>
-    `;
-    document.getElementById('previewContent').innerHTML = previewContent;
-    document.getElementById('previewModal').classList.remove('hidden');
 }
 
 // Download sertifikat
@@ -408,13 +259,6 @@ function downloadSertifikat() {
     const url = pesertaData.sertifikat.url || API_CONFIG.sertifikatDownload;
     window.open(url, '_blank');
 }
-
-
-// Close preview modal
-function closePreviewModal() {
-    document.getElementById('previewModal').classList.add('hidden');
-}
-
 // Show notification
 function showNotification(title, message, type = 'info') {
     const notification = document.createElement('div');
@@ -458,22 +302,6 @@ document.addEventListener('DOMContentLoaded', function() {
 /* Custom styles for file sections */
 #penilaianFileSection, #sertifikatFileSection {
     transition: all 0.3s ease;
-}
-
-/* Animation for modal */
-@keyframes modalSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-#previewModal > div {
-    animation: modalSlideIn 0.3s ease;
 }
 
 </style>

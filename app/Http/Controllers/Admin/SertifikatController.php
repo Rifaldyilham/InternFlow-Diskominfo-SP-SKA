@@ -85,11 +85,13 @@ class SertifikatController extends Controller
         }
 
         $file = $request->file('file_sertifikat');
-        $fileName = 'sertifikat_' . $peserta->id_pesertamagang . '_' . time() . '.pdf';
+        $originalName = $file->getClientOriginalName();
+        $originalName = \Illuminate\Support\Str::of($originalName)->afterLast('\\')->afterLast('/')->toString();
+        $fileName = 'sertifikat_' . $peserta->id_pesertamagang . '_' . time() . '_' . $originalName;
         $path = $file->storeAs('sertifikat', $fileName, 'public');
 
         $sertifikat = Sertifikat::where('id_pesertamagang', $peserta->id_pesertamagang)->first();
-        if ($sertifikat && $sertifikat->file_sertifikat) {
+        if ($sertifikat && $sertifikat->file_sertifikat && $sertifikat->file_sertifikat !== $path) {
             Storage::disk('public')->delete($sertifikat->file_sertifikat);
         }
 
@@ -190,8 +192,13 @@ class SertifikatController extends Controller
         $size = $exists ? Storage::disk('public')->size($path) : 0;
         $sizeMb = $size > 0 ? number_format($size / 1024 / 1024, 2) . ' MB' : '-';
 
+        $baseName = basename($path);
+        if (preg_match('/^sertifikat_\\d+_\\d+_(.+)$/', $baseName, $m)) {
+            $baseName = $m[1];
+        }
+
         return [
-            'nama' => basename($path),
+            'nama' => $baseName,
             'ukuran' => $sizeMb,
             'tanggal_upload' => $createdAt ? Carbon::parse($createdAt)->format('Y-m-d') : null,
             'url' => $exists ? Storage::url($path) : null,

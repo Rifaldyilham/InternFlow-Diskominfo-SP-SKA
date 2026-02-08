@@ -81,8 +81,14 @@ class PenilaianPesertaController extends Controller
         $size = $exists ? Storage::disk('public')->size($path) : 0;
         $sizeMb = $size > 0 ? number_format($size / 1024 / 1024, 2) . ' MB' : '-';
 
+        $baseName = basename($path);
+        // Hilangkan prefix penamaan internal agar nama tampil seperti asli
+        if (preg_match('/^penilaian_\\d+_\\d+_(.+)$/', $baseName, $m)) {
+            $baseName = $m[1];
+        }
+
         return [
-            'nama' => basename($path),
+            'nama' => $baseName,
             'ukuran' => $sizeMb,
             'tanggal_upload' => $createdAt ? Carbon::parse($createdAt)->format('Y-m-d') : null,
             'url' => $exists ? Storage::url($path) : null,

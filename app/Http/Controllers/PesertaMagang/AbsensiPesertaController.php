@@ -57,21 +57,32 @@ class AbsensiPesertaController extends Controller
 
         $alpha = max(0, $total - ($hadir + $izin + $sakit));
 
-        // Cek apakah sudah absen hari ini (dengan timezone Jakarta)
-        $todayJakarta = Carbon::now('Asia/Jakarta')->toDateString();
+        // Cek status periode magang dan absensi hari ini (timezone Jakarta)
+        $todayJakarta = Carbon::now('Asia/Jakarta');
+        $todayDate = $todayJakarta->toDateString();
+        $endDate = $peserta->tanggal_selesai
+            ? Carbon::parse($peserta->tanggal_selesai, 'Asia/Jakarta')->endOfDay()
+            : null;
         
-        $alreadyAbsen = Absensi::where('id_pesertamagang', $pesertaId)
-            ->whereDate('waktu_absen', $todayJakarta)
-            ->exists();
-
         $infoMessage = null;
-        if ($alreadyAbsen) {
-            $absensiToday = Absensi::where('id_pesertamagang', $pesertaId)
-                ->whereDate('waktu_absen', $todayJakarta)
-                ->first();
-            
-            $infoMessage = 'Anda sudah absen hari ini pada pukul ' . 
-                Carbon::parse($absensiToday->waktu_absen)->format('H:i') . ' WIB';
+
+        // Jika masa magang sudah lewat, blokir form dan beri pesan perhatian
+        if ($endDate && $todayJakarta->gt($endDate)) {
+            $infoMessage = 'Masa magang sudah selesai. Anda tidak bisa absen lagi.';
+        } else {
+            // Cek apakah sudah absen hari ini
+            $alreadyAbsen = Absensi::where('id_pesertamagang', $pesertaId)
+                ->whereDate('waktu_absen', $todayDate)
+                ->exists();
+
+            if ($alreadyAbsen) {
+                $absensiToday = Absensi::where('id_pesertamagang', $pesertaId)
+                    ->whereDate('waktu_absen', $todayDate)
+                    ->first();
+                
+                $infoMessage = 'Anda sudah absen hari ini pada pukul ' . 
+                    Carbon::parse($absensiToday->waktu_absen)->format('H:i') . ' WIB';
+            }
         }
 
         return view('peserta.absensi', compact(
@@ -120,8 +131,9 @@ class AbsensiPesertaController extends Controller
         // Gunakan timezone Jakarta
         $todayJakarta = Carbon::now('Asia/Jakarta');
         $start = Carbon::parse($peserta->tanggal_mulai, 'Asia/Jakarta');
+        // Gunakan endOfDay supaya tanggal_selesai masih bisa dipakai absen sepanjang hari terakhir
         $end = $peserta->tanggal_selesai ? 
-            Carbon::parse($peserta->tanggal_selesai, 'Asia/Jakarta') : null;
+            Carbon::parse($peserta->tanggal_selesai, 'Asia/Jakarta')->endOfDay() : null;
 
         if ($todayJakarta->lt($start)) {
             return response()->json([

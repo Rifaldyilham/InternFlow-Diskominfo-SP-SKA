@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use App\Models\Pegawai;
 use App\Models\PesertaMagang;
 use App\Models\Penilaian;
+use Illuminate\Support\Str;
 
 class PenilaianController extends Controller
 {
@@ -123,12 +124,14 @@ class PenilaianController extends Controller
         }
 
         $file = $request->file('file');
-        $ext = $file->getClientOriginalExtension();
-        $fileName = 'penilaian_' . $peserta->id_pesertamagang . '_' . time() . '.' . $ext;
+        $originalName = $file->getClientOriginalName();
+        // Pastikan hanya nama file tanpa path dan karakter berbahaya
+        $originalName = Str::of($originalName)->afterLast('\\')->afterLast('/')->toString();
+        $fileName = 'penilaian_' . $peserta->id_pesertamagang . '_' . time() . '_' . $originalName;
         $path = $file->storeAs('penilaian', $fileName, 'public');
 
         $penilaian = Penilaian::where('id_pesertamagang', $peserta->id_pesertamagang)->first();
-        if ($penilaian && $penilaian->filePenilaian) {
+        if ($penilaian && $penilaian->filePenilaian && $penilaian->filePenilaian !== $path) {
             Storage::disk('public')->delete($penilaian->filePenilaian);
         }
 
@@ -260,8 +263,13 @@ class PenilaianController extends Controller
         $size = $exists ? Storage::disk('public')->size($path) : 0;
         $sizeMb = $size > 0 ? number_format($size / 1024 / 1024, 2) . ' MB' : '-';
 
+        $baseName = basename($path);
+        if (preg_match('/^penilaian_\\d+_\\d+_(.+)$/', $baseName, $m)) {
+            $baseName = $m[1];
+        }
+
         return [
-            'nama' => basename($path),
+            'nama' => $baseName,
             'ukuran' => $sizeMb,
             'tanggal_upload' => $createdAt ? Carbon::parse($createdAt)->format('Y-m-d') : null,
             'url' => $exists ? Storage::url($path) : null,

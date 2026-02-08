@@ -414,6 +414,11 @@ function setupEventListeners() {
     
     alasanTextarea.addEventListener('input', function() {
         charCount.textContent = this.value.length;
+        
+        // Hilangkan error ketika sudah memenuhi minimal karakter
+        if (this.value.trim().length >= 150) {
+            clearFieldError('alasan');
+        }
     });
     
     // File upload preview
@@ -422,7 +427,17 @@ function setupEventListeners() {
     
     // Form submission
     const form = document.getElementById('formPengajuan');
-    // form.addEventListener('submit', handleFormSubmit);
+    form.addEventListener('submit', function(e) {
+        clearFieldError('alasan');
+        const alasanValue = alasanTextarea.value.trim();
+        if (alasanValue.length < 150) {
+            e.preventDefault();
+            showFieldError('alasan', 'Alasan minimal 150 karakter. Tambahkan lagi ' + (150 - alasanValue.length) + ' karakter.');
+            alasanTextarea.focus();
+            return false;
+        }
+        return true;
+    });
     
     // Modal close on backdrop click
     const modal = document.getElementById('successModal');
