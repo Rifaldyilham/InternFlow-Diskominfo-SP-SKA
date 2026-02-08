@@ -65,10 +65,12 @@ class AbsensiPesertaController extends Controller
             : null;
         
         $infoMessage = null;
+        $finishedMagang = false;
 
         // Jika masa magang sudah lewat, blokir form dan beri pesan perhatian
         if ($endDate && $todayJakarta->gt($endDate)) {
-            $infoMessage = 'Masa magang sudah selesai. Anda tidak bisa absen lagi.';
+            $infoMessage = 'Masa magang Anda telah selesai. Fitur logbook dan absensi sudah tidak tersedia. Silakan cek sertifikat dan penilaian di halaman yang sesuai. Jika ingin mengikuti program magang kembali, silakan mengajukan pendaftaran ulang.';
+            $finishedMagang = true;
         } else {
             // Cek apakah sudah absen hari ini
             $alreadyAbsen = Absensi::where('id_pesertamagang', $pesertaId)
@@ -91,7 +93,8 @@ class AbsensiPesertaController extends Controller
             'izin',
             'sakit',
             'alpha',
-            'infoMessage'
+            'infoMessage',
+            'finishedMagang'
         ));
     }
 

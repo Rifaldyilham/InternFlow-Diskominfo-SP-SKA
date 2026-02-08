@@ -14,7 +14,13 @@
             <div class="flex items-center gap-3">
                 <i class='bx bx-check-circle text-success text-xl'></i>
                 <div>
-                    <div class="font-semibold">Absensi Terkirim</div>
+                    <div class="font-semibold">
+                        @if(!empty($finishedMagang))
+                            Magang Telah Selesai
+                        @else
+                            Absensi Terkirim
+                        @endif
+                    </div>
                     <div>{{ $infoMessage }}</div>
                 </div>
             </div>

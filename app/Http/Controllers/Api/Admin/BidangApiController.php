@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Bidang;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Carbon\Carbon;
 
 class BidangApiController extends Controller
 {
@@ -15,9 +15,9 @@ class BidangApiController extends Controller
     {
         $query = Bidang::with(['admin', 'peserta']);
 
-        // Hitung jumlah peserta aktif per bidang
         $bidangs = $query->get()->map(function ($bidang) {
-            $bidang->peserta_aktif = $bidang->peserta->where('status', 'aktif')->count();
+            $active = $this->filterPesertaAktif($bidang->peserta);
+            $bidang->peserta_aktif = $active->count();
             return $bidang;
         });
 
@@ -35,7 +35,8 @@ class BidangApiController extends Controller
             return response()->json(['message' => 'Bidang tidak ditemukan'], 404);
         }
         
-        $bidang->peserta_aktif = $bidang->peserta->where('status', 'aktif')->count();
+        $active = $this->filterPesertaAktif($bidang->peserta);
+        $bidang->peserta_aktif = $active->count();
         
         return response()->json([
             'data' => $bidang,
@@ -192,17 +193,42 @@ class BidangApiController extends Controller
             return response()->json(['message' => 'Bidang tidak ditemukan'], 404);
         }
         
-        // Ambil user data untuk setiap peserta
-        $pesertaWithUsers = $bidang->peserta->map(function ($peserta) {
-            $peserta->load('user');
-            $peserta->name = $peserta->user->name ?? $peserta->nama;
-            $peserta->email = $peserta->user->email ?? $peserta->email;
-            return $peserta;
-        });
+        $pesertaWithUsers = $this->filterPesertaAktif($bidang->peserta)
+            ->map(function ($peserta) {
+                $peserta->load('user');
+                $peserta->name = $peserta->user->name ?? $peserta->nama;
+                $peserta->email = $peserta->user->email ?? $peserta->email;
+                return $peserta;
+            })
+            ->values();
         
         return response()->json([
             'data' => $pesertaWithUsers,
             'message' => 'Daftar peserta bidang berhasil diambil'
         ]);
+    }
+
+    /**
+     * Peserta aktif + grace 1 hari setelah tanggal_selesai
+     */
+    private function filterPesertaAktif($pesertas)
+    {
+        $today = Carbon::now('Asia/Jakarta')->startOfDay();
+
+        return $pesertas->filter(function ($peserta) use ($today) {
+            if ($peserta->status !== 'aktif') {
+                return false;
+            }
+
+            if (!$peserta->tanggal_selesai) {
+                return true;
+            }
+
+            $graceEnd = Carbon::parse($peserta->tanggal_selesai, 'Asia/Jakarta')
+                ->addDay()        // tahan 1 hari setelah selesai
+                ->endOfDay();
+
+            return $today->lte($graceEnd);
+        });
     }
 }

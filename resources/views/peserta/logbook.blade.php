@@ -31,7 +31,7 @@
             <i class='bx bx-check-circle'></i>
             <div>
                 <strong>Magang Telah Selesai</strong>
-                <p>Masa magang Anda telah selesai. Fitur logbook dan absensi sudah tidak tersedia. Silakan cek sertifikat dan penilaian di halaman yang sesuai.</p>
+                <p>Masa magang Anda telah selesai. Fitur logbook dan absensi sudah tidak tersedia. Silakan cek sertifikat dan penilaian di halaman yang sesuai.  Jika ingin mengikuti program magang kembali, silakan mengajukan pendaftaran ulang.</p>
             </div>
         </div>
     </div>
@@ -287,6 +287,22 @@ document.addEventListener('DOMContentLoaded', function() {
     setupEventListeners();
 });
 
+// Helper untuk dapatkan tanggal hari ini (local, tanpa UTC shift)
+function getTodayLocal() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function getTodayLocalFromDate(dateObj) {
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
 function setupEventListeners() {
     // Date picker change
     document.getElementById('tanggalKegiatan').addEventListener('change', function() {
@@ -441,6 +457,12 @@ async function loadLogbookList(page = 1) {
  */
 async function submitLogbookHadir() {
     if (!validateFormHadir()) return;
+    // Pastikan tanggal tidak melewati hari ini (frontend guard)
+    const today = getTodayLocal();
+    if (state.selectedDate > today) {
+        showNotification('error', 'Tanggal logbook tidak boleh di masa depan.');
+        return;
+    }
     
     try {
         const formData = new FormData();
@@ -540,17 +562,13 @@ function setTanggal(type) {
     
     switch(type) {
         case 'today':
-            // Already today
             break;
         case 'yesterday':
             newDate.setDate(today.getDate() - 1);
             break;
-        case 'tomorrow':
-            newDate.setDate(today.getDate() + 1);
-            break;
     }
     
-    const formattedDate = newDate.toISOString().split('T')[0];
+    const formattedDate = getTodayLocalFromDate(newDate);
     dateInput.value = formattedDate;
     state.selectedDate = formattedDate;
     
@@ -566,9 +584,11 @@ function resetForm() {
     document.getElementById('logbook_id').value = '';
     
     // Reset tanggal to today
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('tanggalKegiatan').value = today;
-    state.selectedDate = today;
+    const today = getTodayLocal();
+    const maxDate = document.getElementById('tanggalKegiatan').max || today;
+    const chosen = today > maxDate ? maxDate : today;
+    document.getElementById('tanggalKegiatan').value = chosen;
+    state.selectedDate = chosen;
     
     updateTanggalInfo();
 }
@@ -766,17 +786,22 @@ function initializeActiveState() {
     // Update form date limits
     const startDate = document.getElementById('tanggalKegiatan');
     if (state.magangData) {
-        startDate.min = state.magangData.tanggal_mulai;
-        startDate.max = state.magangData.tanggal_selesai;
+        const today = getTodayLocal();
+        const start = state.magangData.tanggal_mulai;
+        const end = state.magangData.tanggal_selesai;
+        // max tidak boleh melewati hari ini
+        const allowedMax = end ? (today < end ? today : end) : today;
+
+        startDate.min = start;
+        startDate.max = allowedMax;
         
-        // Set default date to today
-        const today = new Date().toISOString().split('T')[0];
-        if (today >= state.magangData.tanggal_mulai && today <= state.magangData.tanggal_selesai) {
+        // Set default date ke hari ini jika dalam rentang, jika tidak gunakan max
+        if (today >= start && today <= allowedMax) {
             startDate.value = today;
             state.selectedDate = today;
         } else {
-            startDate.value = state.magangData.tanggal_mulai;
-            state.selectedDate = state.magangData.tanggal_mulai;
+            startDate.value = allowedMax;
+            state.selectedDate = allowedMax;
         }
     }
     

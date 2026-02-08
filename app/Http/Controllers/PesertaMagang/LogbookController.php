@@ -102,6 +102,31 @@ class LogbookController extends Controller
             ], 422);
         }
 
+        // Cegah input tanggal di masa depan
+        $today = Carbon::today('Asia/Jakarta')->toDateString();
+        if ($request->tanggal > $today) {
+            return response()->json([
+                'message' => 'Tanggal logbook tidak boleh di masa depan.'
+            ], 422);
+        }
+
+        // Harus sudah absen HADIR pada tanggal tersebut
+        $absensi = Absensi::where('id_pesertamagang', $peserta->id_pesertamagang)
+            ->whereDate('waktu_absen', $request->tanggal)
+            ->first();
+
+        if (!$absensi) {
+            return response()->json([
+                'message' => 'Silakan absen terlebih dahulu pada tanggal tersebut sebelum mengisi logbook.'
+            ], 422);
+        }
+
+        if ($absensi->status !== 'hadir') {
+            return response()->json([
+                'message' => 'Logbook hanya dapat diisi jika absensi berstatus HADIR.'
+            ], 422);
+        }
+
         // Cegah logbook jika absensi izin/sakit pada tanggal yang sama
         $absensiIzinSakit = Absensi::where('id_pesertamagang', $peserta->id_pesertamagang)
             ->whereDate('waktu_absen', $request->tanggal)

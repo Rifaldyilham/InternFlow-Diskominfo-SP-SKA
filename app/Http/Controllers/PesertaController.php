@@ -9,6 +9,7 @@ use App\Models\PesertaMagang;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Bidang;
+use Carbon\Carbon;
 
 class PesertaController extends Controller
 {
@@ -23,8 +24,8 @@ class PesertaController extends Controller
             ->orderByDesc('created_at')
             ->first();
 
-        if ($latestPengajuan && $latestPengajuan->status_verifikasi !== 'ditolak') {
-            return redirect()->back()->with('error', 'Anda sudah memiliki pengajuan yang menunggu verifikasi.');
+        if ($this->pengajuanMasihAktif($latestPengajuan)) {
+            return redirect()->back()->with('error', 'Anda sudah memiliki pengajuan yang aktif atau sedang berjalan.');
         }
 
         $data = $request->only([
@@ -133,7 +134,7 @@ class PesertaController extends Controller
             ->orderByDesc('created_at')
             ->first();
 
-        if (!$pengajuan) {
+        if (!$pengajuan || !$this->pengajuanMasihAktif($pengajuan)) {
             return response()->json(['hasPengajuan' => false]);
         }
 
@@ -150,14 +151,57 @@ class PesertaController extends Controller
         $user = Auth::user();
         $existingPengajuan = null;
         if ($user) {
-            $existingPengajuan = PesertaMagang::where('id_user', $user->id_user)
+            $latest = PesertaMagang::where('id_user', $user->id_user)
                 ->orderByDesc('created_at')
                 ->first();
+
+            if ($this->pengajuanMasihAktif($latest)) {
+                $existingPengajuan = $latest;
+            }
         }
 
         return view('peserta.pendaftaran', compact('bidang', 'existingPengajuan'));
     }
 
+    /**
+     * Menentukan apakah pengajuan masih aktif/sedang berjalan
+     */
+    private function pengajuanMasihAktif(?PesertaMagang $pengajuan): bool
+    {
+        if (!$pengajuan) {
+            return false;
+        }
+
+        // Jika ditolak, dianggap tidak aktif
+        if ($pengajuan->status_verifikasi === 'ditolak') {
+            return false;
+        }
+
+        $now = Carbon::now('Asia/Jakarta');
+        $start = $pengajuan->tanggal_mulai ? Carbon::parse($pengajuan->tanggal_mulai, 'Asia/Jakarta') : null;
+        $end = $pengajuan->tanggal_selesai
+            ? Carbon::parse($pengajuan->tanggal_selesai, 'Asia/Jakarta')->endOfDay()
+            : null;
+
+        // pending selalu dianggap aktif
+        if ($pengajuan->status_verifikasi === 'pending') {
+            return true;
+        }
+
+        // terverifikasi: aktif jika belum melewati tanggal selesai (atau tanpa tanggal selesai)
+        if ($pengajuan->status_verifikasi === 'terverifikasi') {
+            // Jika belum mulai, tetap dikunci agar tidak ajukan baru
+            if ($start && $now->lt($start)) {
+                return true;
+            }
+
+            if (!$end || $now->lte($end)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
 
 class PesertaMagangController extends Controller
