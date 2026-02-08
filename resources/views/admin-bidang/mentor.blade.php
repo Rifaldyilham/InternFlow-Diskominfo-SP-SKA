@@ -428,7 +428,7 @@ function renderPesertaModalContent(mentor, mentorName) {
 
         <div class="mentor-total">
             <span class="meta-label">Total Peserta</span>
-            <span class="mentor-count">${mentor.jumlah_bimbingan || 0}</span>
+            <span class="mentor-count">${mentor.peserta ? mentor.peserta.length : 0}</span>
         </div>
     </div>
 </div>    

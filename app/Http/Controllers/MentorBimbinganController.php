@@ -24,8 +24,12 @@ class MentorBimbinganController extends Controller
             }
             
             $total = PesertaMagang::where('id_pegawai', $pegawai->id_pegawai)->count();
+            $today = \Illuminate\Support\Carbon::today();
             $aktif = PesertaMagang::where('id_pegawai', $pegawai->id_pegawai)
-                ->where('status', 'aktif')
+                ->where(function ($q) use ($today) {
+                    $q->whereNull('tanggal_selesai')
+                      ->orWhereDate('tanggal_selesai', '>=', $today);
+                })
                 ->count();
             
             return response()->json([
@@ -65,7 +69,12 @@ class MentorBimbinganController extends Controller
             $perPage = $request->get('per_page', 10);
             $page = $request->get('page', 1);
             
+            $today = \Illuminate\Support\Carbon::today();
             $peserta = PesertaMagang::where('id_pegawai', $pegawai->id_pegawai)
+                ->where(function ($q) use ($today) {
+                    $q->whereNull('tanggal_selesai')
+                      ->orWhereDate('tanggal_selesai', '>=', $today);
+                })
                 ->orderBy('nama')
                 ->paginate($perPage, ['*'], 'page', $page);
             

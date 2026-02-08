@@ -1,6 +1,6 @@
 @extends('layouts.mentor')
 
-@section('title', 'Input Penilaian Peserta')
+@section('title', 'Input Penilaian')
 @section('subtitle', 'Upload penilaian untuk peserta yang telah selesai magang')
 
 @section('styles')

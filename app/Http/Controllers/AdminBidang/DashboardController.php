@@ -8,6 +8,7 @@ use App\Models\PesertaMagang;
 use App\Models\Pegawai;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Carbon;
 
 class DashboardController extends Controller
 {
@@ -91,8 +92,13 @@ public function apiPeserta(Request $request): JsonResponse
     \Log::info('Admin bidang ID:', ['id_bidang' => $idBidang, 'pegawai_id' => $pegawai->id_pegawai]);
 
     // Hanya ambil peserta yang sudah diverifikasi dan ditempatkan di bidang ini
+    $today = Carbon::today();
     $query = PesertaMagang::where('id_bidang', $idBidang)
         ->where('status_verifikasi', 'terverifikasi')
+        ->where(function ($q) use ($today) {
+            $q->whereNull('tanggal_selesai')
+              ->orWhereDate('tanggal_selesai', '>=', $today);
+        })
         ->with(['pegawai', 'bidangPilihan', 'bidang']);
 
     $perPage = (int) $request->query('per_page', 10);
@@ -154,16 +160,22 @@ public function apiPeserta(Request $request): JsonResponse
     $idBidang = $pegawai->id_bidang;
 
     // Ambil mentor dari tabel pegawai yang memiliki role mentor (role_id = 3)
+    $today = Carbon::today();
     $mentors = Pegawai::where('id_bidang', $idBidang)
         ->whereHas('user', function ($q) {
             $q->where('id_role', 3); // Role mentor
         })
-        ->with(['user', 'pesertamagang']) // Load relasi
+        ->with(['user', 'pesertamagang' => function ($q) use ($today) {
+            $q->where(function ($q) use ($today) {
+                $q->whereNull('tanggal_selesai')
+                  ->orWhereDate('tanggal_selesai', '>=', $today);
+            });
+        }]) // Load relasi
         ->get();
 
     $data = $mentors->map(function ($mentor) {
         // Hitung jumlah peserta yang sedang dibimbing
-        $jumlahBimbingan = $mentor->pesertamagang->where('status', 'aktif')->count();
+        $jumlahBimbingan = $mentor->pesertamagang->count();
         
         return [
             'id' => $mentor->id_pegawai,
@@ -241,7 +253,11 @@ public function apiPeserta(Request $request): JsonResponse
     $mentor = Pegawai::where('id_pegawai', $id)
         ->where('id_bidang', $pegawai->id_bidang) // Pastikan mentor di bidang yang sama
         ->with(['user', 'pesertamagang' => function($query) {
-            $query->where('status', 'aktif')
+            $today = Carbon::today();
+            $query->where(function ($q) use ($today) {
+                      $q->whereNull('tanggal_selesai')
+                        ->orWhereDate('tanggal_selesai', '>=', $today);
+                  })
                   ->with(['bidang', 'bidangPilihan']);
         }])
         ->first();
