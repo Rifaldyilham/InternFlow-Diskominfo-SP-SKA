@@ -8,10 +8,6 @@
 
 @section('content')
 <div class="form-card">
-    <h2 class="form-title">
-        <i class='bx bx-book'></i> Logbook Harian Magang
-    </h2>
-    
     <!-- Loading State -->
     <div id="loadingState" class="text-center py-8">
         <i class='bx bx-loader-circle bx-spin text-4xl text-primary'></i>

@@ -21,7 +21,6 @@
                       <div class="peserta-info-meta">
                           <span id="selectedPesertaNim"></span>
                           <span id="selectedPesertaUniv"></span>
-                          <span id="selectedPesertaBidang"></span>
                       </div>
                 </div>
             </div>
@@ -632,14 +631,12 @@ function showPesertaInfo(peserta) {
     const name = document.getElementById('selectedPesertaName');
     const nim = document.getElementById('selectedPesertaNim');
     const univ = document.getElementById('selectedPesertaUniv');
-    const bidang = document.getElementById('selectedPesertaBidang');
     
     // Update UI
     avatar.textContent = getInitials(peserta.nama);
     name.textContent = peserta.nama;
     nim.textContent = `NIM: ${peserta.nim || 'N/A'}`;
     univ.textContent = peserta.universitas || '-';
-    bidang.textContent = peserta.bidang || '-';
 }
 
 function clearSelectedPeserta() {

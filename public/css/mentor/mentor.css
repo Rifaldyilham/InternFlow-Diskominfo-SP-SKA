@@ -9,6 +9,65 @@
     min-height: calc(100vh - 120px);
 }
 
+/* Admin-like Stats */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 25px;
+    margin-bottom: 35px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    border-top: 5px solid;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.08);
+}
+
+.stat-card.border-blue { border-color: var(--primary); }
+.stat-card.border-green { border-color: #2ed573; }
+.stat-card.border-orange { border-color: #ffa502; }
+
+.stat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stat-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+}
+
+.stat-icon.blue { background: rgba(33, 52, 72, 0.1); color: var(--primary); }
+.stat-icon.green { background: rgba(46, 213, 115, 0.1); color: #2ed573; }
+.stat-icon.orange { background: rgba(255, 165, 2, 0.1); color: #ffa502; }
+
+.stat-value {
+    font-size: 2.1rem;
+    font-weight: 700;
+    color: var(--primary);
+    line-height: 1.1;
+}
+
+.stat-label {
+    color: #666;
+    font-size: 0.95rem;
+    margin-bottom: 6px;
+}
+
 .mentor-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -37,6 +96,14 @@
 }
 
 /* Filter Container */
+.filter-container {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
 .filter-container-mentor {
     background: white;
     border-radius: 12px;
@@ -84,6 +151,194 @@
 }
 
 /* Table Styles untuk Mentor */
+.table-container {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+
+.table-header {
+    padding: 22px 24px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.table-header h3 {
+    color: var(--primary);
+    font-size: 1.2rem;
+    margin: 0;
+    font-weight: 700;
+}
+
+.table-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.table-info {
+    font-size: 0.95rem;
+    color: #555;
+    background: #f8f9fa;
+    padding: 8px 12px;
+    border-radius: 12px;
+}
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.table-container table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-container thead {
+    background: #f8f9fa;
+    border-bottom: 2px solid #eee;
+}
+
+.table-container th {
+    padding: 16px 20px;
+    text-align: left;
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #dee2e6;
+    white-space: nowrap;
+}
+
+.table-container tbody tr {
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s ease;
+}
+
+.table-container tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.table-container td {
+    padding: 18px 20px;
+    color: #495057;
+    font-size: 0.95rem;
+    vertical-align: middle;
+}
+
+.table-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 22px;
+    border-top: 1px solid #eee;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.pagination-info {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.page-numbers {
+    font-weight: 600;
+    color: #444;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.pagination-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: all 0.3s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: #f5f5f5;
+    border-color: var(--primary);
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Action Buttons (align with admin) */
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-start;
+}
+
+.action-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+}
+
+.action-btn.view {
+    background: rgba(113, 88, 226, 0.12);
+    color: #7158e2;
+}
+.action-btn.view:hover {
+    background: #7158e2;
+    color: #fff;
+}
+
+.action-btn.edit {
+    background: rgba(52, 152, 219, 0.12);
+    color: #3498db;
+}
+.action-btn.edit:hover {
+    background: #3498db;
+    color: #fff;
+}
+
+.action-btn.success {
+    background: rgba(46, 204, 113, 0.12);
+    color: #2ecc71;
+}
+.action-btn.success:hover {
+    background: #2ecc71;
+    color: #fff;
+}
+
 .mentor-table-container {
     background: white;
     border-radius: 16px;
@@ -167,6 +422,7 @@
 .peserta-avatar-mentor {
     width: 45px;
     height: 45px;
+    aspect-ratio: 1 / 1;
     border-radius: 50%;
     background: linear-gradient(45deg, var(--primary), var(--secondary));
     color: white;
@@ -175,6 +431,7 @@
     justify-content: center;
     font-weight: bold;
     font-size: 1rem;
+    flex-shrink: 0;
 }
 
 .peserta-info-mentor {
@@ -1394,4 +1651,22 @@
 
 .ml-auto {
     margin-left: auto;
+}
+
+@media (max-width: 768px) {
+    .table-header, .table-footer {
+        padding: 14px 16px;
+    }
+    .table-container th,
+    .table-container td {
+        padding: 12px 14px;
+    }
+    .table-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
 }

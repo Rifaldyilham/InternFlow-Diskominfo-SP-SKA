@@ -47,7 +47,6 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 70px;">ID</th>
                     <th>Pengguna</th>
                     <th>Role</th>
                     <th>Status</th>
@@ -58,7 +57,7 @@
             <tbody id="pesertaTableBody">
                 <!-- Data akan dimuat via AJAX -->
                 <tr id="loadingRow">
-                    <td colspan="6" style="text-align: center; padding: 50px 20px;">
+                    <td colspan="5" style="text-align: center; padding: 50px 20px;">
                         <div class="loading-skeleton" style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
                             <i class='bx bx-loader-circle bx-spin' style="font-size: 3rem; color: var(--primary);"></i>
                             <div style="text-align: center; color: #666;">
@@ -183,44 +182,63 @@
 <div id="detailModal" class="modal">
     <div class="modal-content" style="max-width: 500px;">
         <div class="modal-header">
-            <h3>Detail Akun</h3>
+            <h3 class="modal-title">Detail Akun</h3>
             <button class="modal-close" onclick="closeDetailModal()">&times;</button>
         </div>
         <div class="modal-body">
-            <div class="user-detail">
-                <div class="user-avatar-large">
-                    <div class="avatar" id="detailAvatar">AK</div>
+            <div class="space-y-6">
+                <!-- Header dengan avatar -->
+                <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                    <div class="w-16 h-16 bg-primary text-white rounded-full flex items-center justify-center text-xl font-bold" id="detailAvatar">
+                        AK
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-lg" id="detailName">-</h4>
+                        <div class="text-gray-600" id="detailEmail">-</div>
+                    </div>
                 </div>
-                <div class="user-info-detail">
-                    <h4 id="detailName">-</h4>
-                    <p id="detailEmail">-</p>
-                    <div class="detail-info">
-                        <div class="info-row">
-                            <span class="info-label">Role:</span>
-                            <span class="info-value" id="detailRole">-</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">NIP:</span>
-                            <span class="info-value" id="detailNip">-</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Bidang:</span>
-                            <span class="info-value" id="detailBidang">-</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Status:</span>
-                            <span class="info-value" id="detailStatus">-</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Bergabung:</span>
-                            <span class="info-value" id="detailJoinDate">-</span>
+                
+                <!-- Informasi Akun -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="text-sm text-gray-500 block">Role</label>
+                        <div id="detailRole" class="font-medium">-</div>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-sm text-gray-500 block">NIP</label>
+                        <div id="detailNip" class="font-medium">-</div>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-sm text-gray-500 block">Bidang</label>
+                        <div id="detailBidang" class="font-medium">-</div>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-sm text-gray-500 block">Status</label>
+                        <div id="detailStatus">-</div>
+                    </div>
+                </div>
+                
+                <!-- Informasi Tambahan -->
+                <div>
+                    <h5 class="font-semibold mb-3 text-primary">Informasi Lainnya</h5>
+                    <div class="p-4 bg-gray-50 rounded-lg space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Tanggal Bergabung</span>
+                            <span class="font-medium" id="detailJoinDate">-</span>
                         </div>
                     </div>
+                </div>
+                
+                <!-- Status Badge yang lebih baik -->
+                <div id="statusBadgeContainer">
+                    <!-- Status akan ditambahkan oleh JavaScript -->
                 </div>
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="closeDetailModal()">Tutup</button>
+            <button class="btn btn-secondary" onclick="closeDetailModal()">
+                <i class='bx bx-x'></i> Tutup
+            </button>
             <button class="btn btn-primary" id="detailEditBtn">
                 <i class='bx bx-edit'></i> Edit Akun
             </button>
@@ -495,7 +513,6 @@ function renderTable(users) {
         const userId = user.id_user || user.id;
         
         row.innerHTML = `
-            <td><strong>#${userId}</strong></td>
             <td>
                 <div class="user-cell">
                     <div class="avatar">${getInitials(user.name)}</div>

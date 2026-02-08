@@ -170,6 +170,9 @@
                 <!-- Konten akan dimuat via JavaScript -->
             </div>
         </div>
+        <div class="modal-footer" id="detailModalFooter">
+            <!-- Tombol akan diisi via JavaScript -->
+        </div>
     </div>
 </div>
 
@@ -240,27 +243,6 @@
                 </button>
             </div>
         </form>
-    </div>
-</div>
-
-<!-- Modal Lihat Sertifikat -->
-<div id="viewSertifikatModal" class="modal">
-    <div class="modal-content" style="max-width: 900px;">
-        <div class="modal-header">
-            <h3 id="viewSertifikatTitle">Detail Sertifikat</h3>
-            <button class="modal-close" onclick="closeModal('viewSertifikatModal')">&times;</button>
-        </div>
-        <div class="modal-body">
-            <div id="viewSertifikatContent">
-                <!-- Konten akan dimuat via JavaScript -->
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" onclick="closeModal('viewSertifikatModal')">Tutup</button>
-            <button type="button" class="btn btn-primary" onclick="downloadSertifikat()" id="downloadBtn">
-                <i class='bx bx-download'></i> Download Sertifikat
-            </button>
-        </div>
     </div>
 </div>
 
@@ -526,8 +508,8 @@ function renderTable() {
         return `
             <tr>
                 <td>
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <div class="user-avatar">${getInitials(peserta.nama)}</div>
+                    <div class="peserta-cell-wrapper">
+                        <div class="peserta-avatar-small">${getInitials(peserta.nama)}</div>
                         <div>
                             <div style="font-weight: 600; color: var(--primary);">${peserta.nama}</div>
                             <div style="font-size: 0.85rem; color: #666;">${peserta.nim || ''}</div>
@@ -750,8 +732,11 @@ function renderDetailModal(peserta) {
                 </div>
             </div>
         ` : ''}
-        
-        <div class="detail-actions">
+    `;
+    
+    const footer = document.getElementById('detailModalFooter');
+    if (footer) {
+        footer.innerHTML = `
             ${isSelesai && !hasSertifikat ? `
                 <button onclick="showUploadModal('${peserta.id}')" class="btn btn-primary">
                     <i class='bx bx-upload'></i> Upload Sertifikat
@@ -762,8 +747,8 @@ function renderDetailModal(peserta) {
                 </button>
             ` : ''}
             <button onclick="closeModal('detailModal')" class="btn btn-secondary">Tutup</button>
-        </div>
-    `;
+        `;
+    }
     
     openModal('detailModal');
 }
@@ -866,85 +851,37 @@ async function viewSertifikat(pesertaId) {
         const data = await response.json();
         const sertifikat = data.data || data;
         
-        renderViewSertifikatModal(sertifikat);
+        if (!sertifikat?.id) {
+            throw new Error('Sertifikat tidak ditemukan untuk peserta ini');
+        }
+
+        state.currentSertifikatId = sertifikat.id;
+        await openSertifikatInNewTab(sertifikat.id);
         
     } catch (error) {
         console.error('Error:', error);
-        showNotification('Gagal memuat detail sertifikat', 'error');
+        showNotification(error.message || 'Gagal memuat sertifikat', 'error');
     } finally {
         showLoading('view', false);
     }
 }
 
-function renderViewSertifikatModal(sertifikat) {
-    state.currentSertifikatId = sertifikat.id;
-    const peserta = sertifikat.peserta
-        || state.pesertaList.find(p => p.id == state.currentPesertaId)
-        || {};
+async function openSertifikatInNewTab(sertifikatId) {
+    const response = await fetch(`${API_CONFIG.endpoints.sertifikat.download}/${sertifikatId}`, {
+        headers: {
+            'Accept': 'application/pdf',
+            'X-CSRF-TOKEN': window.csrfToken
+        }
+    });
 
-    document.getElementById('viewSertifikatTitle').textContent = `Sertifikat - ${peserta.nama || 'Tidak Diketahui'}`;
-    
-    document.getElementById('viewSertifikatContent').innerHTML = `
-        <div class="detail-section">
-            <div class="detail-header">
-                <div class="detail-title">
-                    <div class="detail-avatar">${getInitials(peserta.nama)}</div>
-                    <div>
-                        <h4></h4>
-                        <p> • </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="pdf-preview">
-            <i class='bx bx-file-pdf'></i>
-            <div class="pdf-info">
-                <div class="pdf-name">${sertifikat.nama_file}</div>
-                <div class="pdf-details">
-                    <span><i class='bx bx-hash'></i> ${sertifikat.nomor_sertifikat}</span>
-                    <span><i class='bx bx-calendar'></i> ${formatDate(sertifikat.tanggal_terbit)}</span>
-                    <span><i class='bx bx-data'></i> ${formatFileSize(sertifikat.ukuran_file)}</span>
-                </div>
-            </div>
-        </div>
-        
-        <div class="sertifikat-details">
-            <h4 style="color: var(--primary); margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
-                <i class='bx bx-info-circle'></i> Detail Sertifikat
-            </h4>
-            <div class="detail-card">
-                <div class="sertifikat-grid">
-                    <div class="sertifikat-item">
-                        <label>Nomor Sertifikat</label>
-                        <span class="nomor-sertifikat">${sertifikat.nomor_sertifikat}</span>
-                    </div>
-                    <div class="sertifikat-item">
-                        <label>Tanggal Terbit</label>
-                        <span>${formatDate(sertifikat.tanggal_terbit)}</span>
-                    </div>
-                    <div class="sertifikat-item">
-                        <label>Tanggal Upload</label>
-                        <span>${formatDate(sertifikat.created_at)}</span>
-                    </div>
-                    <div class="sertifikat-item">
-                        <label>Status</label>
-                        <span class="status-badge status-approved">TERBIT</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="sertifikat-preview-note">
-            <i class='bx bx-info-circle'></i>
-            <div>
-                <strong>Informasi</strong>
-                <p>Sertifikat ini akan tersedia di halaman peserta untuk diunduh.</p>
-            </div>
-        </div>
-    `;
-    
-    openModal('viewSertifikatModal');
+    if (!response.ok) throw new Error('Gagal membuka sertifikat');
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    window.open(url, '_blank', 'noopener');
+
+    // Lepas resource setelah tab baru memuat
+    setTimeout(() => window.URL.revokeObjectURL(url), 5000);
 }
 
 // Download sertifikat
@@ -1101,17 +1038,6 @@ function showLoading(context, isLoading) {
                 `;
             }
         },
-        'view': () => {
-            const modalContent = document.getElementById('viewSertifikatContent');
-            if (modalContent && isLoading) {
-                modalContent.innerHTML = `
-                    <div style="text-align: center; padding: 40px;">
-                        <i class='bx bx-loader-circle bx-spin' style="font-size: 3rem; color: var(--primary);"></i>
-                        <div style="margin-top: 15px; color: #666;">Memuat detail sertifikat...</div>
-                    </div>
-                `;
-            }
-        },
         'delete': () => {
             const btn = document.getElementById('confirmDeleteBtn');
             if (btn) {
@@ -1202,4 +1128,3 @@ function showNotification(message, type = 'info') {
 }
 </script>
 @endsection
-

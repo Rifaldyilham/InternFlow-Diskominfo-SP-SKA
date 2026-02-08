@@ -95,7 +95,7 @@
 <div class="form-card">
     <div class="flex justify-between items-center mb-6">
         <h3 class="text-xl font-bold text-primary flex items-center gap-2">
-            <i class='bx bx-list-check'></i> Daftar Peserta Pengajuan Magang
+            Daftar Peserta Pengajuan Magang
         </h3>
         <div class="table-count">
             Menampilkan semua pengajuan
@@ -245,15 +245,6 @@ function showRejectModal(pesertaId) {
                         </div>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="rejectReason" class="block text-sm font-medium mb-2 text-gray-700">
-                            Alasan Penolakan (Opsional)
-                        </label>
-                        <textarea id="rejectReason" 
-                                  class="form-input w-full h-32" 
-                                  placeholder="Masukkan alasan penolakan (jika diperlukan)..."></textarea>
-                    </div>
-                    
                     <div class="mt-6 flex gap-3 justify-end">
                         <button onclick="closeModal('rejectModal')" 
                                 class="btn btn-secondary">
@@ -279,7 +270,7 @@ function showRejectModal(pesertaId) {
 }
 
 async function confirmReject() {
-    const catatan = document.getElementById('rejectReason').value;
+    const catatan = null; // tidak perlu alasan penolakan
     
     try {
         await submitVerifikasiAPI(rejectPesertaId, 'ditolak', catatan);

@@ -9,31 +9,35 @@
 
 @section('content')
 <div class="mentor-dashboard">
-    <!-- Stats Cards -->
-    <div class="mentor-stats">
-        <div class="mentor-stat-card">
-            <div class="flex items-center justify-between">
+    <!-- Stats Cards (match admin look) -->
+    <div class="stats-grid">
+        <div class="stat-card border-blue">
+            <div class="stat-header">
                 <div>
-                    <div class="mentor-stat-value" id="totalPeserta">0</div>
-                    <div class="mentor-stat-label">Total Peserta</div>
+                    <div class="stat-label">Total Peserta</div>
+                    <div class="stat-value" id="totalPeserta">0</div>
                 </div>
-                <i class='bx bx-group text-3xl text-primary'></i>
+                <div class="stat-icon blue">
+                    <i class='bx bx-group'></i>
+                </div>
             </div>
         </div>
-        
-        <div class="mentor-stat-card">
-            <div class="flex items-center justify-between">
+
+        <div class="stat-card border-green">
+            <div class="stat-header">
                 <div>
-                    <div class="mentor-stat-value" id="pesertaAktif">0</div>
-                    <div class="mentor-stat-label">Peserta Aktif</div>
+                    <div class="stat-label">Peserta Aktif</div>
+                    <div class="stat-value" id="pesertaAktif">0</div>
                 </div>
-                <i class='bx bx-user-check text-3xl text-green-600'></i>
+                <div class="stat-icon green">
+                    <i class='bx bx-user-check'></i>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Filter Pencarian Nama Saja -->
-    <div class="filter-container-mentor">
+    <div class="filter-container filter-container-mentor">
         <div class="flex flex-col md:flex-row md:items-end gap-4">
             <div class="flex-1">
                 <label for="searchInput" class="filter-label-mentor">
@@ -51,49 +55,60 @@
     </div>
 
     <!-- Daftar Peserta -->
-    <div class="mentor-table-container">
-        <div class="mentor-table-header">
+    <div class="table-container mentor-table-container">
+        <div class="table-header">
             <h3>Daftar Peserta Bimbingan</h3>
-            <span class="mentor-table-count" id="pesertaCount">0 peserta</span>
+            <div class="table-actions">
+                <div class="table-info">
+                    Total: <span id="pesertaCount">0</span> peserta
+                </div>
+            </div>
         </div>
-        
-        <table class="mentor-table">
-            <thead>
-                <tr>
-                    <th>Nama Peserta</th>
-                    <th>Universitas</th>
-                    <th>Program Studi</th>
-                    <th>Tanggal Masuk</th>
-                    <th>Tanggal Selesai</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody id="pesertaTableBody">
-                <!-- Data akan diisi oleh JavaScript -->
-                <tr id="loadingRow">
-                    <td colspan="6" class="text-center py-12">
-                        <div class="loading-skeleton-mentor flex flex-col items-center gap-5">
-                            <i class='bx bx-loader-circle bx-spin text-4xl text-primary'></i>
-                            <div class="text-center text-gray-600">
-                                <div class="font-semibold mb-2">Memuat data peserta...</div>
-                                <div class="text-sm">Mohon tunggu sebentar</div>
+
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nama Peserta</th>
+                        <th>Universitas</th>
+                        <th>Program Studi</th>
+                        <th>Tanggal Masuk</th>
+                        <th>Tanggal Selesai</th>
+                        <th style="width: 150px;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="pesertaTableBody">
+                    <!-- Data akan diisi oleh JavaScript -->
+                    <tr id="loadingRow">
+                        <td colspan="6" class="text-center py-12">
+                            <div class="loading-skeleton-mentor flex flex-col items-center gap-5">
+                                <i class='bx bx-loader-circle bx-spin text-4xl text-primary'></i>
+                                <div class="text-center text-gray-600">
+                                    <div class="font-semibold mb-2">Memuat data peserta...</div>
+                                    <div class="text-sm">Mohon tunggu sebentar</div>
+                                </div>
                             </div>
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
         <!-- Pagination -->
-        <div class="pagination-mentor">
-            <div class="pagination-info-mentor" id="pageInfo">
+        <div class="table-footer">
+            <div class="pagination-info" id="pageInfo">
                 Menampilkan 0 - 0 dari 0 peserta
             </div>
-            <div class="pagination-controls-mentor">
-                <button id="prevPage" class="pagination-btn-mentor" disabled>
+            <div class="pagination-controls">
+                <button id="prevPage" class="pagination-btn" disabled>
                     <i class='bx bx-chevron-left'></i>
                 </button>
-                <button id="nextPage" class="pagination-btn-mentor" disabled>
+                <div class="page-numbers">
+                    <span id="currentPage">1</span>
+                    <span>/</span>
+                    <span id="totalPages">1</span>
+                </div>
+                <button id="nextPage" class="pagination-btn" disabled>
                     <i class='bx bx-chevron-right'></i>
                 </button>
             </div>
@@ -331,18 +346,18 @@ function renderPesertaTable() {
                     <div class="text-sm font-medium">${formatDate(peserta.tanggal_selesai)}</div>
                 </td>
                 <td>
-                    <div class="mentor-action-buttons">
-                        <button class="mentor-action-btn view" 
+                    <div class="action-buttons">
+                        <button class="action-btn view" 
                                 onclick="showDetailPeserta('${peserta.id}')"
                                 title="Lihat Detail">
                             <i class='bx bx-show'></i>
                         </button>
-                        <button class="mentor-action-btn primary"
+                        <button class="action-btn edit"
                                 onclick="goToLogbook('${peserta.id}', '${peserta.nama}')"
                                 title="Verifikasi Logbook">
                             <i class='bx bx-notepad'></i>
                         </button>
-                        <button class="mentor-action-btn success"
+                        <button class="action-btn success"
                                 onclick="goToAbsensi('${peserta.id}', '${peserta.nama}')"
                                 title="Verifikasi Absensi">
                             <i class='bx bx-calendar-check'></i>
@@ -446,8 +461,10 @@ function resetSearch() {
 }
 
 function updatePesertaCount() {
-    document.getElementById('pesertaCount').textContent = 
-        `${state.filteredPeserta.length} peserta`;
+    const countEl = document.getElementById('pesertaCount');
+    if (countEl) {
+        countEl.textContent = state.filteredPeserta.length;
+    }
 }
 
 function updatePagination() {
@@ -456,13 +473,17 @@ function updatePagination() {
     const end = Math.min(state.currentPage * state.itemsPerPage, state.filteredPeserta.length);
     
     document.getElementById('pageInfo').textContent = 
-        `Menampilkan ${start} - ${end} dari ${state.filteredPeserta.length} peserta`;
+        `Menampilkan ${state.filteredPeserta.length ? start : 0} - ${state.filteredPeserta.length ? end : 0} dari ${state.filteredPeserta.length} peserta`;
     
     const prevBtn = document.getElementById('prevPage');
     const nextBtn = document.getElementById('nextPage');
+    const currentPageEl = document.getElementById('currentPage');
+    const totalPagesEl = document.getElementById('totalPages');
     
     if (prevBtn) prevBtn.disabled = state.currentPage === 1;
     if (nextBtn) nextBtn.disabled = state.currentPage === totalPages || totalPages === 0;
+    if (currentPageEl) currentPageEl.textContent = totalPages === 0 ? 0 : state.currentPage;
+    if (totalPagesEl) totalPagesEl.textContent = totalPages;
 }
 
 function prevPage() {
