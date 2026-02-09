@@ -859,49 +859,70 @@ style.textContent = `
     
     .action-buttons {
         display: flex;
-        gap: 8px;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: nowrap;
     }
     
     .action-btn {
-        width: 36px;
-        height: 36px;
-        border-radius: 8px;
-        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        background: linear-gradient(180deg, #f9fafb 0%, #f3f4f6 100%);
+        color: #0f172a;
         cursor: pointer;
-        display: flex;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.1rem;
-        transition: all 0.2s;
+        font-size: 1.05rem;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+        box-shadow: 0 3px 8px rgba(15, 23, 42, 0.08);
+    }
+    
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(15, 23, 42, 0.12);
+    }
+
+    .action-btn:focus-visible {
+        outline: 2px solid #94a3b8;
+        outline-offset: 2px;
     }
     
     .action-btn.view {
-        background: rgba(155, 89, 182, 0.1);
-        color: #9b59b6;
+        background: #eef2ff;
+        border-color: #e0e7ff;
+        color: #4f46e5;
     }
     
     .action-btn.view:hover {
-        background: #9b59b6;
+        background: #4f46e5;
+        border-color: #4f46e5;
         color: white;
     }
     
     .action-btn.edit {
-        background: rgba(52, 152, 219, 0.1);
-        color: #3498db;
+        background: #e0f2fe;
+        border-color: #bae6fd;
+        color: #0284c7;
     }
     
     .action-btn.edit:hover {
-        background: #3498db;
+        background: #0284c7;
+        border-color: #0284c7;
         color: white;
     }
     
     .action-btn.delete {
-        background: rgba(231, 76, 60, 0.1);
-        color: #e74c3c;
+        background: #fef2f2;
+        border-color: #fecdd3;
+        color: #dc2626;
     }
     
     .action-btn.delete:hover {
-        background: #e74c3c;
+        background: #dc2626;
+        border-color: #dc2626;
         color: white;
     }
     

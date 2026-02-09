@@ -913,10 +913,12 @@ function renderAbsensiTable() {
                     ${absensi.bukti ? 'Ada' : '-'}
                 </td>
                 <td>
-                    <button onclick="viewAbsensiDetailByIndex(${absensiIndex})" 
-                            class="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1">
-                        <i class='bx bx-show'></i> Detail
-                    </button>
+                    <div class="mentor-action-buttons">
+                        <button onclick="viewAbsensiDetailByIndex(${absensiIndex})" 
+                                class="mentor-action-btn view" title="Lihat detail">
+                            <i class='bx bx-show'></i>
+                        </button>,
+                    </div>
                 </td>
             </tr>
         `;
