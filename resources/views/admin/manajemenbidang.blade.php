@@ -604,7 +604,7 @@ function renderPesertaList(peserta) {
         `;
     }
     
-    let html = '<div class="peserta-table">';
+    let html = '<div class="detail-table-responsive"><div class="peserta-table">';
     html += `
         <div class="table-header-small">
             <div style="grid-column: 1;">Nama</div>
@@ -629,7 +629,7 @@ function renderPesertaList(peserta) {
             </div>
         `;
     });
-    html += '</div>';
+    html += '</div></div>';
     
     return html;
 }

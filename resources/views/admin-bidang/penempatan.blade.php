@@ -517,52 +517,77 @@ async function showDetailPeserta(pesertaId) {
 
 function renderDetailPeserta(peserta) {
     const modalContent = document.getElementById('detailPesertaContent');
-    const isAssigned = peserta.mentor_id && peserta.status_penempatan === 'assigned';
-    const isActive = peserta.status === 'aktif';
-    
-    // Format berkas jika ada
-    const berkasHTML = `
-        ${peserta.surat_penempatan_path ? 
-            `<div class="mt-4">
+    const cvUrl = peserta?.berkas?.['CV / Resume'] || peserta?.cv_path || peserta?.cv || peserta?.link_cv;
+    const suratPengantarUrl = peserta?.berkas?.['Surat Pengantar'] || peserta?.surat_penempatan_path || peserta?.surat_pengantar_path || peserta?.surat_pengantar;
+
+    // Susun blok dokumen dengan struktur yang sama seperti verifikasi-berkas
+    let berkasHtml = '';
+    if (cvUrl || suratPengantarUrl) {
+        berkasHtml = `
+            <div class="mt-4">
                 <h5 class="font-semibold mb-3 text-primary">Dokumen</h5>
-                <div class="p-3 bg-gray-50 rounded-lg">
-                    <div class="flex items-center gap-3 mb-2">
-                        <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                            <i class='bx bx-file text-red-600'></i>
-                        </div>
-                        <div class="flex-1">
-                            <div class="font-medium">Surat Penempatan</div>
-                            <div class="text-sm text-gray-500">${formatDate(peserta.created_at)}</div>
-                        </div>
-                        <a href="${peserta.surat_penempatan_path}" target="_blank" 
-                           class="action-btn view" title="Lihat Dokumen">
-                            <i class='bx bx-show'></i>
-                        </a>
-                    </div>
-                    ${peserta.cv_path ? `
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <i class='bx bx-file text-blue-600'></i>
+
+                <div class="space-y-4">
+                    ${cvUrl
+                        ? `
+                        <div class="border rounded-xl p-4 bg-white space-y-3">
+                            <div class="flex items-start gap-3">
+                                <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center shrink-0">
+                                    <i class='bx bx-file text-red-600'></i>
+                                </div>
+
+                                <div>
+                                    <div class="font-semibold text-gray-800">CV / Resume</div>
+                                    <div class="text-sm text-gray-500">Dokumen CV Peserta</div>
+                                </div>
                             </div>
-                            <div class="flex-1">
-                                <div class="font-medium">Curriculum Vitae</div>
-                                <div class="text-sm text-gray-500">CV Peserta</div>
-                            </div>
-                            <a href="${peserta.cv_path}" target="_blank" 
-                               class="action-btn view" title="Lihat Dokumen">
-                                <i class='bx bx-show'></i>
+
+                            <a href="${cvUrl}"
+                                target="_blank"
+                                class="w-full inline-flex items-center justify-center gap-2
+                                        rounded-lg border px-4 py-2 text-sm font-medium
+                                        hover:bg-gray-50 transition">
+                                <i class='bx bx-show'></i> Lihat Dokumen
                             </a>
                         </div>
-                    ` : ''}
+                        `
+                        : `<div class="text-sm text-gray-500">CV / Resume tidak tersedia</div>`
+                    }
+
+                    ${suratPengantarUrl
+                        ? `
+                        <div class="border rounded-xl p-4 bg-white space-y-3">
+                            <div class="flex items-start gap-3">
+                                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
+                                    <i class='bx bx-file text-blue-600'></i>
+                                </div>
+
+                                <div>
+                                    <div class="font-semibold text-gray-800">Surat Pengantar</div>
+                                    <div class="text-sm text-gray-500">Surat Pengantar Magang</div>
+                                </div>
+                            </div>
+
+                            <a href="${suratPengantarUrl}"
+                                target="_blank"
+                                class="w-full inline-flex items-center justify-center gap-2
+                                        rounded-lg border px-4 py-2 text-sm font-medium
+                                        hover:bg-gray-50 transition">
+                                <i class='bx bx-show'></i> Lihat Dokumen
+                            </a>
+                        </div>
+                        `
+                        : `<div class="text-sm text-gray-500">Surat Pengantar tidak tersedia</div>`
+                    }
                 </div>
-            </div>` : ''
-        }
-    `;
-    
+            </div>
+        `;
+    }
+
     modalContent.innerHTML = `
         <div class="space-y-6">
-            <!-- Header dengan avatar dan status -->
-            <div class="flex items-center gap-4 p-4 bg-blue-50 rounded-lg">
+            <!-- Header dengan avatar -->
+            <div class="flex flex-col sm:flex-row items-center sm:items-start gap-4 p-4 bg-blue-50 rounded-lg text-center sm:text-left">
                 <div class="peserta-avatar" style="width: 60px; height: 60px; font-size: 1.2rem;">
                     ${getInitials(peserta.nama || peserta.name)}
                 </div>
@@ -592,11 +617,7 @@ function renderDetailPeserta(peserta) {
                 </div>
                 <div>
                     <label class="text-sm text-gray-500">Bidang Pilihan</label>
-                    <div class="font-medium">${peserta.bidang_pilihan || '-'}</div>
-                </div>
-                <div>
-                    <label class="text-sm text-gray-500">Bidang Penempatan</label>
-                    <div class="font-medium">${peserta.bidang_penempatan || '-'}</div>
+                    <div class="font-medium">${peserta.bidang_pilihan || peserta.bidang_penempatan || '-'}</div>
                 </div>
             </div>
             
@@ -615,35 +636,11 @@ function renderDetailPeserta(peserta) {
                 </div>
             </div>
             
-            <!-- Mentor Pembimbing (jika sudah ditetapkan) -->
-            ${isAssigned && peserta.mentor_nama ? `
-                <div>
-                    <h5 class="font-semibold mb-3 text-primary">Mentor Pembimbing</h5>
-                    <div class="p-4 bg-green-50 border border-green-200 rounded-lg">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                                <i class='bx bx-user-check text-green-600 text-xl'></i>
-                            </div>
-                            <div class="flex-1">
-                                <div class="font-bold">${peserta.mentor_nama}</div>
-                                <div class="text-sm text-gray-600">
-                                    ${peserta.mentor_email || peserta.mentor_jabatan || 'Mentor'}
-                                </div>
-                            </div>
-                            <button onclick="showMentorDetail('${peserta.mentor_id}')" 
-                                    class="action-btn view">
-                                <i class='bx bx-show'></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            ` : ''}
-            
             <!-- Alasan & Catatan -->
             <div>
                 <h5 class="font-semibold mb-3 text-primary">Alasan Magang</h5>
                 <div class="p-4 bg-gray-50 rounded-lg">
-                    <div class="text-gray-700 leading-relaxed">
+                    <div class="text-gray-700 leading-relaxed whitespace-pre-line max-h-40 overflow-y-auto">
                         ${peserta.alasan || peserta.alasan_magang || '-'}
                     </div>
                 </div>
@@ -661,29 +658,18 @@ function renderDetailPeserta(peserta) {
             </div>
             
             <!-- Dokumen -->
-            ${berkasHTML}
+            ${berkasHtml}
+            
+            <!-- Tombol Aksi -->
+            <div class="mt-8 pt-6 border-t border-gray-200">
+                <div class="flex justify-end">
+                    <button onclick="closeModal('detailPesertaModal')" 
+                            class="btn btn-secondary">
+                        <i class='bx bx-x'></i> Tutup
+                    </button>
+                </div>
+            </div>
         </div>
-        
-        <!-- Tombol Aksi -->
-        ${!isAssigned ? `
-            <div class="mt-8 pt-6 border-t border-gray-200">
-                <div class="flex justify-end">
-                    <button onclick="closeModal('detailPesertaModal')" 
-                            class="btn btn-secondary">
-                        <i class='bx bx-x'></i> Tutup
-                    </button>
-                </div>
-            </div>
-        ` : `
-            <div class="mt-8 pt-6 border-t border-gray-200">
-                <div class="flex justify-end">
-                    <button onclick="closeModal('detailPesertaModal')" 
-                            class="btn btn-secondary">
-                        <i class='bx bx-x'></i> Tutup
-                    </button>
-                </div>
-            </div>
-        `}
     `;
     
     openModal('detailPesertaModal');
@@ -1149,3 +1135,4 @@ function showNotification(message, type = 'info') {
 }
 </script>
 @endsection
+

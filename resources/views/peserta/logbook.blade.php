@@ -107,20 +107,18 @@
                     <i class='bx bx-calendar'></i> Pilih Tanggal Kegiatan
                 </h4>
                 
-                <div class="form-row">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <div class="form-group">
                         <label for="tanggalKegiatan">Tanggal Kegiatan *</label>
-                        <div class="relative">
+                        <div class="flex items-center gap-3 px-3 py-2 border border-gray-300 rounded-lg bg-white">
+                            <i class='bx bx-calendar text-gray-500 text-lg'></i>
                             <input type="date" id="tanggalKegiatan" 
-                                   class="w-full p-3 pl-10 border border-gray-300 rounded-lg"
+                                   class="flex-1 p-2 border-0 outline-none focus:ring-0 focus:outline-none bg-transparent"
                                    min="" max="">
-                            <i class='bx bx-calendar absolute left-3 top-3 text-gray-400'></i>
                         </div>
                         <div class="text-xs text-gray-500 mt-1">Pilih tanggal untuk mengisi logbook</div>
                     </div>
-                    <div class="form-row responsive-form-row"></div>
 
-                    
                     <div class="form-group">
                         <label>Informasi Tanggal</label>
                         <div id="tanggalInfo" class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
@@ -195,10 +193,6 @@
                     <i class='bx bx-history'></i> Riwayat Logbook
                 </h2>
                 <div class="flex flex-col sm:flex-row gap-3 responsive-filter">
-                    <select id="filterBulan" onchange="filterLogbook()" class="filter-select">
-                        <option value="all">Semua Bulan</option>
-                        <!-- Options will be populated by JavaScript -->
-                    </select>
                     <select id="filterStatus" onchange="filterLogbook()" class="filter-select">
                         <option value="all">Semua Status</option>
                         <option value="verified">Diverifikasi</option>
@@ -288,7 +282,6 @@ let state = {
     currentPage: 1,
     lastPage: 1,
     filters: {
-        bulan: 'all',
         status: 'all'
     }
 };
@@ -432,13 +425,12 @@ async function checkAbsensiStatus() {
 /**
  * 4. Fungsi untuk load logbook list
  * Backend perlu implement:
- * - GET /api/peserta/logbook?page=1&bulan={month}&status={status}
+ * - GET /api/peserta/logbook?page=1&status={status}
  */
 async function loadLogbookList(page = 1) {
     try {
         const params = new URLSearchParams({
             page: page,
-            bulan: state.filters.bulan,
             status: state.filters.status
         });
         const response = await fetch(`/api/peserta/logbook?${params}`, {
@@ -777,10 +769,9 @@ function formatDate(dateString) {
 }
 
 function filterLogbook() {
-    const bulan = document.getElementById('filterBulan').value;
     const status = document.getElementById('filterStatus').value;
     
-    state.filters = { bulan, status };
+    state.filters = { status };
     state.currentPage = 1;
     loadLogbookList();
 }

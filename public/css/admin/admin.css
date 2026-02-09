@@ -172,6 +172,22 @@
     gap: 15px;
 }
 
+/* Modal responsive tweaks */
+@media (max-width: 640px) {
+    .modal-content {
+        width: 95%;
+        max-width: 520px;
+        margin: 0 10px;
+        border-radius: 12px;
+    }
+
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 16px;
+    }
+}
+
 /* Form Styles */
 .form-group {
     margin-bottom: 20px;
@@ -535,6 +551,79 @@
     background: rgba(155, 89, 182, 0.1);
     color: #8e44ad;
     border: 1px solid rgba(155, 89, 182, 0.2);
+}
+
+/* Detail modal profile header */
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    flex-wrap: wrap;
+}
+
+#detailAvatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+}
+
+.profile-text h4 {
+    margin: 0 0 4px 0;
+    color: #1f2937;
+    font-size: 1.05rem;
+}
+
+.profile-text div {
+    color: #6b7280;
+    font-size: 0.95rem;
+}
+
+/* Utility-style helpers for the detail modal (non Tailwind) */
+.grid {
+    display: grid;
+}
+
+.grid-cols-1 {
+    grid-template-columns: 1fr;
+}
+
+.md\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.gap-4 {
+    gap: 1rem;
+}
+
+.space-y-6 > * + * {
+    margin-top: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .md\:grid-cols-2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Table wrapper: enable horizontal scroll on narrow screens */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table-responsive table {
+    min-width: 720px;
 }
 
 /* Responsive Table */
@@ -1683,6 +1772,24 @@
     display: block;
 }
 
+/* Detail modal table responsiveness */
+.detail-table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+}
+
+.detail-table-responsive .peserta-table {
+    min-width: 720px;
+}
+
+@media (max-width: 768px) {
+    .detail-table-responsive .peserta-table {
+        min-width: 640px;
+    }
+}
+
 /* WARNING BOX */
 .warning-box {
     background: #fff9e6;
@@ -2009,7 +2116,8 @@
 @media (max-width: 768px) {
 
     .table-responsive {
-        overflow-x: hidden; /* penting */
+        overflow-x: auto;
+        padding-bottom: 8px;
     }
 
     .bidang-table thead {

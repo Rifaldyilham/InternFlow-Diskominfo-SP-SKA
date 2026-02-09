@@ -186,33 +186,35 @@
                 <span class="mentor-table-count" id="absensiCount">0 absensi</span>
             </div>
             
-            <table class="mentor-table">
-                <thead>
-                    <tr>
-                        <th>Peserta</th>
-                        <th>Tanggal</th>
-                        <th>Status</th>
-                        <th>Waktu</th>
-                        <th>Lokasi</th>
-                        <th>Bukti</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody id="absensiTableBody">
-                    <!-- Data akan diisi oleh JavaScript -->
-                    <tr id="loadingRowAbsensi">
-                        <td colspan="5" class="text-center py-12">
-                            <div class="loading-skeleton-mentor flex flex-col items-center gap-5">
-                                <i class='bx bx-loader-circle bx-spin text-4xl text-primary'></i>
-                                <div class="text-center text-gray-600">
-                                    <div class="font-semibold mb-2">Memuat data absensi...</div>
-                                    <div class="text-sm">Mohon tunggu sebentar</div>
+            <div class="overflow-x-auto">
+                <table class="mentor-table min-w-[900px]">
+                    <thead>
+                        <tr>
+                            <th>Peserta</th>
+                            <th>Tanggal</th>
+                            <th>Status</th>
+                            <th>Waktu</th>
+                            <th>Lokasi</th>
+                            <th>Bukti</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="absensiTableBody">
+                        <!-- Data akan diisi oleh JavaScript -->
+                        <tr id="loadingRowAbsensi">
+                            <td colspan="7" class="text-center py-12">
+                                <div class="loading-skeleton-mentor flex flex-col items-center gap-5">
+                                    <i class='bx bx-loader-circle bx-spin text-4xl text-primary'></i>
+                                    <div class="text-center text-gray-600">
+                                        <div class="font-semibold mb-2">Memuat data absensi...</div>
+                                        <div class="text-sm">Mohon tunggu sebentar</div>
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
             
             <!-- Pagination -->
             <div class="pagination-mentor">

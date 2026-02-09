@@ -17,19 +17,19 @@
     
     <div id="penilaianFileSection" class="bg-yellow-50 p-6 rounded-xl border border-yellow-200 mb-6 hidden">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-4 w-full">
                 <div class="w-16 h-16 bg-yellow-100 rounded-xl flex items-center justify-center">
-                    <i class='bx bx-file-pdf text-3xl text-yellow-600'></i>
+                    <i class='bx bx-clipboard text-3xl text-yellow-600' aria-hidden="true"></i>
                 </div>
-                <div>
-                    <div id="penilaianFileName" class="font-bold text-primary text-lg">Penilaian_John_Doe.pdf</div>
+                <div class="min-w-0">
+                    <div id="penilaianFileName" class="font-bold text-primary text-lg truncate">Penilaian_John_Doe.pdf</div>
                     <div id="penilaianFileInfo" class="text-gray-600 text-sm">2.4 MB • Diupload: 28 Mar 2024</div>
                     <div class="text-xs text-yellow-600 mt-1">
                         <i class='bx bx-info-circle'></i> File penilaian final dari mentor pembimbing
                     </div>
                 </div>
             </div>
-            <div class="flex gap-3">
+            <div class="flex gap-3 w-full md:w-auto">
               <button 
                 onclick="downloadPenilaianFile()" 
                 class="w-full md:w-auto px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-800 transition"
@@ -69,20 +69,20 @@
     </div>
     
     <div id="sertifikatFileSection" class="bg-green-50 p-6 rounded-xl border border-green-200 mb-6 hidden">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center gap-4">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div class="flex items-center gap-4 w-full">
                 <div class="w-16 h-16 bg-green-100 rounded-xl flex items-center justify-center">
-                    <i class='bx bx-certificate text-3xl text-green-600'></i>
+                    <i class='bx bx-certification text-3xl text-green-600' aria-hidden="true"></i>
                 </div>
-                <div>
-                    <div id="sertifikatFileName" class="font-bold text-primary text-lg">Sertifikat_Magang_John_Doe.pdf</div>
+                <div class="min-w-0">
+                    <div id="sertifikatFileName" class="font-bold text-primary text-lg truncate">Sertifikat_Magang_John_Doe.pdf</div>
                     <div id="sertifikatFileInfo" class="text-gray-600 text-sm">1.8 MB • Diterbitkan: 2 Apr 2024</div>
                     <div class="text-xs text-green-600 mt-1">
                         <i class='bx bx-info-circle'></i> Sertifikat resmi dari Diskominfo SP Surakarta
                     </div>
                 </div>
             </div>
-            <div class="flex gap-3">
+            <div class="flex gap-3 w-full md:w-auto">
                <button 
                 onclick="downloadSertifikat()" 
                 class="w-full md:w-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"

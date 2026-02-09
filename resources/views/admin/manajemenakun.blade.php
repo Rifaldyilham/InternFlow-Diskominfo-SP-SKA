@@ -188,11 +188,11 @@
         <div class="modal-body">
             <div class="space-y-6">
                 <!-- Header dengan avatar -->
-                <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg profile-header">
                     <div class="w-16 h-16 bg-primary text-white rounded-full flex items-center justify-center text-xl font-bold" id="detailAvatar">
                         AK
                     </div>
-                    <div>
+                    <div class="profile-text">
                         <h4 class="font-bold text-lg" id="detailName">-</h4>
                         <div class="text-gray-600" id="detailEmail">-</div>
                     </div>

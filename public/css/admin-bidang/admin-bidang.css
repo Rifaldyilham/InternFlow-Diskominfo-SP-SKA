@@ -545,6 +545,22 @@
     gap: 15px;
 }
 
+/* Modal responsive tweaks for small screens */
+@media (max-width: 640px) {
+    .modal-content {
+        width: 95%;
+        max-width: 540px;
+        margin: 0 10px;
+        border-radius: 12px;
+    }
+
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 16px;
+    }
+}
+
 /* Form Styles */
 .form-group {
     margin-bottom: 20px;
@@ -992,6 +1008,82 @@
 /* Overflow Utilities */
 .overflow-y-auto { overflow-y: auto; }
 .max-h-96 { max-height: 24rem; }
+
+/* Detail modal responsive wrapper */
+.detail-modal-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+}
+
+/* Cards & sections for detail modal (matching verifikasi style) */
+.detail-section {
+    margin-bottom: 20px;
+}
+
+.detail-card {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid #eef2f7;
+}
+
+.detail-heading {
+    font-weight: 700;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 12px 0;
+}
+
+.detail-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    min-width: 560px;
+}
+
+.detail-info-grid .label {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-bottom: 4px;
+    display: block;
+}
+
+.detail-info-grid .value {
+    font-weight: 600;
+    color: #111827;
+}
+
+.detail-period {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    min-width: 420px;
+}
+
+.detail-docs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 12px;
+}
+
+@media (max-width: 768px) {
+    .detail-info-grid,
+    .detail-period {
+        grid-template-columns: 1fr;
+        min-width: 480px;
+    }
+}
+
+@media (max-width: 640px) {
+    .detail-info-grid,
+    .detail-period {
+        min-width: 360px;
+    }
+}
 
 /* Z-index Utilities */
 .z-50 { z-index: 50; }
