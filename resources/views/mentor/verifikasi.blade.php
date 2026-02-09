@@ -45,7 +45,7 @@
     <!-- Tab Content: Logbook -->
     <div id="logbook-content" class="tab-content-mentor active">
         <div class="filter-container-mentor mb-6">
-            <div class="filter-grid-mentor flex flex-col md:grid">
+            <div class="filter-grid-mentor grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="filter-group-mentor">
                     <label for="searchLogbook" class="filter-label-mentor">
                         <i class='bx bx-search'></i> Pencarian Logbook
@@ -74,11 +74,11 @@
                 </div>
             </div>
             
-            <div class="flex flex-col sm:flex-row gap-3 mt-4">
-                <button onclick="filterLogbookData()" class="btn btn-primary">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                <button onclick="filterLogbookData()" class="btn btn-primary w-full">
                     <i class='bx bx-filter'></i> Terapkan Filter
                 </button>
-                <button onclick="resetLogbookFilter()" class="btn btn-secondary">
+                <button onclick="resetLogbookFilter()" class="btn btn-secondary w-full">
                     <i class='bx bx-reset'></i> Reset
                 </button>
             </div>
@@ -91,7 +91,7 @@
             </div>
             
             <div class="overflow-x-auto">
-            <table class="mentor-table">
+            <table class="mentor-table min-w-[900px]">
                 <thead>
                     <tr>
                         <th>Peserta</th>
@@ -234,7 +234,7 @@
 
 <!-- Modal Detail Logbook -->
 <div id="logbookModal" class="modal-mentor">
-    <div class="modal-content-mentor max-w-full md:max-w-[800px]">
+    <div class="modal-content-mentor max-w-full md:max-w-[800px] max-h-[90vh] overflow-y-auto">
         <div class="modal-header-mentor">
             <h3 class="modal-title-mentor" id="logbookModalTitle">Detail Logbook</h3>
             <button class="modal-close-mentor" onclick="closeLogbookModal()">&times;</button>
@@ -770,8 +770,12 @@ function renderLogbookTable() {
                       <div class="font-medium">${formatDate(logbook.tanggal)}</div>
                   </td>
                   <td>
-                    <div class="font-medium truncate max-w-xs">${logbook.kegiatan}</div>
-                    <div class="text-sm text-gray-500 truncate">${logbook.deskripsi?.substring(0, 60)}...</div>
+                    <div class="font-medium line-clamp-2 max-w-[240px] sm:max-w-none">
+                        ${logbook.kegiatan}
+                    </div>
+                    <div class="text-sm text-gray-500 line-clamp-2 max-w-[240px] sm:max-w-none">
+                        ${logbook.deskripsi || '-'}
+                    </div>
                 </td>
                 <td>${waktuDisplay}</td>
                 <td>
@@ -999,7 +1003,7 @@ function renderLogbookDetailModal(logbook) {
     
     document.getElementById('logbookModalContent').innerHTML = `
         <div class="space-y-6">
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="text-sm text-gray-500">Tanggal</label>
                     <div class="font-medium">${formatDate(logbook.tanggal)}</div>

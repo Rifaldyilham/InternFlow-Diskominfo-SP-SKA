@@ -29,11 +29,18 @@
     <style>
         html {
             scroll-behavior: smooth;
+
         }
 
         body {
             font-family: 'Poppins', sans-serif;
         }
+
+        html, body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
 
         .hero-bg {
             background: linear-gradient(135deg, rgba(33, 52, 72, 0.95) 0%, rgba(84, 119, 146, 0.9) 100%), url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80');
@@ -140,6 +147,23 @@
             opacity: 1;
         }
 
+                @media (max-width: 640px) {
+            .alur-item {
+                padding-left: 40px;
+            }
+
+            .alur-item:before {
+                width: 32px;
+                height: 32px;
+                font-size: 14px;
+            }
+
+            .alur-item:not(:last-child):after {
+                left: 16px;
+            }
+        }
+
+
     </style>
 </head>
 
@@ -147,7 +171,7 @@
     <!-- Navigation Bar -->
     <nav x-data="{ isOpen: false }"
         class="fixed w-full bg-primary text-white shadow-xl z-50 transition-all duration-300">
-        <div class="container mx-auto px-6 py-4">
+        <div class="container mx-auto px-4 sm:px-6 py-4">
             <div class="flex items-center justify-between">
                 <!-- Logo -->
                 <div class="flex items-center">
@@ -201,7 +225,7 @@
             <h1 class="text-3xl sm:text-4xl md:text-6xl font-bold mb-6 leading-tight">
                 Selamat Datang di <span class="text-accent">InternFlow</span>
             </h1>
-            <p class="text-xl md:text-2xl mb-10 max-w-3xl mx-auto opacity-90">
+            <p class="text-base sm:text-lg md:text-2xl mb-8 sm:mb-10 max-w-3xl mx-auto opacity-90 leading-relaxed">
                 Sistem Digital <span class="font-semibold">Monitoring & Administrasi Magang</span> <br> Dinas
                 Komunikasi, Informatika, Statistik dan Persandian
                 Kota Surakarta
@@ -221,8 +245,9 @@
     </section>
 
     <!-- Main Content -->
-    <main class="container mx-auto px-6 py-16 md:bg-fixed"
+    <main class="w-full bg-scroll md:bg-fixed"
     style="background: url('https://diskominfosp.surakarta.go.id/fe/assets/img/nav-bar.jpg'); background-size: cover; background-position: center;">
+      <div class="container mx-auto px-4 sm:px-6 py-12 sm:py-16">
         <!-- Alur Magang Section -->
         <section id="alur" class="mb-20 scroll-mt-24">
             <div class="text-center mb-12">
@@ -332,12 +357,12 @@
                 </div>
             </div>
         </section>
-
+        </div>
     </main>
 
 <!-- Main Footer -->
 <footer id="contact" class="bg-primary text-white pt-12 pb-8">
-    <div class="container mx-auto px-9">
+    <div class="container mx-auto px-4 sm:px-6">
         <!-- Main Footer Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
             <!-- Brand -->

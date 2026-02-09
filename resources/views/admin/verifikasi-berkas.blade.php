@@ -102,8 +102,8 @@
         </div>
     </div>
     
-    <div class="table-container">
-        <table class="data-table">
+    <div class="table-container overflow-x-auto">
+        <table class="data-table min-w-[800px]">
             <thead>
                 <tr>
                     <th>Peserta</th>
@@ -380,7 +380,7 @@ function renderTable() {
             <td>${formatDate(p.created_at)}</td>
 
             <td>
-                <div class="action-buttons flex gap-2">
+                <div class="action-buttons flex gap-2 justify-end">
                     <button onclick="showVerifikasi('${p.id}')"
                         class="action-btn view"
                         title="Lihat Detail">
@@ -447,54 +447,78 @@ async function showVerifikasi(pesertaId) {
                 .substring(0, 2);
         }
 
-        // Format berkas dengan link
+        // Format berkas dengan layout responsif (FIX)
         let berkasHtml = '';
-        
+
         if (p.berkas) {
             berkasHtml = `
                 <div class="mt-4">
                     <h5 class="font-semibold mb-3 text-primary">Dokumen</h5>
-                    <div class="p-3 bg-gray-50 rounded-lg">
-                        ${p.berkas['CV / Resume'] ? `
-                        <div class="flex items-center gap-3 mb-2">
-                            <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                                <i class='bx bx-file text-red-600'></i>
+
+                    <div class="space-y-4">
+                        ${
+                            p.berkas['CV / Resume']
+                            ? `
+                            <div class="border rounded-xl p-4 bg-white space-y-3">
+                                <div class="flex items-start gap-3">
+                                    <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center shrink-0">
+                                        <i class='bx bx-file text-red-600'></i>
+                                    </div>
+
+                                    <div>
+                                        <div class="font-semibold text-gray-800">CV / Resume</div>
+                                        <div class="text-sm text-gray-500">Dokumen CV Peserta</div>
+                                    </div>
+                                </div>
+
+                                <a href="${p.berkas['CV / Resume']}"
+                                target="_blank"
+                                class="w-full inline-flex items-center justify-center gap-2
+                                        rounded-lg border px-4 py-2 text-sm font-medium
+                                        hover:bg-gray-50 transition">
+                                    <i class='bx bx-show'></i> Lihat Dokumen
+                                </a>
                             </div>
-                            <div class="flex-1">
-                                <div class="font-medium">CV / Resume</div>
-                                <div class="text-sm text-gray-500">Dokumen CV Peserta</div>
+                            `
+                            : `<div class="text-sm text-gray-500">CV / Resume tidak tersedia</div>`
+                        }
+
+                        ${
+                            p.berkas['Surat Pengantar']
+                            ? `
+                            <div class="border rounded-xl p-4 bg-white space-y-3">
+                                <div class="flex items-start gap-3">
+                                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
+                                        <i class='bx bx-file text-blue-600'></i>
+                                    </div>
+
+                                    <div>
+                                        <div class="font-semibold text-gray-800">Surat Pengantar</div>
+                                        <div class="text-sm text-gray-500">Surat Pengantar Magang</div>
+                                    </div>
+                                </div>
+
+                                <a href="${p.berkas['Surat Pengantar']}"
+                                target="_blank"
+                                class="w-full inline-flex items-center justify-center gap-2
+                                        rounded-lg border px-4 py-2 text-sm font-medium
+                                        hover:bg-gray-50 transition">
+                                    <i class='bx bx-show'></i> Lihat Dokumen
+                                </a>
                             </div>
-                            <a href="${p.berkas['CV / Resume']}" target="_blank" 
-                               class="action-btn view" title="Lihat Dokumen">
-                                <i class='bx bx-show'></i>
-                            </a>
-                        </div>
-                        ` : '<div class="text-gray-500 text-sm">CV / Resume tidak tersedia</div>'}
-                        
-                        ${p.berkas['Surat Pengantar'] ? `
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <i class='bx bx-file text-blue-600'></i>
-                            </div>
-                            <div class="flex-1">
-                                <div class="font-medium">Surat Pengantar</div>
-                                <div class="text-sm text-gray-500">Surat Pengantar Magang</div>
-                            </div>
-                            <a href="${p.berkas['Surat Pengantar']}" target="_blank" 
-                               class="action-btn view" title="Lihat Dokumen">
-                                <i class='bx bx-show'></i>
-                            </a>
-                        </div>
-                        ` : '<div class="text-gray-500 text-sm">Surat Pengantar tidak tersedia</div>'}
+                            `
+                            : `<div class="text-sm text-gray-500">Surat Pengantar tidak tersedia</div>`
+                        }
                     </div>
                 </div>
             `;
         }
 
+
         document.getElementById('verifikasiContent').innerHTML = `
             <div class="space-y-6">
                 <!-- Header dengan avatar -->
-                <div class="flex items-center gap-4 p-4 bg-blue-50 rounded-lg">
+                <div class="flex flex-col sm:flex-row items-center sm:items-start gap-4 p-4 bg-blue-50 rounded-lg text-center sm:text-left">
                     <div class="peserta-avatar" style="width: 60px; height: 60px; font-size: 1.2rem;">
                         ${getInitials(p.nama)}
                     </div>
@@ -547,7 +571,7 @@ async function showVerifikasi(pesertaId) {
                 <div>
                     <h5 class="font-semibold mb-3 text-primary">Alasan Magang</h5>
                     <div class="p-4 bg-gray-50 rounded-lg">
-                        <div class="text-gray-700 leading-relaxed whitespace-pre-line">
+                        <div class="text-gray-700 leading-relaxed whitespace-pre-line max-h-40 overflow-y-auto">
                             ${p.alasan || '-'}
                         </div>
                     </div>

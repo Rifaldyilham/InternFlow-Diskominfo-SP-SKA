@@ -764,8 +764,8 @@
 
 .filter-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
     align-items: end;
 }
 
@@ -1238,11 +1238,11 @@
 }
 
 /* RESPONSIVE DESIGN */
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
     .filter-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: 1fr;
     }
-    
+        
     .detail-grid {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -2055,4 +2055,16 @@
         margin-top: 8px;
         justify-content: flex-start;
     }
+}
+ /* responsive  */
+ @media (max-width: 640px) {
+  .action-buttons {
+    gap: 6px;
+  }
+
+  .action-btn {
+    padding: 6px;
+    width: 34px;
+    height: 34px;
+  }
 }
