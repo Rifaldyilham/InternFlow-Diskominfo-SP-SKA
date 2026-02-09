@@ -18,6 +18,7 @@
 
 <!-- Bidang Table -->
 <div class="table-container">
+    
     <div class="table-header">
         <h3>Daftar Bidang Magang</h3>
         <div class="table-actions">
@@ -25,8 +26,9 @@
                 <i class='bx bx-refresh'></i> Refresh
             </button>
         </div>
-    </div>
+</div>
     
+<div class="table-responsive">
     <table>
         <thead>
             <tr>
@@ -50,6 +52,7 @@
             </tr>
         </tbody>
     </table>
+</div>
 </div>
 
 <!-- Modal Tambah/Edit Bidang -->
@@ -250,7 +253,8 @@ function renderBidangTable() {
 
         return `
             <tr>
-                <td>
+                <td class="bidang-cell">
+                    <div class="bidang-wrapper">
                     <div style="display: flex; align-items: center; gap: 12px;">
                         <div class="bidang-icon" style="width: 40px; height: 40px; border-radius: 8px; 
                             background: ${getBidangColor(bidang.nama_bidang)}; 
@@ -263,6 +267,7 @@ function renderBidangTable() {
                                 ${bidang.deskripsi ? bidang.deskripsi.substring(0, 60) + '...' : 'Tidak ada deskripsi'}
                             </div>
                         </div>
+                    </div>
                     </div>
                 </td>
                 <td>
@@ -611,7 +616,7 @@ function renderPesertaList(peserta) {
     
     peserta.forEach(p => {
         html += `
-            <div class="peserta-row" style="display: grid; grid-template-columns: 2fr 1fr 2fr 2fr; padding: 12px 15px; border-bottom: 1px solid #eee; align-items: center;">
+            <div class="peserta-row peserta-responsive">
                 <div class="peserta-cell" style="grid-column: 1; display: flex; align-items: center;">
                     <div class="peserta-avatar-small">${getInitials(p.nama)}</div>
                     <div class="peserta-info-small">

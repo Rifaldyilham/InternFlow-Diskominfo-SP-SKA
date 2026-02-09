@@ -11,7 +11,7 @@
 <div class="mentor-dashboard">
     <!-- Info Peserta yang Dipilih -->
     <div id="pesertaInfo" class="peserta-info-card mb-6">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div class="flex items-center gap-4">
                 <div class="peserta-info-avatar" id="selectedPesertaAvatar">
                     <!-- Avatar akan diisi JavaScript -->
@@ -45,7 +45,7 @@
     <!-- Tab Content: Logbook -->
     <div id="logbook-content" class="tab-content-mentor active">
         <div class="filter-container-mentor mb-6">
-            <div class="filter-grid-mentor">
+            <div class="filter-grid-mentor flex flex-col md:grid">
                 <div class="filter-group-mentor">
                     <label for="searchLogbook" class="filter-label-mentor">
                         <i class='bx bx-search'></i> Pencarian Logbook
@@ -74,7 +74,7 @@
                 </div>
             </div>
             
-            <div class="flex gap-3 mt-4">
+            <div class="flex flex-col sm:flex-row gap-3 mt-4">
                 <button onclick="filterLogbookData()" class="btn btn-primary">
                     <i class='bx bx-filter'></i> Terapkan Filter
                 </button>
@@ -90,6 +90,7 @@
                 <span class="mentor-table-count" id="logbookCount">0 logbook</span>
             </div>
             
+            <div class="overflow-x-auto">
             <table class="mentor-table">
                 <thead>
                     <tr>
@@ -117,6 +118,7 @@
                     </tr>
                 </tbody>
             </table>
+            </div>
             
             <!-- Pagination -->
             <div class="pagination-mentor">
@@ -232,7 +234,7 @@
 
 <!-- Modal Detail Logbook -->
 <div id="logbookModal" class="modal-mentor">
-    <div class="modal-content-mentor" style="max-width: 800px;">
+    <div class="modal-content-mentor max-w-full md:max-w-[800px]">
         <div class="modal-header-mentor">
             <h3 class="modal-title-mentor" id="logbookModalTitle">Detail Logbook</h3>
             <button class="modal-close-mentor" onclick="closeLogbookModal()">&times;</button>
@@ -253,7 +255,7 @@
 
 <!-- Modal Verifikasi Logbook -->
 <div id="verificationModal" class="modal-mentor">
-    <div class="modal-content-mentor" style="max-width: 600px;">
+    <div class="modal-content-mentor max-w-full md:max-w-[600px]">
         <div class="modal-header-mentor">
             <h3 class="modal-title-mentor">Verifikasi Logbook</h3>
             <button class="modal-close-mentor" onclick="closeVerificationModal()">&times;</button>
@@ -779,7 +781,7 @@ function renderLogbookTable() {
                     ${logbook.bukti ? 'Ada' : '-'}
                 </td>
                 <td>
-                    <div class="mentor-action-buttons">
+                    <div class="mentor-action-buttons flex gap-2">
                         <button class="mentor-action-btn view" 
                                 onclick="viewLogbookDetail('${logbook.id}')"
                                 title="Lihat Detail">

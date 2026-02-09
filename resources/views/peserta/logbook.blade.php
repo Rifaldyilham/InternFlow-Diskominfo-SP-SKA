@@ -91,7 +91,7 @@
         
         <!-- Form Isi Logbook -->
         <div id="logbookForm" class="mb-8">
-            <div class="flex justify-between items-start mb-6">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-3 mb-6">
                 <h3 class="section-title">
                     <i class='bx bx-edit'></i> Isi Logbook
                 </h3>
@@ -118,6 +118,8 @@
                         </div>
                         <div class="text-xs text-gray-500 mt-1">Pilih tanggal untuk mengisi logbook</div>
                     </div>
+                    <div class="form-row responsive-form-row"></div>
+
                     
                     <div class="form-group">
                         <label>Informasi Tanggal</label>
@@ -165,11 +167,20 @@
                     <input type="hidden" id="logbook_id" name="logbook_id">
                     <input type="hidden" id="logbook_tanggal" name="tanggal">
                     
-                    <div class="form-actions">
-                        <button type="button" onclick="submitLogbookHadir()" class="btn btn-primary btn-lg">
+                    <div class="form-actions flex flex-col sm:flex-row gap-3">
+                        <button 
+                            type="button" 
+                            onclick="submitLogbookHadir()" 
+                            class="btn btn-primary btn-lg w-full sm:w-auto"
+                        >
                             <i class='bx bx-save'></i> Simpan Logbook
                         </button>
-                        <button type="button" class="btn btn-secondary" onclick="resetForm()">
+
+                        <button 
+                            type="button" 
+                            class="btn btn-secondary w-full sm:w-auto" 
+                            onclick="resetForm()"
+                        >
                             Reset
                         </button>
                     </div>
@@ -183,7 +194,7 @@
                 <h2 class="form-title">
                     <i class='bx bx-history'></i> Riwayat Logbook
                 </h2>
-                <div class="flex gap-3">
+                <div class="flex flex-col sm:flex-row gap-3 responsive-filter">
                     <select id="filterBulan" onchange="filterLogbook()" class="filter-select">
                         <option value="all">Semua Bulan</option>
                         <!-- Options will be populated by JavaScript -->
@@ -628,7 +639,7 @@ function previewBukti(input) {
         
         preview.innerHTML = `
             <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between responsive-card">
                     <div class="flex items-center gap-3">
                         <i class='bx bx-file text-xl text-blue-600'></i>
                         <div>
@@ -717,7 +728,7 @@ function renderLogbookList() {
 
         return `
             <div class="logbook-item">
-                <div class="flex justify-between items-start mb-3">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-3">
                     <div>
                         <div class="text-sm text-gray-500">${tanggal}</div>
                         <div class="font-semibold text-primary">${item.kegiatan}</div>

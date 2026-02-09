@@ -820,3 +820,19 @@ table {
     100% { transform: rotate(360deg); }
 }
 
+/* responsive */
+@media (max-width: 640px) {
+  .alur-item {
+    padding-left: 42px;
+  }
+
+  .alur-item:before {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+  }
+
+  .alur-item:not(:last-child):after {
+    left: 16px;
+  }
+}

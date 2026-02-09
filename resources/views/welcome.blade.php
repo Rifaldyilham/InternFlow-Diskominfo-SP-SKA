@@ -198,7 +198,7 @@
     <!-- Hero Section -->
     <section id="home" class="hero-bg text-white pt-24 md:pt-32 pb-20">
         <div class="container mx-auto px-6 text-center">
-            <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight animate-pulse">
+            <h1 class="text-3xl sm:text-4xl md:text-6xl font-bold mb-6 leading-tight">
                 Selamat Datang di <span class="text-accent">InternFlow</span>
             </h1>
             <p class="text-xl md:text-2xl mb-10 max-w-3xl mx-auto opacity-90">
@@ -221,8 +221,8 @@
     </section>
 
     <!-- Main Content -->
-    <main class="container mx-auto px-6 py-16"
-        style="background: url('https://diskominfosp.surakarta.go.id/fe/assets/img/nav-bar.jpg'); background-size: cover; background-position: center; background-attachment: fixed;">
+    <main class="container mx-auto px-6 py-16 md:bg-fixed"
+    style="background: url('https://diskominfosp.surakarta.go.id/fe/assets/img/nav-bar.jpg'); background-size: cover; background-position: center;">
         <!-- Alur Magang Section -->
         <section id="alur" class="mb-20 scroll-mt-24">
             <div class="text-center mb-12">
@@ -255,7 +255,7 @@
                         <h3 class="text-xl font-bold text-primary mb-3">2. Verifikasi Administrasi</h3>
                         <p class="text-gray-600 mb-4">Tim Admin Kepegawaian memverifikasi kelengkapan dan kesesuaian
                             berkas pendaftaran.</p>
-                        <div class="flex items-center gap-4 mt-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
                             <div class="flex-1 bg-green-50 p-3 rounded-lg border border-green-200">
                                 <p class="text-sm font-medium text-green-700">Diterima</p>
                                 <p class="text-xs text-green-600">Melanjutkan ke proses seleksi bidang</p>
@@ -276,7 +276,7 @@
                         <h3 class="text-xl font-bold text-primary mb-3">3. Penempatan Bidang</h3>
                         <p class="text-gray-600 mb-4">Admin Bidang menempatkan peserta ke bidang sesuai kompetensi dan
                             ketersediaan kuota, kemudian menetapkan mentor pembimbing.</p>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+                        <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-4">
                             <div class="bg-secondary/10 p-3 rounded-lg text-center">
                                 <p class="text-sm font-medium text-secondary"> Teknologi & Informatika</p>
                             </div>
@@ -297,7 +297,7 @@
                         <h3 class="text-xl font-bold text-primary mb-3">4. Pelaksanaan Magang</h3>
                         <p class="text-gray-600 mb-4">Peserta menjalani magang dengan panduan mentor, mengisi logbook
                             harian, dan melaksanakan tugas sesuai bidang.</p>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-4">
                             <div class="bg-secondary/10 p-3 rounded-lg text-center">
                                 <p class="text-sm font-medium text-secondary"> Logbook Harian</p>
                             </div>
@@ -353,7 +353,7 @@
             <!-- Logo Pemerintah -->
             <div>
                 <h4 class="font-bold text-lg mb-6 text-accent">Mitra Pemerintah</h4>
-                <div class="grid grid-cols-2 gap-6 items-center">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 items-center">
                     <img src="https://diskominfosp.surakarta.go.id/public/fe/assets/img/pemkot.png"
                         class="h-12 object-contain opacity-80 hover:opacity-100 transition">
 
@@ -395,6 +395,7 @@
 
                 <div class="rounded-xl overflow-hidden shadow-lg border border-accent/30">
                     <iframe
+                        class="w-full h-48 sm:h-56 md:h-64"
                         src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3955.0568719019525!2d110.82868719999999!3d-7.568779!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a166036a73eb1%3A0x7f6987f2e325554e!2sDinas%20Komunikasi%20Informatika%20Statistik%20Dan%20Persandian%20Kota%20Surakarta!5e0!3m2!1sid!2sid"
                         width="100%" height="180" style="border:0;" loading="lazy">
                     </iframe>

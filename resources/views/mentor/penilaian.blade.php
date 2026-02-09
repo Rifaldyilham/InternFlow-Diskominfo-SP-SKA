@@ -11,7 +11,7 @@
 <div class="mentor-dashboard">
     <!-- Filter Pencarian -->
     <div class="filter-container-mentor">
-        <div class="filter-grid-mentor">
+        <div class="filter-grid-mentor flex flex-col md:grid">
             <div class="filter-group-mentor">
                 <label for="searchInput" class="filter-label-mentor">
                     <i class='bx bx-search'></i> Cari Peserta
@@ -46,6 +46,7 @@
             <span class="mentor-table-count" id="pesertaCount">0 peserta</span>
         </div>
         
+        <div class="table-responsive">   
         <table class="mentor-table">
             <thead>
                 <tr>
@@ -71,6 +72,7 @@
                 </tr>
             </tbody>
         </table>
+        </div>
         
         <!-- Pagination -->
         <div class="pagination-mentor">
@@ -91,7 +93,7 @@
 
 <!-- Modal Upload Penilaian -->
 <div id="uploadModal" class="modal-mentor">
-    <div class="modal-content-mentor" style="max-width: 600px;">
+    <div class="modal-content-mentor max-w-full md:max-w-[600px]">
         <div class="modal-header-mentor">
             <h3 class="modal-title-mentor" id="modalTitle">Upload File Penilaian</h3>
             <button class="modal-close-mentor" onclick="closeUploadModal()">&times;</button>
@@ -404,7 +406,7 @@ function renderPesertaTable() {
                     </span>
                 </td>
                 <td>
-                    <div class="mentor-action-buttons">
+                    <div class="mentor-action-buttons flex gap-2 flex-wrap">
                         ${hasFile ? `
                             <button class="mentor-action-btn view" 
                                     onclick="previewPenilaian('${peserta.id}', '${peserta.nama}')"
@@ -481,7 +483,7 @@ function uploadPenilaian(pesertaId, pesertaNama) {
                 </div>
             </div>
             
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="form-label-mentor">Nama Peserta</label>
                     <div class="p-3 bg-gray-50 rounded-lg font-medium">${pesertaNama}</div>

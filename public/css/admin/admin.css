@@ -1994,3 +1994,65 @@
     background: #fff3cd;
     color: #856404;
 }
+
+/* responsive  */
+/* =========================
+   MOBILE FIX - BIDANG
+========================= */
+
+/* desktop */
+.bidang-table {
+    width: 100%;
+}
+
+/* mobile */
+@media (max-width: 768px) {
+
+    .table-responsive {
+        overflow-x: hidden; /* penting */
+    }
+
+    .bidang-table thead {
+        display: none;
+    }
+
+    .bidang-table,
+    .bidang-table tbody,
+    .bidang-table tr,
+    .bidang-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .bidang-table tr {
+        background: #fff;
+        border-radius: 12px;
+        padding: 12px;
+        margin-bottom: 12px;
+        box-shadow: 0 2px 6px rgba(0,0,0,.06);
+    }
+
+    .bidang-table td {
+        padding: 6px 0;
+        border: none;
+    }
+
+    /* konten nama bidang */
+    .bidang-wrapper {
+        display: flex;
+        flex-direction: row;
+        gap: 10px;
+    }
+
+    .bidang-icon {
+        width: 34px;
+        height: 34px;
+        font-size: 1rem;
+    }
+
+    /* tombol aksi */
+    .action-buttons {
+        margin-top: 8px;
+        justify-content: flex-start;
+    }
+}
