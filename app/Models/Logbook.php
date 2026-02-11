@@ -21,6 +21,6 @@ class Logbook extends Model
 
     public function peserta()
     {
-        return $this->belongsTo(Pesertamagang::class, 'id_pesertamagang', 'id_pesertamagang');
+        return $this->belongsTo(PesertaMagang::class, 'id_pesertamagang', 'id_pesertamagang');
     }
 }

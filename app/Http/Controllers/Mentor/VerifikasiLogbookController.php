@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Mentor;
 use App\Http\Controllers\Controller;
 use App\Models\Absensi;
 use App\Models\Logbook;
-use App\Models\Pesertamagang;
+use App\Models\PesertaMagang;
 use Illuminate\Http\Request;
 
 class VerifikasiLogbookController extends Controller

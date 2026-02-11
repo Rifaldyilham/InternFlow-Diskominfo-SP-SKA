@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Mentor;
 
 use App\Http\Controllers\Controller;
 use App\Models\Absensi;
-use App\Models\Pesertamagang;
+use App\Models\PesertaMagang;
 use App\Models\Pegawai;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -30,7 +30,7 @@ class AbsensiController extends Controller
             : null;
 
         // ambil semua peserta bimbingan mentor
-        $pesertaList = Pesertamagang::where('id_pegawai', $pegawaiId)->get();
+        $pesertaList = PesertaMagang::where('id_pegawai', $pegawaiId)->get();
 
         $pesertaIds = $pesertaList->pluck('id_pesertamagang');
         $result = [];
@@ -137,7 +137,7 @@ class AbsensiController extends Controller
         $pegawaiId = $pegawai->id_pegawai;
 
         // Pastikan peserta ini bimbingan mentor tsb
-        $isValid = \App\Models\Pesertamagang::where('id_pesertamagang', $pesertaId)
+        $isValid = \App\Models\PesertaMagang::where('id_pesertamagang', $pesertaId)
             ->where('id_pegawai', $pegawaiId)
             ->exists();
 
