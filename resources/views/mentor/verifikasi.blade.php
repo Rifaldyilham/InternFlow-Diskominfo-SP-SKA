@@ -572,10 +572,20 @@ async function loadLogbookData() {
 async function loadAbsensiData() {
     try {
         showLoading('absensi', true);
-        
+
+        const dateFilter = document.getElementById('dateAbsensi')?.value || state.absensiFilters.date || '';
+        const params = new URLSearchParams({
+            page: state.absensiCurrentPage,
+            per_page: state.absensiItemsPerPage
+        });
+
+        if (dateFilter) {
+            params.set(state.selectedPeserta ? 'date' : 'tanggal', dateFilter);
+        }
+
         const absensiUrl = state.selectedPeserta
-            ? `${API_CONFIG.endpoints.absensiPeserta}/${state.selectedPeserta.id}?page=${state.absensiCurrentPage}&per_page=${state.absensiItemsPerPage}`
-            : `${API_CONFIG.endpoints.absensiPeserta}?page=${state.absensiCurrentPage}&per_page=${state.absensiItemsPerPage}`;
+            ? `${API_CONFIG.endpoints.absensiPeserta}/${state.selectedPeserta.id}?${params.toString()}`
+            : `${API_CONFIG.endpoints.absensiPeserta}?${params.toString()}`;
 
         // **API BACKEND:** GET /api/mentor/absensi (all) atau /api/mentor/absensi/{pesertaId}
         const response = await fetch(absensiUrl, {
@@ -917,7 +927,7 @@ function renderAbsensiTable() {
                         <button onclick="viewAbsensiDetailByIndex(${absensiIndex})" 
                                 class="mentor-action-btn view" title="Lihat detail">
                             <i class='bx bx-show'></i>
-                        </button>,
+                        </button>
                     </div>
                 </td>
             </tr>
@@ -1403,7 +1413,7 @@ function setupEventListeners() {
     document.getElementById('searchAbsensi').addEventListener('input', 
         debounce(filterAbsensiData, 300)
     );
-    document.getElementById('dateAbsensi').addEventListener('change', filterAbsensiData);
+    document.getElementById('dateAbsensi').addEventListener('change', handleAbsensiDateChange);
     document.getElementById('statusAbsensi').addEventListener('change', filterAbsensiData);
     
     // Logbook pagination
@@ -1436,7 +1446,13 @@ function resetAbsensiFilter() {
     state.absensiFilters.date = '';
     state.absensiFilters.status = 'all';
     
-    filterAbsensiData();
+    loadAbsensiData();
+}
+
+function handleAbsensiDateChange() {
+    state.absensiFilters.date = document.getElementById('dateAbsensi').value;
+    state.absensiCurrentPage = 1;
+    loadAbsensiData();
 }
 
 function debounce(func, wait) {
@@ -1662,3 +1678,5 @@ function showNotification(message, type = 'info') {
 }
 </script>
 @endsection
+
+

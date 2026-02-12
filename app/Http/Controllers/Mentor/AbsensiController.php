@@ -25,8 +25,9 @@ class AbsensiController extends Controller
         $pegawaiId = $pegawai->id_pegawai;
 
         // tanggal yang dipilih mentor (opsional)
-        $tanggal = $request->tanggal
-            ? Carbon::parse($request->tanggal)->toDateString()
+        $tanggalInput = $request->tanggal ?: $request->date;
+        $tanggal = $tanggalInput
+            ? Carbon::parse($tanggalInput)->toDateString()
             : null;
 
         // ambil semua peserta bimbingan mentor
@@ -137,28 +138,56 @@ class AbsensiController extends Controller
         $pegawaiId = $pegawai->id_pegawai;
 
         // Pastikan peserta ini bimbingan mentor tsb
-        $isValid = \App\Models\PesertaMagang::where('id_pesertamagang', $pesertaId)
+        $peserta = \App\Models\PesertaMagang::where('id_pesertamagang', $pesertaId)
             ->where('id_pegawai', $pegawaiId)
-            ->exists();
+            ->first();
 
-        if (!$isValid) {
+        if (!$peserta) {
             return response()->json([
                 'message' => 'Peserta tidak valid'
             ], 403);
         }
 
-        // Ambil absensi peserta ini
-        $query = \App\Models\Absensi::where('id_pesertamagang', $pesertaId);
+        $tanggalInput = $request->date ?: $request->tanggal;
+        $tanggal = $tanggalInput
+            ? Carbon::parse($tanggalInput)->toDateString()
+            : null;
 
-        // FILTER TANGGAL (dari UI)
-        if ($request->date) {
-            $query->whereDate('waktu_absen', $request->date);
-        }
+        if ($tanggal) {
+            if ($peserta->tanggal_mulai) {
+                $mulai = Carbon::parse($peserta->tanggal_mulai)->toDateString();
+                if ($tanggal < $mulai) {
+                    return response()->json(['data' => []]);
+                }
+            }
+            if ($peserta->tanggal_selesai) {
+                $selesai = Carbon::parse($peserta->tanggal_selesai)->toDateString();
+                if ($tanggal > $selesai) {
+                    return response()->json(['data' => []]);
+                }
+            }
 
-        $absensi = $query
-            ->orderBy('waktu_absen', 'desc')
-            ->get()
-            ->map(function ($a) {
+            $absen = \App\Models\Absensi::where('id_pesertamagang', $pesertaId)
+                ->whereDate('waktu_absen', $tanggal)
+                ->first();
+
+            if (!$absen) {
+                return response()->json([
+                    'data' => [[
+                        'id'           => null,
+                        'tanggal'      => $tanggal,
+                        'waktu_submit' => null,
+                        'status'       => 'alpha',
+                        'lokasi'       => null,
+                        'bukti'        => null,
+                        'koordinat'    => null,
+                        'keterangan'   => null,
+                        'created_at'   => null,
+                    ]]
+                ]);
+            }
+
+            $absensi = collect([$absen])->map(function ($a) {
                 $waktu = $a->waktu_absen instanceof \Carbon\Carbon
                     ? $a->waktu_absen
                     : ($a->waktu_absen ? Carbon::parse($a->waktu_absen) : null);
@@ -174,6 +203,27 @@ class AbsensiController extends Controller
                     'created_at'   => $a->created_at,
                 ];
             });
+        } else {
+            $absensi = \App\Models\Absensi::where('id_pesertamagang', $pesertaId)
+                ->orderBy('waktu_absen', 'desc')
+                ->get()
+                ->map(function ($a) {
+                    $waktu = $a->waktu_absen instanceof \Carbon\Carbon
+                        ? $a->waktu_absen
+                        : ($a->waktu_absen ? Carbon::parse($a->waktu_absen) : null);
+                    return [
+                        'id'           => $a->id_absensi,
+                        'tanggal'      => $waktu ? $waktu->toDateString() : null,
+                        'waktu_submit' => $waktu ? $waktu->format('H:i') : null,
+                        'status'       => $a->status,
+                        'lokasi'       => $a->lokasi,
+                        'bukti'        => $a->bukti_kegiatan,
+                        'koordinat'    => null,
+                        'keterangan'   => null,
+                        'created_at'   => $a->created_at,
+                    ];
+                });
+        }
 
         return response()->json([
             'data' => $absensi
