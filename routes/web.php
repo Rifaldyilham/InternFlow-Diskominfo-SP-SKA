@@ -146,7 +146,7 @@ Route::prefix('api/mentor')->middleware(['auth'])->group(function () {
 });
 
 // Routes untuk Admin Bidang
-Route::prefix('admin-bidang')->middleware(['auth'])->group(function () {
+Route::prefix('admin-bidang')->middleware(['auth', 'role:Admin Bidang'])->group(function () {
     Route::get('/mentor', [DashboardController::class, 'index'])
         ->name('admin-bidang.mentor');
 
