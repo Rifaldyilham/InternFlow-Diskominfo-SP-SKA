@@ -66,24 +66,33 @@ class AbsensiPesertaController extends Controller
         
         $infoMessage = null;
         $finishedMagang = false;
+        $notStarted = false;
 
         // Jika masa magang sudah lewat, blokir form dan beri pesan perhatian
         if ($endDate && $todayJakarta->gt($endDate)) {
             $infoMessage = 'Masa magang Anda telah selesai. Fitur logbook dan absensi sudah tidak tersedia. Silakan cek sertifikat dan penilaian di halaman yang sesuai. Jika ingin mengikuti program magang kembali, silakan mengajukan pendaftaran ulang.';
             $finishedMagang = true;
         } else {
-            // Cek apakah sudah absen hari ini
-            $alreadyAbsen = Absensi::where('id_pesertamagang', $pesertaId)
-                ->whereDate('waktu_absen', $todayDate)
-                ->exists();
+            $startDate = $peserta->tanggal_mulai
+                ? Carbon::parse($peserta->tanggal_mulai, 'Asia/Jakarta')->startOfDay()
+                : null;
 
-            if ($alreadyAbsen) {
-                $absensiToday = Absensi::where('id_pesertamagang', $pesertaId)
+            if ($startDate && $todayJakarta->lt($startDate)) {
+                $notStarted = true;
+            } else {
+                // Cek apakah sudah absen hari ini
+                $alreadyAbsen = Absensi::where('id_pesertamagang', $pesertaId)
                     ->whereDate('waktu_absen', $todayDate)
-                    ->first();
-                
-                $infoMessage = 'Anda sudah absen hari ini pada pukul ' . 
-                    Carbon::parse($absensiToday->waktu_absen)->format('H:i') . ' WIB';
+                    ->exists();
+
+                if ($alreadyAbsen) {
+                    $absensiToday = Absensi::where('id_pesertamagang', $pesertaId)
+                        ->whereDate('waktu_absen', $todayDate)
+                        ->first();
+                    
+                    $infoMessage = 'Anda sudah absen hari ini pada pukul ' . 
+                        Carbon::parse($absensiToday->waktu_absen)->format('H:i') . ' WIB';
+                }
             }
         }
 
@@ -94,7 +103,8 @@ class AbsensiPesertaController extends Controller
             'sakit',
             'alpha',
             'infoMessage',
-            'finishedMagang'
+            'finishedMagang',
+            'notStarted'
         ));
     }
 

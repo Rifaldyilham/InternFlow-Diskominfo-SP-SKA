@@ -134,16 +134,21 @@
             margin-top: 20px;
         }
 
+        @media (max-width: 640px) {
+            .logo-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+        }
+
         .gov-logo {
-            filter: grayscale(100%) brightness(0) invert(1);
-            opacity: 0.8;
-            transition: all 0.3s ease;
+            opacity: 0.9;
+            transition: opacity 0.3s ease;
             height: 50px;
             object-fit: contain;
         }
 
         .gov-logo:hover {
-            filter: grayscale(0) brightness(1) invert(0);
             opacity: 1;
         }
 
@@ -378,18 +383,18 @@
             <!-- Logo Pemerintah -->
             <div>
                 <h4 class="font-bold text-lg mb-6 text-accent">Mitra Pemerintah</h4>
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 items-center">
+                <div class="logo-grid">
                     <img src="https://diskominfosp.surakarta.go.id/public/fe/assets/img/pemkot.png"
-                        class="h-12 object-contain opacity-80 hover:opacity-100 transition">
+                        class="gov-logo">
 
                     <img src="https://diskominfosp.surakarta.go.id/public/fe/assets/img/ppidkotasolologo.png"
-                        class="h-12 object-contain opacity-80 hover:opacity-100 transition">
+                        class="gov-logo">
 
                     <img src="https://diskominfosp.surakarta.go.id/public/fe/assets/img/solodatalogo.png"
-                        class="h-12 object-contain opacity-80 hover:opacity-100 transition">
+                        class="gov-logo">
 
                     <img src="https://diskominfosp.surakarta.go.id/public/displayFileFe/setting/4cdb646e-0344-4342-abed-d19dc8ea2aaf.png"
-                        class="h-12 object-contain opacity-80 hover:opacity-100 transition">
+                        class="gov-logo">
                 </div>
             </div>
 
@@ -460,19 +465,24 @@
                 Dibangun dengan Laravel • Bagian dari transformasi digital
             </p>
 
-            <div class="mt-5 flex flex-wrap justify-center gap-6 text-sm">
-                <a href="https://surakarta.go.id" class="text-gray-200 hover:text-accent transition hover:underline">
-                    surakarta.go.id
-                </a>
-                <a href="https://diskominfo.surakarta.go.id" class="text-gray-200 hover:text-accent transition hover:underline">
-                    diskominfo.surakarta.go.id
-                </a>
-                <a href="https://ppid.surakarta.go.id" class="text-gray-200 hover:text-accent transition hover:underline">
-                    ppid.surakarta.go.id
-                </a>
-                <a href="https://solodata.surakarta.go.id" class="text-gray-200 hover:text-accent transition hover:underline">
-                    solodata.surakarta.go.id
-                </a>
+            <div class="mt-5 relative flex items-center justify-center text-sm">
+                <span class="absolute left-0 text-[3px] sm:text-[4px] text-white/10 select-none tracking-widest">
+                    Dibuat oleh: Rifaldy Ilham Narulloh • Nayla Amira • Yanti Aisyah
+                </span>
+                <div class="flex flex-wrap justify-center gap-6 text-sm">
+                    <a href="https://surakarta.go.id" class="text-gray-200 hover:text-accent transition hover:underline">
+                        surakarta.go.id
+                    </a>
+                    <a href="https://diskominfosp.surakarta.go.id/" class="text-gray-200 hover:text-accent transition hover:underline">
+                        diskominfo.surakarta.go.id
+                    </a>
+                    <a href="https://ppid.surakarta.go.id" class="text-gray-200 hover:text-accent transition hover:underline">
+                        ppid.surakarta.go.id
+                    </a>
+                    <a href="https://solodata.surakarta.go.id" class="text-gray-200 hover:text-accent transition hover:underline">
+                        solodata.surakarta.go.id
+                    </a>
+                </div>
             </div>
         </div>
     </div>

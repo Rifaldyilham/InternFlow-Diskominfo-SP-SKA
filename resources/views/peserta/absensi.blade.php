@@ -26,6 +26,16 @@
             </div>
         @endif
     </div>
+
+    @if(!empty($notStarted))
+    <div class="info-alert">
+        <i class='bx bx-info-circle'></i>
+        <div>
+            <strong>Magang Belum Dimulai</strong>
+            <p>Absensi baru bisa diisi setelah tanggal mulai magang.</p>
+        </div>
+    </div>
+    @endif
     
 <!-- Statistik Absensi -->
 <div class="absensi-stats-grid">
@@ -67,7 +77,7 @@
 </div>
     
     <!-- Form Absensi Hari Ini -->
-    @if(!isset($infoMessage))
+    @if(!isset($infoMessage) && empty($notStarted))
     <div id="absensiForm" class="absensi-form-container">
         <h3 class="section-title">
             <i class='bx bx-edit'></i> Absensi Hari Ini
