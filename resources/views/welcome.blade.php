@@ -467,7 +467,7 @@
 
             <div class="mt-5 relative flex items-center justify-center text-sm">
                 <span class="absolute left-0 text-[3px] sm:text-[4px] text-white/10 select-none tracking-widest">
-                    Dibuat oleh: Rifaldy Ilham Narulloh • Nayla Amira • Yanti Aisyah
+                    Dibuat oleh: Rifaldy Ilham Nasrulloh • Nayla Amira • Yanti Aisyah
                 </span>
                 <div class="flex flex-wrap justify-center gap-6 text-sm">
                     <a href="https://surakarta.go.id" class="text-gray-200 hover:text-accent transition hover:underline">
