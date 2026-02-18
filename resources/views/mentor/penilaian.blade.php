@@ -162,9 +162,6 @@
 
 @section('scripts')
 <script>
-// ============================
-// KONFIGURASI API (Backend-ready)
-// ============================
 const API_CONFIG = {
     baseUrl: window.location.origin,
     endpoints: {
@@ -183,9 +180,6 @@ const API_CONFIG = {
     }
 };
 
-// ============================
-// STATE MANAGEMENT
-// ============================
 let state = {
     pesertaList: [],
     filteredPeserta: [],
@@ -201,9 +195,6 @@ let state = {
     selectedFile: null
 };
 
-// ============================
-// INISIALISASI
-// ============================
 document.addEventListener('DOMContentLoaded', function() {
     setupCSRF();
     loadInitialData();
@@ -234,10 +225,6 @@ async function loadInitialData() {
         showLoading(false);
     }
 }
-
-// ============================
-// FUNGSI API (Backend-ready)
-// ============================
 
 async function loadStats() {
     try {
@@ -318,11 +305,6 @@ async function loadPesertaSelesai() {
         renderEmptyTable('Terjadi kesalahan saat memuat data');
     }
 }
-
-// ============================
-// UI FUNCTIONS
-// ============================
-
 
 function filterPeserta() {
     const searchQuery = document.getElementById('searchInput').value.toLowerCase();
@@ -459,10 +441,6 @@ function renderEmptyTable(message) {
     `;
 }
 
-// ============================
-// UPLOAD FUNCTIONS
-// ============================
-
 function uploadPenilaian(pesertaId, pesertaNama) {
     state.selectedPeserta = state.pesertaList.find(p => p.id == pesertaId);
     if (!state.selectedPeserta) return;
@@ -566,10 +544,6 @@ function editPenilaian(pesertaId, pesertaNama) {
     }
 }
 
-// ============================
-// FILE HANDLING FUNCTIONS
-// ============================
-
 function handleDragOver(e) {
     e.preventDefault();
     const dropZone = document.getElementById('dropZone');
@@ -652,10 +626,6 @@ function removeSelectedFile() {
     document.getElementById('filePreview').innerHTML = '';
 }
 
-// ============================
-// FORM SUBMISSION
-// ============================
-
 document.getElementById('uploadForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
@@ -698,10 +668,6 @@ document.getElementById('uploadForm').addEventListener('submit', async function(
         showSubmitLoading(false);
     }
 });
-
-// ============================
-// PREVIEW & DELETE FUNCTIONS
-// ============================
 
 async function previewPenilaian(pesertaId, pesertaNama) {
     try {
@@ -833,10 +799,6 @@ async function downloadPenilaian(penilaianId) {
     }
 }
 
-// ============================
-// UTILITY FUNCTIONS
-// ============================
-
 function getInitials(name) {
     if (!name) return '--';
     return name
@@ -933,10 +895,6 @@ function nextPage() {
     }
 }
 
-// ============================
-// MODAL FUNCTIONS
-// ============================
-
 function openModal(modalId) {
     document.getElementById(modalId).style.display = 'flex';
     document.body.style.overflow = 'hidden';
@@ -959,10 +917,6 @@ function closeDeleteModal() {
     document.body.style.overflow = 'auto';
     state.selectedPeserta = null;
 }
-
-// ============================
-// LOADING FUNCTIONS
-// ============================
 
 function showLoading(context, isLoading) {
     const loaders = {
@@ -1008,10 +962,6 @@ function showSubmitLoading(show) {
             : '<i class="bx bx-upload"></i> Upload File';
     }
 }
-
-// ============================
-// NOTIFICATION FUNCTION
-// ============================
 
 function showNotification(message, type = 'info') {
     const notification = document.createElement('div');

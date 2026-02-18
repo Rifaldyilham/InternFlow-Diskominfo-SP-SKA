@@ -248,11 +248,6 @@
 </div>
 
 <script>
-// ============================
-// JavaScript Functions
-// ============================
-
-// Global variables
 let currentAbsensiStatus = null;
 let userLocation = null;
 let uploadedFile = null;

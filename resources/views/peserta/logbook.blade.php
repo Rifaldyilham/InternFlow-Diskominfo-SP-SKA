@@ -271,9 +271,6 @@
 
 @section('scripts')
 <script>
-// ============================================
-// GLOBAL STATE MANAGEMENT
-// ============================================
 let state = {
     magangStatus: null,
     magangData: null,
@@ -315,16 +312,6 @@ function setupEventListeners() {
     });
 }
 
-// ============================================
-// API FUNCTIONS (Backend akan mengisi ini)
-// ============================================
-
-/**
- * 1. Fungsi untuk cek status magang peserta
- * Backend perlu implement:
- * - GET /api/peserta/logbook/status
- * Return: { status: 'not_verified'|'active'|'finished', magang: {...}, stats: {...} }
- */
 async function checkMagangStatus() {
     try {
         showLoading();
@@ -504,11 +491,6 @@ async function submitLogbookHadir() {
         showNotification('error', error.message || 'Gagal menyimpan logbook. Silakan coba lagi.');
     }
 }
-
-
-// ============================================
-// HELPER FUNCTIONS (Frontend only)
-// ============================================
 
 function showLoading() {
     document.getElementById('loadingState').classList.remove('hidden');

@@ -74,10 +74,6 @@
 <script>
 
 // C:\MAGANG\monitoring-magang\monitoring-magang\resources\views\admin-bidang\mentor.blade.php
-
-// ============================
-// KONFIGURASI API
-// ============================
 const API_CONFIG = {
     baseUrl: window.location.origin,
     endpoints: {
@@ -86,9 +82,6 @@ const API_CONFIG = {
     }
 };
 
-// ============================
-// STATE MANAGEMENT
-// ============================
 let state = {
     mentorList: [],
     filteredMentorList: [],
@@ -101,9 +94,6 @@ let state = {
     }
 };
 
-// ============================
-// INISIALISASI
-// ============================
 document.addEventListener('DOMContentLoaded', function() {
     fetchMentorData();
     setupEventListeners();
@@ -117,10 +107,6 @@ function setupEventListeners() {
         debounce(filterMentorData, 300)();
     });
 }
-
-// ============================
-// FUNGSI API
-// ============================
 
 // Fetch data mentor dari backend
 async function fetchMentorData() {
@@ -178,9 +164,6 @@ function filterMentorData() {
     updatePageInfo();
 }
 
-// ============================
-// RENDER TABLE
-// ============================
 function renderMentorTable() {
     const tbody = document.getElementById('mentorTableBody');
     
@@ -262,11 +245,6 @@ function renderEmptyTable(message) {
         </tr>
     `;
 }
-
-// ============================
-// DETAIL MODAL (Hanya lihat)
-// ============================
-
 
 // Fungsi untuk melihat peserta yang dibimbing (modal mini)
 async function showMentorPeserta(mentorId, mentorName) {
@@ -436,9 +414,6 @@ function renderPesertaModalContent(mentor, mentorName) {
     `;
 }
 
-// ============================
-// UTILITY FUNCTIONS
-// ============================
 function getInitials(name) {
     if (!name) return '--';
     return name

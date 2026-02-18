@@ -339,9 +339,6 @@
 @section('scripts')
 <script>
 window.initialTab = @json($initialTab ?? 'logbook');
-// ============================
-// KONFIGURASI API (Backend-ready)
-// ============================
 const API_CONFIG = {
     baseUrl: window.location.origin,
     endpoints: {
@@ -358,9 +355,6 @@ const API_CONFIG = {
     }
 };
 
-// ============================
-// STATE MANAGEMENT
-// ============================
 let state = {
     selectedPeserta: null,  // Peserta yang dipilih dari halaman bimbingan
     currentTab: 'logbook',   // Tab aktif
@@ -390,9 +384,6 @@ let state = {
     currentLogbook: null
 };
 
-// ============================
-// INISIALISASI
-// ============================
 document.addEventListener('DOMContentLoaded', function() {
     setupCSRF();
     checkSelectedPeserta();
@@ -504,10 +495,6 @@ async function loadInitialData() {
         showNotification('Gagal memuat data', 'error');
     }
 }
-
-// ============================
-// FUNGSI API (Backend-ready)
-// ============================
 
 // loadStats removed (badges removed)
 
@@ -636,10 +623,6 @@ async function loadAbsensiData() {
     }
 }
 
-// ============================
-// UI FUNCTIONS
-// ============================
-
 function showPesertaInfo(peserta) {
     const avatar = document.getElementById('selectedPesertaAvatar');
     const name = document.getElementById('selectedPesertaName');
@@ -705,10 +688,6 @@ function switchTab(tabName) {
         loadAbsensiData();
     }
 }
-
-// ============================
-// LOGBOOK FUNCTIONS
-// ============================
 
 function filterLogbookData() {
     const searchQuery = document.getElementById('searchLogbook').value.toLowerCase();
@@ -836,10 +815,6 @@ function renderEmptyLogbookTable(message) {
     `;
 }
 
-// ============================
-// ABSENSI FUNCTIONS
-// ============================
-
 function filterAbsensiData() {
     const searchQuery = document.getElementById('searchAbsensi').value.toLowerCase();
     const dateFilter = document.getElementById('dateAbsensi').value;
@@ -953,10 +928,6 @@ function renderEmptyAbsensiTable(message) {
         </tr>
     `;
 }
-
-// ============================
-// MODAL FUNCTIONS
-// ============================
 
 async function viewLogbookDetail(logbookId) {
     try {
@@ -1325,10 +1296,6 @@ function previewLogbookBukti(path) {
     window.open(`/storage/${path}`, '_blank');
 }
 
-// ============================
-// UTILITY FUNCTIONS
-// ============================
-
 function getInitials(name) {
     if (!name) return '--';
     return name
@@ -1557,10 +1524,6 @@ function absensiNextPage() {
     }
 }
 
-// ============================
-// MODAL UTILITIES
-// ============================
-
 function openModal(modalId) {
     document.getElementById(modalId).style.display = 'flex';
     document.body.style.overflow = 'hidden';
@@ -1581,10 +1544,6 @@ function closeAbsensiModal() {
     document.getElementById('absensiModal').style.display = 'none';
     document.body.style.overflow = 'auto';
 }
-
-// ============================
-// LOADING FUNCTIONS
-// ============================
 
 function showLoading(context, isLoading) {
     const loaders = {
@@ -1636,10 +1595,6 @@ function showSubmitLoading(show) {
             : '<i class="bx bx-check"></i> Simpan Verifikasi';
     }
 }
-
-// ============================
-// NOTIFICATION FUNCTION
-// ============================
 
 function showNotification(message, type = 'info') {
     const notification = document.createElement('div');

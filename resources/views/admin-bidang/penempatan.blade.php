@@ -947,10 +947,6 @@ function renderMentorDetailModal(mentor) {
     openModal('dynamic');
 }
 
-// ============================
-// UTILITY FUNCTIONS
-// ============================
-
 function formatDate(dateString) {
     if (!dateString) return '-';
     try {

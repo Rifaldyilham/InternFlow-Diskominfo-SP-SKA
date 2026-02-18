@@ -137,9 +137,6 @@
 
 @section('scripts')
 <script>
-// ============================
-// KONFIGURASI API
-// ============================
 const API_CONFIG = {
     baseUrl: window.location.origin,
     endpoints: {
@@ -149,9 +146,6 @@ const API_CONFIG = {
     }
 };
 
-// ============================
-// STATE MANAGEMENT
-// ============================
 let state = {
     pesertaList: [],
     filteredPeserta: [],
@@ -166,9 +160,6 @@ let state = {
     }
 };
 
-// ============================
-// INISIALISASI
-// ============================
 document.addEventListener('DOMContentLoaded', function() {
     // Setup CSRF
     const token = document.querySelector('meta[name="csrf-token"]');
@@ -198,10 +189,6 @@ async function loadInitialData() {
         showLoading(false);
     }
 }
-
-// ============================
-// FUNGSI API
-// ============================
 
 async function loadStats() {
     try {
@@ -274,10 +261,6 @@ async function loadPesertaBimbingan() {
         renderEmptyTable('Terjadi kesalahan saat memuat data: ' + error.message);
     }
 }
-
-// ============================
-// UI FUNCTIONS
-// ============================
 
 function updateStatsUI() {
     document.getElementById('totalPeserta').textContent = state.stats.total || 0;
@@ -394,10 +377,6 @@ function renderEmptyTable(message) {
     updatePesertaCount();
 }
 
-// ============================
-// NAVIGASI
-// ============================
-
 function goToLogbook(pesertaId, pesertaNama) {
     window.location.href = `/mentor/logbook?peserta=${pesertaId}&type=logbook`;
 }
@@ -406,9 +385,7 @@ function goToAbsensi(pesertaId, pesertaNama) {
     window.location.href = `/mentor/absensi?peserta=${pesertaId}&type=absensi`;
 }
 
-// ============================
 // UTILITY FUNCTIONS
-// ============================
 
 function getInitials(name) {
     if (!name) return '--';
@@ -502,10 +479,6 @@ function nextPage() {
         updatePagination();
     }
 }
-
-// ============================
-// MODAL FUNCTIONS
-// ============================
 
 async function showDetailPeserta(pesertaId) {
     try {
@@ -629,10 +602,6 @@ function closeDetailModal() {
     document.body.style.overflow = 'auto';
 }
 
-// ============================
-// LOADING FUNCTIONS
-// ============================
-
 function showLoading(show) {
     const loadingRow = document.getElementById('loadingRow');
     if (loadingRow) {
@@ -651,10 +620,6 @@ function showModalLoading(show) {
         `;
     }
 }
-
-// ============================
-// NOTIFICATION FUNCTION
-// ============================
 
 function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
