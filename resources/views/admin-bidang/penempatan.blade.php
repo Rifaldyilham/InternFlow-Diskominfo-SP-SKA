@@ -429,7 +429,7 @@ function renderMentorOptions(mentorList) {
         `;
     } else {
         mentorList.forEach(mentor => {
-            const kapasitas = mentor.kapasitas || 5;
+            const kapasitas = mentor.kapasitas || 15;
             const jumlahBimbingan = mentor.jumlah_bimbingan || 0;
             const kuotaTersedia = kapasitas - jumlahBimbingan;
             const isAvailable = kuotaTersedia > 0 && mentor.status === 'aktif';

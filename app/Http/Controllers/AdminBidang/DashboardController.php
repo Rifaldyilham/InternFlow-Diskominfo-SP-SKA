@@ -182,7 +182,7 @@ public function apiPeserta(Request $request): JsonResponse
             'nama' => $mentor->nama,
             'nip' => $mentor->nip, // TAMBAHKAN NIP
             'email' => $mentor->user->email ?? null,
-            'kapasitas' => 5, // Default kapasitas
+            'kapasitas' => 15, // Default kapasitas
             'jumlah_bimbingan' => $jumlahBimbingan,
             'status' => 'aktif', // Default status
             'jabatan' => 'Mentor',
