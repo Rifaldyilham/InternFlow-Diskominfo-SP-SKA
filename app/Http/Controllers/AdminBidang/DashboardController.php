@@ -286,7 +286,7 @@ public function apiPeserta(Request $request): JsonResponse
         'nama' => $mentor->nama,
         'nip' => $mentor->nip,
         'email' => $mentor->user->email ?? null,
-        'kapasitas' => 5,
+        'kapasitas' => 15,
         'jumlah_bimbingan' => $jumlahBimbingan,
         'status' => 'aktif',
         'jabatan' => 'Mentor',
